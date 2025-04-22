@@ -1,0 +1,41 @@
+<div class="dashboard-container">
+  <h1>Dashboard</h1>
+  
+  <div class="dashboard-content">
+    <div class="welcome-message">
+      <h2>Welcome to your dashboard!</h2>
+      <p>This is a protected area that requires authentication.</p>
+    </div>
+    
+    <div class="dashboard-cards">
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>Analytics</h3>
+        <p>View your analytics and statistics</p>
+      </div>
+      
+      <div class="card" routerLink="/prompts">
+        <div class="card-icon">💬</div>
+        <h3>Prompts</h3>
+        <p>Manage your AI prompts</p>
+      </div>
+      
+      <div class="card">
+        <div class="card-icon">📁</div>
+        <h3>Projects</h3>
+        <p>Manage your current projects</p>
+      </div>
+      
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>Settings</h3>
+        <p>Configure your account settings</p>
+      </div>
+    </div>
+  </div>
+  
+  <div class="navigation">
+    <a routerLink="/home" class="nav-button">Back to Home</a>
+    <a routerLink="/profile" class="nav-button">View Profile</a>
+  </div>
+</div>

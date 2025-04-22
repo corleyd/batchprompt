@@ -1,0 +1,93 @@
+<div class="prompt-edit-container">
+  <div class="header">
+    <h1>{{ isEditMode ? 'Edit Prompt' : 'Create New Prompt' }}</h1>
+  </div>
+
+  <div class="loading-spinner" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading prompt details...</p>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    <p>{{ error }}</p>
+    <button (click)="error = null">Dismiss</button>
+  </div>
+
+  <div class="prompt-form" *ngIf="!loading">
+    <form [formGroup]="promptForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="name">Prompt Name *</label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name" 
+          placeholder="Enter a name for your prompt"
+          [class.is-invalid]="promptForm.get('name')?.invalid && promptForm.get('name')?.touched"
+        >
+        <div class="validation-error" *ngIf="promptForm.get('name')?.invalid && promptForm.get('name')?.touched">
+          <span *ngIf="promptForm.get('name')?.errors?.['required']">Name is required.</span>
+          <span *ngIf="promptForm.get('name')?.errors?.['maxlength']">Name cannot exceed 255 characters.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Description *</label>
+        <input 
+          type="text" 
+          id="description" 
+          formControlName="description" 
+          placeholder="Enter a brief description"
+          [class.is-invalid]="promptForm.get('description')?.invalid && promptForm.get('description')?.touched"
+        >
+        <div class="validation-error" *ngIf="promptForm.get('description')?.invalid && promptForm.get('description')?.touched">
+          <span *ngIf="promptForm.get('description')?.errors?.['required']">Description is required.</span>
+          <span *ngIf="promptForm.get('description')?.errors?.['maxlength']">Description cannot exceed 255 characters.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="promptText">Prompt Text *</label>
+        <textarea 
+          id="promptText" 
+          formControlName="promptText" 
+          rows="8" 
+          placeholder="Enter your prompt text here"
+          [class.is-invalid]="promptForm.get('promptText')?.invalid && promptForm.get('promptText')?.touched"
+        ></textarea>
+        <div class="validation-error" *ngIf="promptForm.get('promptText')?.invalid && promptForm.get('promptText')?.touched">
+          <span *ngIf="promptForm.get('promptText')?.errors?.['required']">Prompt text is required.</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="outputSchema">Output Schema (JSON) *</label>
+        <div class="schema-header">
+          <small>Enter a JSON schema that describes the expected output structure</small>
+          <button type="button" class="format-btn" (click)="formatJsonSchema()">Format JSON</button>
+        </div>
+        <textarea 
+          id="outputSchema" 
+          formControlName="outputSchema" 
+          rows="6" 
+          placeholder='{"example": "Enter your JSON schema here"}'
+          [class.is-invalid]="promptForm.get('outputSchema')?.invalid && promptForm.get('outputSchema')?.touched"
+        ></textarea>
+        <div class="validation-error" *ngIf="promptForm.get('outputSchema')?.invalid && promptForm.get('outputSchema')?.touched">
+          <span *ngIf="promptForm.get('outputSchema')?.errors?.['required']">Output schema is required.</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="cancel-button" (click)="cancel()">Cancel</button>
+        <button type="submit" class="save-button" [disabled]="saving">
+          <span *ngIf="saving">
+            <span class="spinner-sm"></span> Saving...
+          </span>
+          <span *ngIf="!saving">
+            {{ isEditMode ? 'Update Prompt' : 'Create Prompt' }}
+          </span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

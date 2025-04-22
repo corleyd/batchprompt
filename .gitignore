@@ -1,0 +1,19 @@
+# Ignore Gradle project-specific cache directory
+**/.gradle
+**/.classpath
+
+# Ignore Gradle build output directory
+**/build
+**/bin
+**/*.log
+**/*.log.*.gz
+
+
+**/.project
+**/.settings
+**/org.eclipse.*.prefs
+
+logs/**
+**/sftp.json
+**/logs/*.log
+**/\#*

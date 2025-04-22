@@ -1,0 +1,20 @@
+<div class="home-container">
+  <div class="welcome-section">
+    <h1>Welcome to Our Application</h1>
+    <p>This is the home page of our application.</p>
+  </div>
+
+  <div class="navigation-section">
+    <ng-container *ngIf="auth.isAuthenticated$ | async; else loggedOut">
+      <p class="welcome-text">You're logged in! You can now access:</p>
+      <div class="nav-buttons">
+        <a routerLink="/dashboard" class="nav-btn dashboard-btn">Go to Dashboard</a>
+        <a routerLink="/profile" class="nav-btn profile-btn">View Profile</a>
+      </div>
+    </ng-container>
+    
+    <ng-template #loggedOut>
+      <p class="welcome-text">Please log in to access all features</p>
+    </ng-template>
+  </div>
+</div>

@@ -1,0 +1,31 @@
+server:
+  port: 8082
+debug:true:
+spring:
+  config:
+    import:
+      - ${HOME}/.batchprompt/local.yml
+  datasource:
+    url: jdbc:postgresql://localhost:5432/batchprompt
+    username: batchprompt
+    password: batchprompt
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    locations: classpath:db/migration
+    enabled: true
+logging:
+  level:
+    root: INFO
+    org.springframework: DEBUG
+    org.springframework.security: TRACE
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.context.annotation: INFO
+    org.springframework.ai: DEBUG
+    com.batchprompt: DEBUG
+    org.flywaydb: TRACE
+    org.hibernate: INFO
+    # org.hibernate.SQL: DEBUG
+    # org.hibernate.type: TRACE

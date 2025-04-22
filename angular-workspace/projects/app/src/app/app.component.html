@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="header">
+    <h1>Welcome to {{ title }}</h1>
+  </div>
+  
+  <div class="content">
+    <div *ngIf="auth.isAuthenticated$ | async; else loggedOut">
+      <div class="user-info">
+        <p>You are logged in!</p>
+        <button class="btn logout-btn" (click)="logout()">Log Out</button>
+      </div>
+    </div>
+    
+    <ng-template #loggedOut>
+      <div class="auth-buttons">
+        <h2>Please log in or sign up to continue</h2>
+        <button class="btn login-btn" (click)="login()">Log In</button>
+        <button class="btn signup-btn" (click)="login()">Sign Up</button>
+        <p class="info-text">Both buttons use Auth0 to handle authentication</p>
+      </div>
+    </ng-template>
+  </div>
+  
+  <router-outlet></router-outlet>
+</div>

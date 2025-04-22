@@ -1,0 +1,39 @@
+<div class="profile-container">
+  <h1>Your Profile</h1>
+  
+  <div class="profile-content" *ngIf="userProfile">
+    <div class="profile-header">
+      <div class="profile-picture" *ngIf="userProfile.picture">
+        <img [src]="userProfile.picture" alt="Profile picture">
+      </div>
+      <div class="profile-name">
+        <h2>{{ userProfile.name }}</h2>
+        <p class="profile-email">{{ userProfile.email }}</p>
+      </div>
+    </div>
+    
+    <div class="profile-details">
+      <div class="detail-item">
+        <span class="label">User ID:</span>
+        <span class="value">{{ userProfile.sub }}</span>
+      </div>
+      <div class="detail-item" *ngIf="userProfile.email_verified">
+        <span class="label">Email Verified:</span>
+        <span class="value">{{ userProfile.email_verified ? 'Yes' : 'No' }}</span>
+      </div>
+      <div class="detail-item" *ngIf="userProfile.updated_at">
+        <span class="label">Last Updated:</span>
+        <span class="value">{{ userProfile.updated_at | date:'medium' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="loading" *ngIf="!userProfile">
+    Loading profile information...
+  </div>
+  
+  <div class="navigation">
+    <a routerLink="/home" class="back-button">Back to Home</a>
+    <a routerLink="/dashboard" class="nav-button">Go to Dashboard</a>
+  </div>
+</div>

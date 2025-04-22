@@ -1,0 +1,3 @@
+rootProject.name = "batchprompt"
+
+include('services:prompts')
