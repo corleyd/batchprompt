@@ -36,6 +36,11 @@ export const routes: Routes = [
     loadComponent: () => import('./prompts/prompt-edit/prompt-edit.component').then(m => m.PromptEditComponent),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'files',
+    loadChildren: () => import('./files/files.module').then(m => m.FilesModule),
+    canActivate: [AuthGuard]
+  },
   { 
     path: '**', 
     redirectTo: 'home' 

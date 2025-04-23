@@ -1,3 +1,5 @@
 rootProject.name = "batchprompt"
 
+include('libs:commons-services')
 include('services:prompts')
+include('services:files')

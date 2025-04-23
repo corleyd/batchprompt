@@ -1,0 +1,27 @@
+<div class="files-container">
+  <h1>File Management</h1>
+  
+  <div class="file-upload-section">
+    <h2>Upload New Files</h2>
+    <app-file-upload (fileUploaded)="refreshFiles()"></app-file-upload>
+  </div>
+
+  <div class="file-status-section">
+    <h2>Your Files</h2>
+    <div *ngIf="loading" class="loading">Loading files...</div>
+    
+    <div *ngIf="!loading && files.length === 0" class="no-files">
+      No files found. Upload files to get started!
+    </div>
+    
+    <app-file-status 
+      *ngFor="let file of files" 
+      [file]="file"
+    ></app-file-status>
+  </div>
+
+  <div class="actions">
+    <button (click)="refreshFiles()" class="refresh-button">Refresh Files</button>
+    <a routerLink="/dashboard" class="back-button">Back to Dashboard</a>
+  </div>
+</div>

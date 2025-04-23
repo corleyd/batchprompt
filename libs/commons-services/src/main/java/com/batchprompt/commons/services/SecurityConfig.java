@@ -1,8 +1,10 @@
-package com.batchprompt.prompts.config;
+package com.batchprompt.commons.services;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -18,10 +20,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-import com.batchprompt.prompts.security.AudienceValidator;
 
 @Configuration
 @EnableWebSecurity
+@ConditionalOnProperty(name = "auth0.audience") // Only activate when auth0.audience property is set
 public class SecurityConfig {
 
     @Value("${auth0.audience}")
@@ -31,6 +33,7 @@ public class SecurityConfig {
     private String issuer;
 
     @Bean
+    @ConditionalOnMissingBean(SecurityFilterChain.class)
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> {
             CorsConfigurationSource corsConfigurationSource = request -> {
@@ -52,6 +55,7 @@ public class SecurityConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean(JwtDecoder.class)
     JwtDecoder jwtDecoder() {
         NimbusJwtDecoder jwtDecoder = JwtDecoders.fromOidcIssuerLocation(issuer);
 

@@ -1,0 +1,19 @@
+<div class="file-status-card" [ngClass]="file.status.toLowerCase()">
+  <div class="file-info">
+    <h3 class="file-name">{{ file.name }}</h3>
+    <p class="file-details">
+      <span>Uploaded: {{ file.uploadDate | date:'medium' }}</span>
+      <span>Size: {{ file.size | number }} bytes</span>
+    </p>
+  </div>
+  
+  <div class="status-info">
+    <span class="status-badge">{{ statusMessage }}</span>
+    <button *ngIf="file.status !== 'PROCESSING'" (click)="checkStatus()" class="refresh-status">
+      Refresh Status
+    </button>
+    <div *ngIf="file.status === 'PROCESSING'" class="processing-indicator">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
