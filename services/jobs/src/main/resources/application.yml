@@ -27,6 +27,12 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: ${auth0.issuer-uri}
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: batchprompt
+    password: batchprompt
+    virtual-host: /
 logging:
   level:
     root: INFO
@@ -61,5 +67,3 @@ rabbitmq:
   routing:
     jobs:
       key: jobs.routing.key
-
-

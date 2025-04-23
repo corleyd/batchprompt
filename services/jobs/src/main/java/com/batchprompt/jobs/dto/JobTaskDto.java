@@ -20,6 +20,7 @@ public class JobTaskDto {
     private UUID fileRecordUuid;
     private String modelName;
     private JobTask.Status status;
+    private String responseText;
     private String errorMessage;
     private LocalDateTime beginTimestamp;
     private LocalDateTime endTimestamp;

@@ -33,8 +33,20 @@ services:
       volumes:
          - minio-data:/data
       command: server /data --console-address ":9001"
+   rabbitmq:
+     image: rabbitmq:3-management
+     ports:
+      - "5672:5672"  # RabbitMQ broker
+      - "15672:15672"  # RabbitMQ management UI
+     environment:
+       RABBITMQ_DEFAULT_USER: batchprompt
+       RABBITMQ_DEFAULT_PASS: batchprompt
+     volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+
 
 volumes:
    postgres:
    minio-data:
+   rabbitmq-data:
 

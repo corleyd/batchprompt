@@ -46,6 +46,9 @@ public class JobTask {
     @Column(name = "error_message")
     private String errorMessage;
     
+    @Column(name = "response_text")
+    private String responseText;
+
     @Column(name = "begin_timestamp")
     private LocalDateTime beginTimestamp;
     

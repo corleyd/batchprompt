@@ -16,6 +16,7 @@ create table if not exists job_task (
     job_uuid uuid not null references job (job_uuid),
     file_record_uuid uuid not null,
     model_name varchar not null,
+    response_text varchar,
     status varchar not null,
     error_message varchar,
     begin_timestamp timestamp,

@@ -55,4 +55,19 @@ public class FileClient {
             return null;
         }
     }
+    
+    public FileRecordDto getFileRecord(UUID recordUuid, String authToken) {
+        try {
+            ResponseEntity<FileRecordDto> response = restTemplate.exchange(
+                filesServiceUrl + "/api/files/records/" + recordUuid,
+                HttpMethod.GET,
+                HeaderUtil.createEntityWithAuthHeader(authToken),
+                FileRecordDto.class
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error retrieving file record {}", recordUuid, e);
+            return null;
+        }
+    }
 }

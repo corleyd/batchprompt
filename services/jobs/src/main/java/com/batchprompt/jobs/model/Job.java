@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 public class Job {
     
     public enum Status {
-        Submitted, Processing, Completed, Failed
+        SUBMITTED, PROCESSING, PENDING_OUTPUT, GENERATING_OUTPUT, COMPLETED, COMPLETED_WITH_ERRORS, FAILED
     }
     
     @Id

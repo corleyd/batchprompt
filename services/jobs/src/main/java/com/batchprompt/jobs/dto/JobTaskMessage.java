@@ -2,8 +2,6 @@ package com.batchprompt.jobs.dto;
 
 import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,9 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FileRecordDto {
+public class JobTaskMessage {
+    private UUID jobTaskUuid;
+    private UUID jobUuid;
     private UUID fileRecordUuid;
-    private UUID fileUuid;
-    private Integer recordNumber;
-    private JsonNode record;
+    private String modelName;
+    private UUID promptUuid;
+    private String userId;
+    private String authToken;
 }

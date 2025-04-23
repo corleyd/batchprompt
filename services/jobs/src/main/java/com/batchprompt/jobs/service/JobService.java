@@ -1,16 +1,20 @@
 package com.batchprompt.jobs.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.batchprompt.jobs.client.FileClient;
 import com.batchprompt.jobs.client.PromptClient;
 import com.batchprompt.jobs.dto.FileDto;
 import com.batchprompt.jobs.dto.FileRecordDto;
+import com.batchprompt.jobs.dto.JobTaskMessage;
 import com.batchprompt.jobs.dto.PromptDto;
 import com.batchprompt.jobs.exception.JobSubmissionException;
 import com.batchprompt.jobs.model.Job;
@@ -31,6 +35,7 @@ public class JobService {
     private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ModelService modelService;
+    private final MessageProducer messageProducer;
     
     /**
      * Get all jobs
@@ -130,7 +135,7 @@ public class JobService {
                 .fileUuid(fileUuid)
                 .promptUuid(promptUuid)
                 .modelName(modelName)
-                .status(Job.Status.Submitted)
+                .status(Job.Status.SUBMITTED)
                 .taskCount(fileRecords.size())
                 .completedTaskCount(0)
                 .createdAt(now)
@@ -139,10 +144,15 @@ public class JobService {
                 
         jobRepository.save(job);
         
+        // Store messages to be sent after transaction commits
+        final List<JobTaskMessage> messagesToSend = new ArrayList<>();
+        
         // Create job tasks
         for (FileRecordDto record : fileRecords) {
+            UUID jobTaskUuid = UUID.randomUUID();
+            
             JobTask task = JobTask.builder()
-                    .jobTaskUuid(UUID.randomUUID())
+                    .jobTaskUuid(jobTaskUuid)
                     .jobUuid(jobUuid)
                     .fileRecordUuid(record.getFileRecordUuid())
                     .modelName(modelName)
@@ -150,12 +160,86 @@ public class JobService {
                     .build();
                     
             jobTaskRepository.save(task);
+            
+            // Create the message but don't send it yet
+            JobTaskMessage message = JobTaskMessage.builder()
+                    .jobTaskUuid(jobTaskUuid)
+                    .jobUuid(jobUuid)
+                    .fileRecordUuid(record.getFileRecordUuid())
+                    .modelName(modelName)
+                    .promptUuid(promptUuid)
+                    .userId(userId)
+                    .authToken(authToken)
+                    .build();
+                    
+            messagesToSend.add(message);
         }
+        
+        // Register a callback to be executed after the transaction is successfully committed
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+            @Override
+            public void afterCommit() {
+                // Now that the transaction has committed, send all messages
+                for (JobTaskMessage message : messagesToSend) {
+                    messageProducer.sendJobTask(message);
+                }
+                log.info("Sent {} job task messages for job {} after transaction commit", messagesToSend.size(), jobUuid);
+            }
+        });
         
         log.info("Job {} submitted for file {} and prompt {}", jobUuid, fileUuid, promptUuid);
         
-        // TODO: Send message to message queue for processing
-        
         return job;
+    }
+    
+    /**
+     * Update job status based on the status of its tasks
+     * 
+     * @param jobUuid The UUID of the job to update
+     */
+    @Transactional
+    public void updateJobStatus(UUID jobUuid) {
+        Job job = jobRepository.findById(jobUuid).orElse(null);
+        if (job == null) {
+            log.error("Job not found: {}", jobUuid);
+            return;
+        }
+        
+        List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
+        if (tasks.isEmpty()) {
+            log.error("No tasks found for job: {}", jobUuid);
+            return;
+        }
+        
+        int completedCount = 0;
+        int failedCount = 0;
+        
+        for (JobTask task : tasks) {
+            if (task.getStatus() == JobTask.Status.Completed) {
+                completedCount++;
+            } else if (task.getStatus() == JobTask.Status.Failed) {
+                failedCount++;
+            }
+        }
+        
+        job.setCompletedTaskCount(completedCount + failedCount);
+        
+        // Update job status based on task status
+        if (completedCount + failedCount == tasks.size()) {
+            if (failedCount > 0 && completedCount > 0) {
+                job.setStatus(Job.Status.COMPLETED_WITH_ERRORS);
+            } else if (failedCount > 0) {
+                job.setStatus(Job.Status.FAILED);
+            } else {
+                job.setStatus(Job.Status.COMPLETED);
+            }
+        } else if (job.getStatus() == Job.Status.SUBMITTED) {
+            job.setStatus(Job.Status.PROCESSING);
+        }
+        
+        job.setUpdatedAt(LocalDateTime.now());
+        jobRepository.save(job);
+        
+        log.info("Updated job {} status to {}", jobUuid, job.getStatus());
     }
 }

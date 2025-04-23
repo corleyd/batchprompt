@@ -212,4 +212,8 @@ public class FileService {
     public List<FileRecord> getRecordsByFileId(UUID fileUuid) {
         return fileRecordRepository.findByFileFileUuid(fileUuid);
     }
+    
+    public Optional<FileRecord> getFileRecordById(UUID recordUuid) {
+        return fileRecordRepository.findById(recordUuid);
+    }
 }

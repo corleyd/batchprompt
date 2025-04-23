@@ -74,6 +74,23 @@ public class FileController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/records/{recordUuid}")
+    public ResponseEntity<FileRecordDto> getFileRecordById(
+            @PathVariable UUID recordUuid,
+            @AuthenticationPrincipal Jwt jwt) {
+        
+        String userId = jwt.getSubject();
+        return fileService.getFileRecordById(recordUuid)
+                .map(fileRecord -> {
+                    // Check if the user owns the file
+                    if (!fileRecord.getFile().getUserId().equals(userId)) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<FileRecordDto>build();
+                    }
+                    return ResponseEntity.ok(fileMapper.toDto(fileRecord));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{fileUuid}")
     public ResponseEntity<Void> deleteFile(@PathVariable UUID fileUuid) {
         boolean deleted = fileService.deleteFile(fileUuid);
