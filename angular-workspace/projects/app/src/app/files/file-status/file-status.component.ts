@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { FileService } from '../file.service';
 import { interval, Subscription } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
@@ -14,7 +15,10 @@ export class FileStatusComponent implements OnInit {
   statusPolling?: Subscription;
   statusMessage = '';
 
-  constructor(private fileService: FileService) {}
+  constructor(
+    private fileService: FileService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     // Poll for status updates if the file is in a processing state
@@ -79,5 +83,11 @@ export class FileStatusComponent implements OnInit {
         console.error('Error refreshing status:', err);
       }
     });
+  }
+
+  createJob(): void {
+    if (this.file && this.file.fileUuid) {
+      this.router.navigate(['/jobs/submit', this.file.fileUuid]);
+    }
   }
 }

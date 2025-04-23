@@ -82,3 +82,118 @@
     opacity: 1;
   }
 }
+
+.file-status-card {
+  border-radius: 8px;
+  border-left: 4px solid #ccc;
+  padding: 16px;
+  margin-bottom: 16px;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+  &.processing {
+    border-left-color: #3498db;
+  }
+
+  &.completed {
+    border-left-color: #2ecc71;
+  }
+
+  &.failed {
+    border-left-color: #e74c3c;
+  }
+
+  &.ready {
+    border-left-color: #27ae60;
+  }
+}
+
+.file-info {
+  flex: 1;
+
+  .file-name {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+  }
+
+  .file-details {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+    
+    span {
+      margin-right: 16px;
+    }
+  }
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 10px;
+
+  .status-badge {
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    background-color: #eee;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 8px;
+  }
+
+  button {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    
+    &.refresh-status {
+      background-color: #f1f1f1;
+      color: #555;
+      
+      &:hover {
+        background-color: #e1e1e1;
+      }
+    }
+    
+    &.create-job {
+      background-color: #3498db;
+      color: white;
+      
+      &:hover {
+        background-color: #2980b9;
+      }
+    }
+  }
+
+  .processing-indicator {
+    display: flex;
+    align-items: center;
+    
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-radius: 50%;
+      border-top-color: #3498db;
+      animation: spin 1s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -1,0 +1,68 @@
+<div class="job-submit-container">
+  <h1>Submit a New Job</h1>
+
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Loading required data...</p>
+  </div>
+
+  <div *ngIf="!loading" class="job-form-container">
+    <div *ngIf="submitSuccess" class="success-message">
+      <div class="success-icon">✓</div>
+      <p>Job submitted successfully! Redirecting...</p>
+    </div>
+
+    <form *ngIf="!submitSuccess" [formGroup]="jobForm" (ngSubmit)="onSubmit()" class="job-form">
+      <div class="form-group">
+        <label for="file">Select File:</label>
+        <select id="file" formControlName="fileUuid">
+          <option value="">-- Select a File --</option>
+          <option *ngFor="let file of files" [value]="file.fileUuid">
+            {{ file.fileName }}
+          </option>
+        </select>
+        <div *ngIf="jobForm.get('fileUuid')?.invalid && jobForm.get('fileUuid')?.touched" class="error-message">
+          Please select a file
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="prompt">Select Prompt:</label>
+        <select id="prompt" formControlName="promptUuid">
+          <option value="">-- Select a Prompt --</option>
+          <option *ngFor="let prompt of prompts" [value]="prompt.promptUuid">
+            {{ prompt.name }}
+          </option>
+        </select>
+        <div *ngIf="jobForm.get('promptUuid')?.invalid && jobForm.get('promptUuid')?.touched" class="error-message">
+          Please select a prompt
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="model">Select Model:</label>
+        <select id="model" formControlName="modelName">
+          <option value="">-- Select a Model --</option>
+          <option *ngFor="let model of models" [value]="model">
+            {{ model }}
+          </option>
+        </select>
+        <div *ngIf="jobForm.get('modelName')?.invalid && jobForm.get('modelName')?.touched" class="error-message">
+          Please select a model
+        </div>
+      </div>
+
+      <div *ngIf="errorMessage" class="error-banner">
+        {{ errorMessage }}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="jobForm.invalid || submitting" class="submit-button">
+          <span *ngIf="!submitting">Submit Job</span>
+          <span *ngIf="submitting" class="button-spinner"></span>
+        </button>
+        <a routerLink="/files" class="cancel-button">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>

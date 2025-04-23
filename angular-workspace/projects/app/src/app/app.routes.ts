@@ -41,6 +41,11 @@ export const routes: Routes = [
     loadChildren: () => import('./files/files.module').then(m => m.FilesModule),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'jobs',
+    loadChildren: () => import('./jobs/jobs.module').then(m => m.JobsModule),
+    canActivate: [AuthGuard]
+  },
   { 
     path: '**', 
     redirectTo: 'home' 
