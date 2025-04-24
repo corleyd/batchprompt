@@ -1,14 +1,17 @@
 import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FileService {
-  private apiUrl = "http://localhost:8081/api/files"; // Base URL for the file API
+  private apiUrl: string; // Base URL for the file API
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {
+    this.apiUrl = `${environment.apiBaseUrl}/api/files`;
+  }
 
   // Getter for apiUrl to use in components
   getApiUrl(): string {
