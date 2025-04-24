@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.batchprompt.jobs.client.FileClient;
+import com.batchprompt.jobs.dto.FileDto;
 import com.batchprompt.jobs.dto.FileRecordDto;
 import com.batchprompt.jobs.dto.JobOutputMessage;
 import com.batchprompt.jobs.model.Job;
@@ -79,9 +80,9 @@ public class JobOutputWorker {
             
             // Upload Excel file to file service
             String fileName = "results_" + job.getJobUuid() + ".xlsx";
-            boolean uploaded = uploadExcelFile(excelBytes, fileName, job.getUserId(), "result", null, job.getUserId());
+            FileDto resultFileDto = uploadExcelFile(excelBytes, fileName, job.getUserId(), "result", null, job.getUserId());
             
-            if (!uploaded) {
+            if (resultFileDto == null) {
                 log.error("Failed to upload Excel file for job: {}", jobUuid);
                 failJob(job);
                 return;
@@ -89,6 +90,7 @@ public class JobOutputWorker {
             
             // Update job status to COMPLETED or COMPLETED_WITH_ERRORS
             Job.Status finalStatus = hasErrors ? Job.Status.COMPLETED_WITH_ERRORS : Job.Status.COMPLETED;
+            job.setResultFileUuid(resultFileDto.getFileUuid());
             job.setStatus(finalStatus);
             job.setUpdatedAt(LocalDateTime.now());
             jobRepository.save(job);
@@ -299,13 +301,13 @@ public class JobOutputWorker {
      * @param fileType The file type (upload or result)
      * @return True if upload was successful
      */
-    private boolean uploadExcelFile(byte[] fileContent, String fileName, String userId, String fileType, String authToken, String requestedUserId) {
+    private FileDto uploadExcelFile(byte[] fileContent, String fileName, String userId, String fileType, String authToken, String requestedUserId) {
         try {
             // Convert byte array to input stream
             ByteArrayInputStream inputStream = new ByteArrayInputStream(fileContent);
             
             // Use the authToken if provided, otherwise FileClient will use service-to-service auth
-            fileClient.uploadFile(
+            return fileClient.uploadFile(
                     inputStream,
                     fileName,
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -315,10 +317,9 @@ public class JobOutputWorker {
                     requestedUserId
             );
             
-            return true;
         } catch (Exception e) {
             log.error("Error uploading Excel file: {}", e.getMessage());
-            return false;
+            return null;
         }
     }
     

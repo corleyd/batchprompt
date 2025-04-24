@@ -2,11 +2,13 @@ create table if not exists job (
     job_uuid uuid not null primary key,
     user_id varchar not null,
     file_uuid uuid not null,
+    file_name varchar not null,
     prompt_uuid uuid not null,
     model_name varchar not null,
     status varchar not null,
     task_count integer not null,
     completed_task_count integer not null,
+    result_file_uuid uuid,
     created_at timestamp not null,
     updated_at timestamp not null,
     version integer not null

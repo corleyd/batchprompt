@@ -41,7 +41,7 @@ export class JobSubmitComponent implements OnInit {
     this.loading = true;
     
     // Load files, prompts, and models in parallel
-    const fileObservable = this.fileService.getAllFiles();
+    const fileObservable = this.fileService.getUserFiles();
     const promptObservable = this.promptService.getAllPrompts();
     const modelsObservable = this.jobService.getSupportedModels();
     
@@ -51,7 +51,8 @@ export class JobSubmitComponent implements OnInit {
       models: modelsObservable
     }).subscribe({
       next: (results) => {
-        this.files = results.files;
+        // Extract the files from the paginated response
+        this.files = results.files.content || [];
         this.prompts = results.prompts;
         this.models = results.models;
         this.loading = false;

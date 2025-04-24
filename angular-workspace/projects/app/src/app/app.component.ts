@@ -1,25 +1,39 @@
 import { Component } from '@angular/core';
-import { RouterOutlet, RouterModule, RouterLink, RouterLinkActive } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
-import { NgIf, NgClass, AsyncPipe } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, RouterModule, NgIf, NgClass, AsyncPipe],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
   title = 'BatchPrompt';
 
   constructor(public auth: AuthService) {}
 
-  login(): void {
+  login() {
     this.auth.loginWithRedirect();
   }
 
-  logout(): void {
+  logout() {
     this.auth.logout({ logoutParams: { returnTo: window.location.origin } });
+  }
+
+  /**
+   * Gets user's initials from their full name
+   * @param name Full name of the user
+   * @returns First letter of first name and first letter of last name if available
+   */
+  getUserInitials(name?: string): string {
+    if (!name) return '?';
+    
+    const names = name.trim().split(' ');
+    if (names.length === 1) return names[0].charAt(0).toUpperCase();
+    
+    return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   }
 }

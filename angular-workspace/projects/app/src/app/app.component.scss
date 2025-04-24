@@ -1,103 +1,165 @@
+// Variables
+$primary-color: #4361ee;
+$primary-hover: #3a56d4;
+$sidebar-bg: #f8f9fa;
+$sidebar-text: #444;
+$sidebar-active: #e3e9ff;
+$sidebar-active-text: #4361ee;
+$link-hover: #e9ecef;
+$text-color: #333;
+$text-muted: #6c757d;
+$border-color: #e9ecef;
+$danger-color: #dc3545;
+$danger-hover: #c82333;
+$body-bg: #ffffff;
+
 // Main container
 .app-container {
   display: flex;
-  min-height: 100vh;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-// Styles for authenticated users with sidebar
-.app-container.with-sidebar {
-  .main-content {
-    margin-left: 200px;
-    width: calc(100% - 200px);
+  height: 100vh;
+  background-color: $body-bg;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  &.with-sidebar {
+    .main-content {
+      margin-left: 240px;
+      width: calc(100% - 240px);
+    }
   }
 }
 
 // Sidebar navigation
 .sidebar {
-  width: 200px;
-  background-color: #ffffff;
-  border-right: 1px solid #e0e0e0;
+  width: 240px;
   position: fixed;
-  height: 100%;
-  overflow-y: auto;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-  z-index: 1000;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background-color: $sidebar-bg;
+  color: $sidebar-text;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
+  z-index: 10;
 
   .logo {
-    padding: 20px 15px;
-    border-bottom: 1px solid #e0e0e0;
-    img {
-      max-width: 100%;
-      height: auto;
-    }
+    padding: 1.5rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: $primary-color;
+    letter-spacing: -0.5px;
+    text-align: center;
+    border-bottom: 1px solid $border-color;
+    margin-bottom: 0.5rem;
   }
 
   .nav-links {
-    padding: 20px 0;
-    
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
+
     a {
-      display: block;
-      padding: 10px 15px;
-      color: #333;
+      color: $sidebar-text;
       text-decoration: none;
-      border-left: 3px solid transparent;
-      transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-      font-size: 15px;
-      margin-bottom: 5px;
-      
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      font-size: 1rem;
+      font-weight: 500;
+      margin: 0.125rem 0.5rem;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+
       &:hover {
-        background-color: #f5f5f5;
-        color: #0c7cba;
+        background-color: $link-hover;
+        color: $sidebar-active-text;
       }
-      
+
       &.active {
-        border-left-color: #0c7cba;
-        background-color: #e6f7ff;
-        color: #0c7cba;
-        font-weight: 500;
+        background-color: $sidebar-active;
+        color: $sidebar-active-text;
+        font-weight: 600;
       }
     }
   }
 
   .user-section {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    padding: 15px;
-    border-top: 1px solid #e0e0e0;
-    background-color: #fafafa;
+    border-top: 1px solid $border-color;
+    padding: 1rem 1.25rem;
+    margin-top: auto;
     
     .user-info {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 10px;
-      
-      span {
-        font-size: 14px;
-        color: #333;
-        font-weight: 500;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 170px;
+      gap: 0.75rem;
+
+      .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background-color: $primary-color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: transform 0.2s ease;
+        
+        &:hover {
+          transform: scale(1.05);
+          box-shadow: 0 2px 12px rgba($primary-color, 0.3);
+        }
+        
+        .user-initials {
+          font-size: 1rem;
+          font-weight: 600;
+          color: white;
+        }
       }
-    }
-    
-    .logout-btn {
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      font-size: 13px;
-      cursor: pointer;
-      background-color: #f5f5f5;
-      color: #d32f2f;
-      border: 1px solid #d32f2f;
-      transition: background-color 0.2s;
-      
-      &:hover {
-        background-color: #feeaea;
+
+      .user-details {
+        display: flex;
+        flex-direction: column;
+        
+        .user-name {
+          font-weight: 600;
+          font-size: 0.95rem;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 140px;
+          margin-bottom: 0.25rem;
+        }
+        
+        .profile-link {
+          color: $text-muted;
+          font-size: 0.8rem;
+          text-decoration: none;
+          margin-bottom: 0.5rem;
+          
+          &:hover {
+            color: $primary-color;
+            text-decoration: underline;
+          }
+        }
+        
+        .logout-btn {
+          background: transparent;
+          color: $danger-color;
+          border: 1px solid $border-color;
+          border-radius: 6px;
+          padding: 0.35rem 0.75rem;
+          font-size: 0.8rem;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          
+          &:hover {
+            background-color: $danger-color;
+            color: #fff;
+            border-color: $danger-color;
+          }
+        }
       }
     }
   }
@@ -106,124 +168,88 @@
 // Main content area
 .main-content {
   flex: 1;
-  min-height: 100vh;
-  background-color: #f9f9f9;
-  transition: margin-left 0.3s;
+  overflow-y: auto;
+  position: relative;
+  padding: 1.5rem;
+  color: $text-color;
+  background-color: $body-bg;
 }
 
 // Landing page styles for non-authenticated users
 .landing-page {
-  min-height: 100vh;
-
   .top-nav {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 30px;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    
+    padding: 1rem 2rem;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid $border-color;
+
     .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #333;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: $primary-color;
+      letter-spacing: -0.5px;
     }
-    
+
     .nav-actions {
       display: flex;
-      gap: 15px;
+      gap: 1rem;
       
       .btn {
-        padding: 8px 16px;
-        border-radius: 4px;
-        font-size: 14px;
+        padding: 0.5rem 1.5rem;
+        border-radius: 6px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 0.2s, transform 0.1s;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
         
-        &:hover {
-          transform: translateY(-1px);
+        &.login-btn {
+          background-color: transparent;
+          border: 1px solid $primary-color;
+          color: $primary-color;
+          
+          &:hover {
+            background-color: rgba($primary-color, 0.05);
+          }
         }
-      }
-      
-      .login-btn {
-        background-color: transparent;
-        color: #333;
-        border: 1px solid #ddd;
         
-        &:hover {
-          background-color: #f5f5f5;
-        }
-      }
-      
-      .signup-btn {
-        background-color: #0c7cba;
-        color: white;
-        border: none;
-        
-        &:hover {
-          background-color: #0a6a9e;
+        &.signup-btn {
+          background-color: $primary-color;
+          border: 1px solid $primary-color;
+          color: white;
+          
+          &:hover {
+            background-color: $primary-hover;
+          }
         }
       }
     }
   }
-  
+
   .hero-section {
-    padding: 80px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     text-align: center;
-    background-color: #fff;
-    
+    min-height: 70vh;
+    padding: 2rem;
+    background: linear-gradient(180deg, #f8f9fa 0%, #ffffff 100%);
+
     h1 {
-      font-size: 36px;
-      margin-bottom: 20px;
-      color: #333;
+      font-size: 3rem;
       font-weight: 700;
+      margin-bottom: 1rem;
+      color: #2d3748;
+      letter-spacing: -0.025em;
     }
-    
+
     p {
-      font-size: 18px;
-      color: #666;
+      font-size: 1.25rem;
+      margin-bottom: 2rem;
+      color: #4a5568;
       max-width: 600px;
-      margin: 0 auto 40px;
-    }
-    
-    .cta-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      
-      button {
-        padding: 12px 24px;
-        font-size: 14px;
-        font-weight: 500;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.2s, transform 0.1s;
-        
-        &:hover {
-          transform: translateY(-2px);
-        }
-      }
-      
-      .cta-primary {
-        background-color: #e74c3c;
-        color: white;
-        border: none;
-        
-        &:hover {
-          background-color: #c0392b;
-        }
-      }
-      
-      .cta-secondary {
-        background-color: #fff;
-        color: #333;
-        border: 1px solid #ddd;
-        
-        &:hover {
-          background-color: #f9f9f9;
-        }
-      }
     }
   }
 }

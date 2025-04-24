@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { JobsRoutingModule } from './jobs-routing.module';
 import { JobSubmitComponent } from './job-submit/job-submit.component';
 import { JobListComponent } from './job-list/job-list.component';
+import { DownloadButtonComponent } from '../shared/components';
 
 @NgModule({
   declarations: [
@@ -17,7 +18,8 @@ import { JobListComponent } from './job-list/job-list.component';
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    JobsRoutingModule
+    JobsRoutingModule,
+    DownloadButtonComponent
   ],
   exports: [
     JobSubmitComponent,

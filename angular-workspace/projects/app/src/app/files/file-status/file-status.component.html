@@ -20,8 +20,10 @@
       Create Job
     </button>
     
-    <button (click)="downloadFile()" class="download-button">
-      Download
-    </button>
+    <app-download-button 
+      [fileUuid]="file.fileUuid"
+      [fileName]="file.fileName"
+      [disabled]="file.status === 'PROCESSING'">
+    </app-download-button>
   </div>
 </div>

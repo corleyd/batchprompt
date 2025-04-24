@@ -16,9 +16,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.batchprompt.files.config.MinioConfig;
 import com.batchprompt.files.model.File;
+import com.batchprompt.files.model.FileField;
 import com.batchprompt.files.model.FileRecord;
 import com.batchprompt.files.repository.FileRecordRepository;
 import com.batchprompt.files.repository.FileRepository;
+import com.batchprompt.files.service.FileFieldService.FileFieldDto;
 import com.batchprompt.files.service.validation.ExcelValidator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +38,7 @@ public class FileService {
 
     private final FileRepository fileRepository;
     private final FileRecordRepository fileRecordRepository;
+    private final FileFieldService fileFieldService;
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
     private final ObjectMapper objectMapper;
@@ -182,6 +185,9 @@ public class FileService {
                         
                         // Process valid records
                         processFileRecords(file, validationResult.getRecords());
+                        
+                        // Process and save fields information
+                        processFileFields(file, validationResult.getFields());
                     } else {
                         // Update the file with validation errors
                         file.setStatus(File.Status.Validation);
@@ -199,6 +205,36 @@ public class FileService {
         } catch (Exception e) {
             log.error("Error validating file", e);
             throw new RuntimeException("Failed to validate file", e);
+        }
+    }
+
+    /**
+     * Process and save field information for a file
+     * 
+     * @param file The file entity
+     * @param fields List of field information from validation
+     */
+    @Transactional
+    private void processFileFields(File file, List<ExcelValidator.FieldInfo> fields) {
+        try {
+            // Convert FieldInfo objects to FileFieldDto objects
+            List<FileFieldDto> fieldDtos = fields.stream()
+                    .map(fieldInfo -> {
+                        FileFieldDto dto = new FileFieldDto();
+                        dto.setFieldName(fieldInfo.getFieldName());
+                        dto.setFieldType(fieldInfo.getFieldType());
+                        dto.setDescription(fieldInfo.getDescription());
+                        return dto;
+                    })
+                    .toList();
+            
+            // Add all fields to the file
+            fileFieldService.addFieldsToFile(file.getFileUuid(), fieldDtos);
+            
+            log.info("Processed {} fields for file {}", fields.size(), file.getFileUuid());
+        } catch (Exception e) {
+            log.error("Error processing file fields", e);
+            throw new RuntimeException("Failed to process file fields", e);
         }
     }
 

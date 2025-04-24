@@ -47,12 +47,6 @@ public class FileController {
     private static final Map<String, FileDownloadToken> downloadTokens = new ConcurrentHashMap<>();
     private static final long TOKEN_VALIDITY_MINUTES = 5;
 
-    @GetMapping
-    public ResponseEntity<List<FileDto>> getAllFiles() {
-        List<File> files = fileService.getAllFiles();
-        return ResponseEntity.ok(fileMapper.toDtoList(files));
-    }
-
     @GetMapping("/{fileUuid}")
     public ResponseEntity<FileDto> getFileById(@PathVariable UUID fileUuid) {
         return fileService.getFileById(fileUuid)

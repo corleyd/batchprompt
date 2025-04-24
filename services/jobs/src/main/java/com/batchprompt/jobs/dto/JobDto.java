@@ -18,10 +18,12 @@ public class JobDto {
     private UUID jobUuid;
     private String userId;
     private UUID fileUuid;
+    private String fileName;
     private UUID promptUuid;
     private String modelName;
     private Job.Status status;
     private Integer taskCount;
+    private UUID resultFileUuid;
     private Integer completedTaskCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

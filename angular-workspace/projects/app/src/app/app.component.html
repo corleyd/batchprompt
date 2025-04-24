@@ -2,19 +2,25 @@
   <!-- Sidebar Navigation for authenticated users -->
   <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
     <div class="logo">
-      <img src="assets/logo.png" alt="Logo">
+      <!-- <img src="assets/logo.png" alt="Logo"> -->
+       BatchPrompt
     </div>
     <div class="nav-links">
       <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
       <a routerLink="/files" routerLinkActive="active">Files</a>
       <a routerLink="/jobs" routerLinkActive="active">Jobs</a>
       <a routerLink="/prompts" routerLinkActive="active">Prompts</a>
-      <a routerLink="/profile" routerLinkActive="active">Profile</a>
     </div>
     <div class="user-section">
       <div class="user-info">
-        <span>{{ (auth.user$ | async)?.name }}</span>
-        <button class="logout-btn" (click)="logout()">Log Out</button>
+        <div class="user-avatar" [routerLink]="['/profile']">
+          <span class="user-initials">{{ getUserInitials((auth.user$ | async)?.name) }}</span>
+        </div>
+        <div class="user-details">
+          <span class="user-name">{{ (auth.user$ | async)?.name }}</span>
+          <a class="profile-link" [routerLink]="['/profile']">View Profile</a>
+          <button class="logout-btn" (click)="logout()">Log Out</button>
+        </div>
       </div>
     </div>
   </div>

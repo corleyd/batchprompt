@@ -4,12 +4,8 @@ import { AuthGuard } from '@auth0/auth0-angular';
 export const routes: Routes = [
   { 
     path: '', 
-    redirectTo: 'home', 
+    redirectTo: 'dashboard', 
     pathMatch: 'full' 
-  },
-  { 
-    path: 'home', 
-    loadComponent: () => import('./home/home.component').then(m => m.HomeComponent) 
   },
   { 
     path: 'profile', 
@@ -48,6 +44,6 @@ export const routes: Routes = [
   },
   { 
     path: '**', 
-    redirectTo: 'home' 
+    redirectTo: 'dashboard' 
   }
 ];

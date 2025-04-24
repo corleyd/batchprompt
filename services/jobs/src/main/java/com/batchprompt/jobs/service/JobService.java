@@ -147,6 +147,7 @@ public class JobService {
                 .jobUuid(jobUuid)
                 .userId(userId)
                 .fileUuid(fileUuid)
+                .fileName(file.getFileName())
                 .promptUuid(promptUuid)
                 .modelName(modelName)
                 .status(Job.Status.SUBMITTED)

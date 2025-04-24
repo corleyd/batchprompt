@@ -23,12 +23,6 @@
     <table class="jobs-table">
       <thead>
         <tr>
-          <th (click)="updateSort('jobUuid')" class="sortable-header">
-            Job ID
-            <span class="sort-icon" *ngIf="sortField === 'jobUuid'">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </th>
           <th (click)="updateSort('fileName')" class="sortable-header">
             File Name
             <span class="sort-icon" *ngIf="sortField === 'fileName'">
@@ -64,19 +58,26 @@
       </thead>
       <tbody>
         <tr *ngFor="let job of jobs">
-          <td>{{ job.jobUuid }}</td>
           <td>{{ job.fileName }}</td>
           <td>{{ job.promptName }}</td>
           <td>{{ job.modelName }}</td>
           <td>
             <span class="status-badge" [ngClass]="getStatusClass(job.status)">
               {{ job.status }}
+              <ng-container *ngIf="job.status === 'PROCESSING'">
+                ({{ job.completedTaskCount }}/{{ job.taskCount }})
+              </ng-container>
             </span>
           </td>
           <td>{{ job.createdAt | date:'medium' }}</td>
           <td class="job-actions">
-            <button *ngIf="job.status === 'COMPLETED'" class="view-results-btn">View Results</button>
-            <button *ngIf="job.status === 'FAILED'" class="view-details-btn">View Details</button>
+            <app-download-button 
+              *ngIf="job.status === 'COMPLETED' && job.resultFileUuid"
+              [fileUuid]="job.resultFileUuid"
+              [fileName]="'Results_' + job.jobUuid + '.xlsx'"
+              [buttonText]="'Download Results'"
+            ></app-download-button>
+            <button *ngIf="job.status === 'COMPLETED' && !job.resultFileUuid" class="view-results-btn">View Results</button>
           </td>
         </tr>
       </tbody>

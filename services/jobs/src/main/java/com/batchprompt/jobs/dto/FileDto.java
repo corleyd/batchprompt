@@ -20,6 +20,7 @@ public class FileDto {
     private String contentType;
     private Long fileSize;
     private String status;
+    private UUID resultFileUuid;
     private Object validationErrors;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

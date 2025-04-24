@@ -33,11 +33,6 @@ export class FileService {
     return this.http.get(`${this.apiUrl}/status/${fileId}`);
   }
 
-  // Get all files
-  getAllFiles(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}`);
-  }
-
   // Get user files with pagination, sorting and filtering
   getUserFiles(page: number = 0, size: number = 10, sortBy: string = 'createdAt', 
               sortDirection: string = 'desc', fileType?: string, status?: string): Observable<any> {

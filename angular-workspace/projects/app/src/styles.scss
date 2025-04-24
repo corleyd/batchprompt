@@ -1,1 +1,191 @@
-/* You can add global styles to this file, and also import other style files */
+/* Import Google Fonts - Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Reset and base styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  background-color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Common utility classes */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin-bottom: 0.5em;
+  color: #2d3748;
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.75rem;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+a {
+  color: #4361ee;
+  text-decoration: none;
+  transition: color 0.2s ease;
+  
+  &:hover {
+    color: #3a56d4;
+  }
+}
+
+button {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Form elements styling */
+input, select, textarea, button {
+  font-family: inherit;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  transition: border-color 0.2s ease-in-out;
+  
+  &:focus {
+    border-color: #4361ee;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(67, 97, 238, 0.25);
+  }
+}
+
+/* Card styling */
+.card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  
+  .card-header {
+    margin-bottom: 1rem;
+    
+    h2, h3, h4 {
+      margin-bottom: 0;
+    }
+  }
+  
+  .card-body {
+    margin-bottom: 1rem;
+  }
+  
+  .card-footer {
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+  }
+}
+
+/* Table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  th {
+    font-weight: 600;
+    background-color: #f8f9fa;
+  }
+  
+  tr:hover {
+    background-color: rgba(0, 0, 0, 0.01);
+  }
+}
+
+/* Button styling */
+.btn {
+  display: inline-block;
+  font-weight: 500;
+  text-align: center;
+  vertical-align: middle;
+  user-select: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  border-radius: 0.25rem;
+  transition: all 0.2s ease-in-out;
+  
+  &.btn-primary {
+    color: #fff;
+    background-color: #4361ee;
+    border: 1px solid #4361ee;
+    
+    &:hover {
+      background-color: #3a56d4;
+      border-color: #3a56d4;
+    }
+  }
+  
+  &.btn-secondary {
+    color: #4361ee;
+    background-color: transparent;
+    border: 1px solid #4361ee;
+    
+    &:hover {
+      background-color: rgba(67, 97, 238, 0.05);
+    }
+  }
+  
+  &.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border: 1px solid #dc3545;
+    
+    &:hover {
+      background-color: #c82333;
+      border-color: #bd2130;
+    }
+  }
+}

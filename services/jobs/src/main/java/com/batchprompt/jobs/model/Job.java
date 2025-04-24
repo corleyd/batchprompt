@@ -36,7 +36,10 @@ public class Job {
     
     @Column(name = "file_uuid", nullable = false)
     private UUID fileUuid;
-    
+
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
+
     @Column(name = "prompt_uuid", nullable = false)
     private UUID promptUuid;
     
@@ -52,6 +55,9 @@ public class Job {
     
     @Column(name = "completed_task_count", nullable = false)
     private Integer completedTaskCount;
+
+    @Column(name = "result_file_uuid")
+    private UUID resultFileUuid;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -18,6 +18,8 @@ public class JobMapper {
                 .jobUuid(job.getJobUuid())
                 .userId(job.getUserId())
                 .fileUuid(job.getFileUuid())
+                .fileName(job.getFileName())
+                .resultFileUuid(job.getResultFileUuid())
                 .promptUuid(job.getPromptUuid())
                 .modelName(job.getModelName())
                 .status(job.getStatus())
