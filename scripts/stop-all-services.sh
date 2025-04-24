@@ -21,7 +21,7 @@ stop_service() {
   else
     echo "$service_name service PID file not found. Looking for running process..."
     # Try to find the process by looking at the Java processes
-    local found_pid=$(ps -ef | grep "services/${service_name}" | grep -v grep | awk '{print $2}')
+    local found_pid=$(ps -ef | grep "services[/:]${service_name}" | grep -v grep | awk '{print $2}')
     if [ ! -z "$found_pid" ]; then
       echo "Found $service_name service running with PID: $found_pid"
       kill $found_pid
@@ -39,9 +39,15 @@ stop_service "files"
 
 # Final check for any remaining Gradle processes related to our services
 echo "Checking for any remaining Gradle processes..."
-for process in $(ps -ef | grep "gradle" | grep "services/" | grep -v grep | awk '{print $2}'); do
-  echo "Stopping extra Gradle process with PID: $process"
-  kill $process
-done
+remaining_processes=$(ps -ef | grep "gradle.*:services:" | grep -v grep | awk '{print $2}')
+if [ ! -z "$remaining_processes" ]; then
+  echo "Found remaining Gradle processes, stopping them..."
+  for process in $remaining_processes; do
+    echo "Stopping Gradle process with PID: $process"
+    kill $process
+  done
+else
+  echo "No remaining Gradle processes found"
+fi
 
 echo "All Spring Boot services stopped"
