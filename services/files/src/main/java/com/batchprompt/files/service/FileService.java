@@ -8,6 +8,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -45,6 +47,27 @@ public class FileService {
 
     public List<File> getFilesByUserId(String userId) {
         return fileRepository.findByUserId(userId);
+    }
+
+    /**
+     * Get paginated files for a specific user with optional filtering and sorting
+     * 
+     * @param userId The user ID to retrieve files for
+     * @param fileType Optional file type filter
+     * @param status Optional status filter
+     * @param pageable Pageable object containing pagination and sorting information
+     * @return Page of files for the user
+     */
+    public Page<File> getFilesByUserIdPaginated(String userId, File.FileType fileType, File.Status status, Pageable pageable) {
+        if (fileType != null && status != null) {
+            return fileRepository.findByUserIdAndFileTypeAndStatus(userId, fileType, status, pageable);
+        } else if (fileType != null) {
+            return fileRepository.findByUserIdAndFileType(userId, fileType, pageable);
+        } else if (status != null) {
+            return fileRepository.findByUserIdAndStatus(userId, status, pageable);
+        } else {
+            return fileRepository.findByUserId(userId, pageable);
+        }
     }
 
     public List<File> getUploadedFilesByUserId(String userId) {

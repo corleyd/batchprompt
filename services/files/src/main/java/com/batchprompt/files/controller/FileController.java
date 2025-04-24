@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,12 +62,54 @@ public class FileController {
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<FileDto>> getFilesByUser(@AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<?> getFilesByUser(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) String fileType,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+        
         String userId = jwt.getSubject();
-        List<File> files = fileService.getFilesByUserId(userId);
-        return ResponseEntity.ok(fileMapper.toDtoList(files));
+        
+        // Convert string parameters to enum types if provided
+        File.FileType fileTypeEnum = null;
+        if (fileType != null && !fileType.isEmpty()) {
+            try {
+                fileTypeEnum = File.FileType.valueOf(fileType);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid file type: " + fileType);
+            }
+        }
+        
+        File.Status statusEnum = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                statusEnum = File.Status.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid status: " + status);
+            }
+        }
+        
+        // Create Pageable object with sort direction
+        org.springframework.data.domain.Sort.Direction direction = 
+            sortDirection.equalsIgnoreCase("asc") ? 
+            org.springframework.data.domain.Sort.Direction.ASC : 
+            org.springframework.data.domain.Sort.Direction.DESC;
+            
+        org.springframework.data.domain.Pageable pageable = 
+            org.springframework.data.domain.PageRequest.of(
+                page, size, 
+                org.springframework.data.domain.Sort.by(direction, sortBy)
+            );
+        
+        Page<File> files = fileService.getFilesByUserIdPaginated(userId, fileTypeEnum, statusEnum, pageable);
+        Page<FileDto> fileDtos = files.map(fileMapper::toDto);
+        
+        return ResponseEntity.ok(fileDtos);
     }
-
+    
     @GetMapping("/user/uploads")
     public ResponseEntity<List<FileDto>> getUploadFilesByUser(@AuthenticationPrincipal Jwt jwt) {
         String userId = jwt.getSubject();

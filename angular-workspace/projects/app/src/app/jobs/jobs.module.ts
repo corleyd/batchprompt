@@ -5,10 +5,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { JobsRoutingModule } from './jobs-routing.module';
 import { JobSubmitComponent } from './job-submit/job-submit.component';
+import { JobListComponent } from './job-list/job-list.component';
 
 @NgModule({
   declarations: [
-    JobSubmitComponent
+    JobSubmitComponent,
+    JobListComponent
   ],
   imports: [
     CommonModule,
@@ -18,7 +20,8 @@ import { JobSubmitComponent } from './job-submit/job-submit.component';
     JobsRoutingModule
   ],
   exports: [
-    JobSubmitComponent
+    JobSubmitComponent,
+    JobListComponent
   ]
 })
 export class JobsModule { }

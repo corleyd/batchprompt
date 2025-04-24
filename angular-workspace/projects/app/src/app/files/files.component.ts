@@ -10,6 +10,24 @@ export class FilesComponent implements OnInit {
   files: any[] = [];
   loading = false;
   
+  // Pagination properties
+  currentPage = 0;
+  pageSize = 10;
+  totalItems = 0;
+  totalPages = 0;
+  
+  // Sorting properties
+  sortBy = 'createdAt';
+  sortDirection = 'desc';
+  
+  // Filter properties
+  fileTypeFilter?: string;
+  statusFilter?: string;
+  
+  // Options for dropdowns
+  fileTypes = ['upload', 'result', 'profile', 'settings'];
+  statusTypes = ['Ready', 'Validation', 'Processing', 'Failed'];
+  
   constructor(private fileService: FileService) { }
 
   ngOnInit(): void {
@@ -18,9 +36,18 @@ export class FilesComponent implements OnInit {
 
   loadFiles(): void {
     this.loading = true;
-    this.fileService.getAllFiles().subscribe({
+    this.fileService.getUserFiles(
+      this.currentPage,
+      this.pageSize,
+      this.sortBy,
+      this.sortDirection,
+      this.fileTypeFilter,
+      this.statusFilter
+    ).subscribe({
       next: (data) => {
-        this.files = data;
+        this.files = data.content;
+        this.totalItems = data.totalElements;
+        this.totalPages = data.totalPages;
         this.loading = false;
       },
       error: (error) => {
@@ -32,5 +59,44 @@ export class FilesComponent implements OnInit {
 
   refreshFiles(): void {
     this.loadFiles();
+  }
+  
+  changePage(page: number): void {
+    this.currentPage = page;
+    this.loadFiles();
+  }
+  
+  changePageSize(size: number): void {
+    this.pageSize = size;
+    this.currentPage = 0; // Reset to first page when changing page size
+    this.loadFiles();
+  }
+  
+  sort(column: string): void {
+    if (this.sortBy === column) {
+      // Toggle direction if already sorting by this column
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortBy = column;
+      this.sortDirection = 'asc'; // Default to ascending when switching columns
+    }
+    this.currentPage = 0; // Reset to first page when sorting
+    this.loadFiles();
+  }
+  
+  applyFilters(): void {
+    this.currentPage = 0; // Reset to first page when filtering
+    this.loadFiles();
+  }
+  
+  clearFilters(): void {
+    this.fileTypeFilter = undefined;
+    this.statusFilter = undefined;
+    this.currentPage = 0; // Reset to first page when clearing filters
+    this.loadFiles();
+  }
+  
+  getPages(): number[] {
+    return Array(this.totalPages).fill(0).map((_, i) => i);
   }
 }

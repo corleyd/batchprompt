@@ -38,6 +38,23 @@ export class FileService {
     return this.http.get<any[]>(`${this.apiUrl}`);
   }
 
+  // Get user files with pagination, sorting and filtering
+  getUserFiles(page: number = 0, size: number = 10, sortBy: string = 'createdAt', 
+              sortDirection: string = 'desc', fileType?: string, status?: string): Observable<any> {
+    let url = `${this.apiUrl}/user?page=${page}&size=${size}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
+    
+    // Add optional filters if provided
+    if (fileType) {
+      url += `&fileType=${fileType}`;
+    }
+    
+    if (status) {
+      url += `&status=${status}`;
+    }
+    
+    return this.http.get<any>(url);
+  }
+
   // New method to get a download token from the server
   getDownloadUrl(fileUuid: string): Observable<string> {
     return this.http.get(`${this.apiUrl}/${fileUuid}/token`, { responseType: 'text' })

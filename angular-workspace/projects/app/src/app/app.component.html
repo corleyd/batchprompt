@@ -1,25 +1,47 @@
-<div class="container">
-  <div class="header">
-    <h1>Welcome to {{ title }}</h1>
-  </div>
-  
-  <div class="content">
-    <div *ngIf="auth.isAuthenticated$ | async; else loggedOut">
+<div class="app-container" [ngClass]="{'with-sidebar': auth.isAuthenticated$ | async}">
+  <!-- Sidebar Navigation for authenticated users -->
+  <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
+    <div class="logo">
+      <img src="assets/logo.png" alt="Logo">
+    </div>
+    <div class="nav-links">
+      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+      <a routerLink="/files" routerLinkActive="active">Files</a>
+      <a routerLink="/jobs" routerLinkActive="active">Jobs</a>
+      <a routerLink="/prompts" routerLinkActive="active">Prompts</a>
+      <a routerLink="/profile" routerLinkActive="active">Profile</a>
+    </div>
+    <div class="user-section">
       <div class="user-info">
-        <p>You are logged in!</p>
-        <button class="btn logout-btn" (click)="logout()">Log Out</button>
+        <span>{{ (auth.user$ | async)?.name }}</span>
+        <button class="logout-btn" (click)="logout()">Log Out</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <!-- Main page content for non-authenticated users -->
+    <div class="landing-page" *ngIf="!(auth.isAuthenticated$ | async)">
+      <nav class="top-nav">
+        <div class="logo">BatchPrompt</div>
+        <div class="nav-actions">
+          <button class="btn login-btn" (click)="login()">LOG IN</button>
+          <button class="btn signup-btn" (click)="login()">SIGN UP</button>
+        </div>
+      </nav>
+      
+      <div class="hero-section">
+        <h1>Batch AI Prompting made simple</h1>
+        <p>Upload a spreadsheet and generate chat responses</p>
+        <!-- <div class="cta-buttons">
+          <button class="cta-primary" (click)="login()">UPLOAD SPREADSHEET</button>
+          <button class="cta-secondary" (click)="login()">GET AN API KEY</button>
+        </div> -->
       </div>
     </div>
     
-    <ng-template #loggedOut>
-      <div class="auth-buttons">
-        <h2>Please log in or sign up to continue</h2>
-        <button class="btn login-btn" (click)="login()">Log In</button>
-        <button class="btn signup-btn" (click)="login()">Sign Up</button>
-        <p class="info-text">Both buttons use Auth0 to handle authentication</p>
-      </div>
-    </ng-template>
+    <!-- Router outlet for all pages -->
+    <router-outlet></router-outlet>
   </div>
-  
-  <router-outlet></router-outlet>
 </div>

@@ -114,9 +114,44 @@
 .file-info {
   flex: 1;
 
+  .file-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+
   .file-name {
-    margin: 0 0 8px 0;
+    margin: 0;
     font-size: 1.2rem;
+  }
+
+  .status-badge {
+    font-weight: bold;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    background-color: #eee;
+    
+    &.processing {
+      background-color: rgba(33, 150, 243, 0.1);
+      color: #2196f3;
+    }
+    
+    &.completed {
+      background-color: rgba(76, 175, 80, 0.1);
+      color: #4caf50;
+    }
+    
+    &.failed {
+      background-color: rgba(244, 67, 54, 0.1);
+      color: #f44336;
+    }
+    
+    &.ready {
+      background-color: rgba(39, 174, 96, 0.1);
+      color: #27ae60;
+    }
   }
 
   .file-details {
@@ -127,67 +162,64 @@
     span {
       margin-right: 16px;
     }
+    
+    .file-type {
+      font-weight: 500;
+      color: #444;
+      &::after {
+        content: '•';
+        margin: 0 8px;
+        color: #aaa;
+      }
+    }
   }
 }
 
-.status-info {
+.processing-indicator {
+  margin: 0 20px;
+  
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #3498db;
+    animation: spin 1s ease-in-out infinite;
+  }
+}
+
+.file-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
   gap: 10px;
-
-  .status-badge {
-    font-weight: bold;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    background-color: #eee;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 8px;
-  }
-
+  
   button {
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 4px;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 500;
     border: none;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.2s ease;
+    white-space: nowrap;
     
-    &.refresh-status {
-      background-color: #f1f1f1;
-      color: #555;
-      
-      &:hover {
-        background-color: #e1e1e1;
-      }
-    }
-    
-    &.create-job {
+    &.download-button {
       background-color: #3498db;
       color: white;
       
       &:hover {
         background-color: #2980b9;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       }
     }
-  }
-
-  .processing-indicator {
-    display: flex;
-    align-items: center;
     
-    .spinner {
-      width: 20px;
-      height: 20px;
-      border: 2px solid rgba(0, 0, 0, 0.1);
-      border-radius: 50%;
-      border-top-color: #3498db;
-      animation: spin 1s ease-in-out infinite;
+    &.create-job {
+      background-color: #27ae60;
+      color: white;
+      
+      &:hover {
+        background-color: #219653;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
     }
   }
 }

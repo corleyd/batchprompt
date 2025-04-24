@@ -15,12 +15,36 @@ export class FileUploadComponent {
   progress = 0;
   message = '';
   errorMsg = '';
+  isDragover = false;
 
   constructor(private fileService: FileService) {}
 
   selectFile(event: any): void {
     this.selectedFiles = event.target.files;
     this.progress = 0;
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragover = true;
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragover = false;
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragover = false;
+    
+    if (event.dataTransfer?.files) {
+      this.selectedFiles = event.dataTransfer.files;
+      this.progress = 0;
+    }
   }
 
   upload(): void {

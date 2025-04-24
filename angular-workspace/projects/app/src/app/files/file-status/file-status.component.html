@@ -1,36 +1,27 @@
 <div class="file-status-card" [ngClass]="file.status.toLowerCase()">
   <div class="file-info">
-    <h3 class="file-name">{{ file.fileName }}</h3>
+    <div class="file-header">
+      <h3 class="file-name">{{ file.fileName }}</h3>
+      <span class="status-badge" [ngClass]="file.status.toLowerCase()">{{ statusMessage }}</span>
+    </div>
     <p class="file-details">
-      <span>Uploaded: {{ file.createdAt | date:'medium' }}</span>
+      <span class="file-type">{{ file.type === 'RESULT' ? 'Result File' : 'Uploaded File' }}</span>
+      <span>{{ file.type === 'RESULT' ? 'Created: ' : 'Uploaded: ' }}{{ file.createdAt | date:'medium' }}</span>
       <span>Size: {{ file.fileSize | number }} bytes</span>
     </p>
   </div>
   
-  <div class="status-info">
-    <span class="status-badge">{{ statusMessage }}</span>
-    <div class="action-buttons">
-      <button *ngIf="file.status !== 'PROCESSING'" (click)="checkStatus()" class="refresh-status">
-        Refresh Status
-      </button>
-      <button *ngIf="file.status === 'Ready'" (click)="createJob()" class="create-job">
-        Create Job
-      </button>
-    </div>
-    <div *ngIf="file.status === 'PROCESSING'" class="processing-indicator">
-      <div class="spinner"></div>
-    </div>
+  <div *ngIf="file.status === 'PROCESSING'" class="processing-indicator">
+    <div class="spinner"></div>
   </div>
 
   <div class="file-actions">
-    <button (click)="downloadFile()" mat-button color="primary">
-      <mat-icon>download</mat-icon> Downloadxxx
+    <button *ngIf="file.status === 'Ready'" (click)="createJob()" class="create-job">
+      Create Job
     </button>
-    <button *ngIf="file.status === 'PROCESSING'" (click)="checkStatus()" mat-button>
-      <mat-icon>refresh</mat-icon> Check Status
-    </button>
-    <button *ngIf="file.status === 'COMPLETED'" (click)="createJob()" mat-button color="accent">
-      <mat-icon>work</mat-icon> Create Job
+    
+    <button (click)="downloadFile()" class="download-button">
+      Download
     </button>
   </div>
 </div>

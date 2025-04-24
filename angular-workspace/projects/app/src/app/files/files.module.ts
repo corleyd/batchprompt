@@ -1,7 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { FilesRoutingModule } from './files-routing.module';
 import { FilesComponent } from './files.component';
@@ -19,7 +21,10 @@ import { FileService } from './file.service';
     CommonModule,
     FilesRoutingModule,
     ReactiveFormsModule,
-    MatIconModule
+    FormsModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule
   ],
   providers: [FileService]
 })

@@ -6,6 +6,32 @@
     <app-file-upload (fileUploaded)="refreshFiles()"></app-file-upload>
   </div>
 
+  <div class="filter-section">
+    <h3>Filter Files</h3>
+    <div class="filter-controls">
+      <div class="filter-group">
+        <label for="fileType">File Type:</label>
+        <select id="fileType" [(ngModel)]="fileTypeFilter">
+          <option [ngValue]="undefined">All Types</option>
+          <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label for="status">Status:</label>
+        <select id="status" [(ngModel)]="statusFilter">
+          <option [ngValue]="undefined">All Statuses</option>
+          <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
+        </select>
+      </div>
+      
+      <div class="filter-actions">
+        <button (click)="applyFilters()" class="apply-button">Apply Filters</button>
+        <button (click)="clearFilters()" class="clear-button">Clear Filters</button>
+      </div>
+    </div>
+  </div>
+
   <div class="file-status-section">
     <h2>Your Files</h2>
     <div *ngIf="loading" class="loading">Loading files...</div>
@@ -14,10 +40,45 @@
       No files found. Upload files to get started!
     </div>
     
+    <div *ngIf="!loading && files.length > 0" class="sort-controls">
+      <span>Sort by: </span>
+      <button (click)="sort('fileName')" [ngClass]="{'active': sortBy === 'fileName'}">
+        Name <span *ngIf="sortBy === 'fileName'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
+      </button>
+      <button (click)="sort('fileType')" [ngClass]="{'active': sortBy === 'fileType'}">
+        Type <span *ngIf="sortBy === 'fileType'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
+      </button>
+      <button (click)="sort('status')" [ngClass]="{'active': sortBy === 'status'}">
+        Status <span *ngIf="sortBy === 'status'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
+      </button>
+      <button (click)="sort('createdAt')" [ngClass]="{'active': sortBy === 'createdAt'}">
+        Date <span *ngIf="sortBy === 'createdAt'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
+      </button>
+    </div>
+    
     <app-file-status 
       *ngFor="let file of files" 
       [file]="file"
     ></app-file-status>
+
+    <div *ngIf="!loading && totalPages > 1" class="pagination-controls">
+      <div class="page-size">
+        <label for="pageSize">Items per page:</label>
+        <select id="pageSize" [ngModel]="pageSize" (ngModelChange)="changePageSize($event)">
+          <option [value]="5">5</option>
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+      <div class="page-navigation">
+        <button [disabled]="currentPage === 0" (click)="changePage(0)" class="page-nav">First</button>
+        <button [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)" class="page-nav">Previous</button>
+        <span class="page-info">Page {{currentPage + 1}} of {{totalPages}}</span>
+        <button [disabled]="currentPage === totalPages - 1" (click)="changePage(currentPage + 1)" class="page-nav">Next</button>
+        <button [disabled]="currentPage === totalPages - 1" (click)="changePage(totalPages - 1)" class="page-nav">Last</button>
+      </div>
+    </div>
   </div>
 
   <div class="actions">
