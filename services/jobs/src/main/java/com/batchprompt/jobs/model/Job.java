@@ -9,6 +9,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -57,4 +58,8 @@ public class Job {
     
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+    
+    @Version
+    @Column(name = "version")
+    private Integer version;
 }

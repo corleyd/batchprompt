@@ -2,6 +2,8 @@ server:
   port: 8082
 debug:true:
 spring:
+  application:
+    name: prompts-service
   config:
     import:
       - ${HOME}/.batchprompt/local.yml
@@ -35,3 +37,10 @@ logging:
     org.hibernate: INFO
     # org.hibernate.SQL: DEBUG
     # org.hibernate.type: TRACE
+
+services:
+  name: prompts-service
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

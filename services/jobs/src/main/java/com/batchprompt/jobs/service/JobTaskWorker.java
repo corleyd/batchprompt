@@ -60,12 +60,14 @@ public class JobTaskWorker {
             
             // Step 3: Use the ChatModel to generate the response
             // Get prompt text
+            // Use user auth token if available, otherwise service-to-service authentication will be used
             PromptDto promptDto = promptClient.getPrompt(message.getPromptUuid(), message.getAuthToken());
             if (promptDto == null) {
                 throw new Exception("Prompt not found: " + message.getPromptUuid());
             }
             
             // Get file record
+            // Use user auth token if available, otherwise service-to-service authentication will be used
             FileRecordDto recordDto = fileClient.getFileRecord(message.getFileRecordUuid(), message.getAuthToken());
             if (recordDto == null) {
                 throw new Exception("File record not found: " + message.getFileRecordUuid());
@@ -94,10 +96,11 @@ public class JobTaskWorker {
         } catch (Exception e) {
             // Step 5: If failed, update status to Failed in a separate transaction
             log.error("Error processing job task: {}", jobTaskUuid, e);
-            
-            failTask(jobTaskUuid, e.getMessage());
-        } finally {
-            // Step 6 & 7: Update the job status based on the status of all its tasks
+            if (jobTask != null) {
+                failTask(jobTaskUuid, e.getMessage());
+            }
+        } {
+            // Step 6: Update job status to Completed or Failed
             jobService.updateJobStatus(jobUuid);
         }
     }
@@ -110,9 +113,15 @@ public class JobTaskWorker {
             return null;
         }
         
-        // Update the status of the job task to Processing and set beginTimestamp
-        jobTask.setStatus(JobTask.Status.Processing);
+        // If already completed or failed, don't process again
+        if (jobTask.getStatus() == JobTask.Status.COMPLETED || jobTask.getStatus() == JobTask.Status.FAILED) {
+            log.info("Job task {} already in final state: {}", jobTaskUuid, jobTask.getStatus());
+            return null;
+        }
+        
+        jobTask.setStatus(JobTask.Status.PROCESSING);
         jobTask.setBeginTimestamp(LocalDateTime.now());
+        
         return jobTaskRepository.save(jobTask);
     }
     
@@ -120,13 +129,14 @@ public class JobTaskWorker {
     public void completeTask(UUID jobTaskUuid, String responseText) {
         JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
         if (jobTask == null) {
-            log.error("Job task not found when completing task: {}", jobTaskUuid);
+            log.error("Job task not found: {}", jobTaskUuid);
             return;
         }
         
-        jobTask.setStatus(JobTask.Status.Completed);
+        jobTask.setStatus(JobTask.Status.COMPLETED);
         jobTask.setResponseText(responseText);
         jobTask.setEndTimestamp(LocalDateTime.now());
+        
         jobTaskRepository.save(jobTask);
     }
     
@@ -134,13 +144,14 @@ public class JobTaskWorker {
     public void failTask(UUID jobTaskUuid, String errorMessage) {
         JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
         if (jobTask == null) {
-            log.error("Job task not found when failing task: {}", jobTaskUuid);
+            log.error("Job task not found: {}", jobTaskUuid);
             return;
         }
         
-        jobTask.setStatus(JobTask.Status.Failed);
-        jobTask.setEndTimestamp(LocalDateTime.now());
+        jobTask.setStatus(JobTask.Status.FAILED);
         jobTask.setErrorMessage(errorMessage);
+        jobTask.setEndTimestamp(LocalDateTime.now());
+        
         jobTaskRepository.save(jobTask);
     }
 }

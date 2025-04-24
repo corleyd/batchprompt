@@ -21,4 +21,16 @@
       <div class="spinner"></div>
     </div>
   </div>
+
+  <div class="file-actions">
+    <button (click)="downloadFile()" mat-button color="primary">
+      <mat-icon>download</mat-icon> Downloadxxx
+    </button>
+    <button *ngIf="file.status === 'PROCESSING'" (click)="checkStatus()" mat-button>
+      <mat-icon>refresh</mat-icon> Check Status
+    </button>
+    <button *ngIf="file.status === 'COMPLETED'" (click)="createJob()" mat-button color="accent">
+      <mat-icon>work</mat-icon> Create Job
+    </button>
+  </div>
 </div>

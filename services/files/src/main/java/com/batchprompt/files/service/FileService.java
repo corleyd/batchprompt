@@ -1,5 +1,17 @@
 package com.batchprompt.files.service;
 
+import java.io.InputStream;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.batchprompt.files.config.MinioConfig;
 import com.batchprompt.files.model.File;
 import com.batchprompt.files.model.FileRecord;
@@ -8,21 +20,12 @@ import com.batchprompt.files.repository.FileRepository;
 import com.batchprompt.files.service.validation.ExcelValidator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -53,11 +56,21 @@ public class FileService {
     }
 
     @Transactional
-    public File uploadFile(MultipartFile file, String userId) {
+    public File uploadFile(MultipartFile file, String fileType, String userId) {
         try {
-            // Check if the file is an Excel file
-            if (!file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-                throw new IllegalArgumentException("Uploaded file must be an Excel spreadsheet (.xlsx)");
+            // Determine file type
+            File.FileType type;
+            try {
+                type = File.FileType.valueOf(fileType);
+            } catch (IllegalArgumentException e) {
+                log.error("Invalid file type: {}, defaulting to upload", fileType);
+                type = File.FileType.upload;
+            }
+            
+            // For upload type files, enforce Excel format
+            if (type == File.FileType.upload && 
+                !file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
+                throw new IllegalArgumentException("Uploaded data files must be Excel spreadsheets (.xlsx)");
             }
 
             // Create a new file record
@@ -66,7 +79,7 @@ public class FileService {
             
             File fileEntity = File.builder()
                     .fileUuid(fileUuid)
-                    .fileType(File.FileType.upload)
+                    .fileType(type)
                     .userId(userId)
                     .fileName(file.getOriginalFilename())
                     .contentType(file.getContentType())
@@ -89,14 +102,27 @@ public class FileService {
             // Save the file metadata to the database
             File savedFile = fileRepository.save(fileEntity);
             
-            // Start validation process
-            validateFile(savedFile.getFileUuid());
+            // For upload type files, start validation process
+            // For result files, set status to Ready immediately
+            if (type == File.FileType.upload) {
+                validateFile(savedFile.getFileUuid());
+            } else {
+                savedFile.setStatus(File.Status.Ready);
+                savedFile.setUpdatedAt(LocalDateTime.now());
+                fileRepository.save(savedFile);
+            }
             
             return savedFile;
         } catch (Exception e) {
             log.error("Error uploading file", e);
-            throw new RuntimeException("Failed to upload file", e);
+            throw new RuntimeException("Failed to upload file: " + e.getMessage(), e);
         }
+    }
+    
+    @Transactional
+    public File uploadFile(MultipartFile file, String userId) {
+        // Maintain backward compatibility
+        return uploadFile(file, "upload", userId);
     }
 
     @Transactional
@@ -120,21 +146,29 @@ public class FileService {
                                 .build()
                 );
                 
-                // Validate the Excel file
-                ExcelValidator.ValidationResult validationResult = excelValidator.validateExcelFile(fileContent);
-                
-                if (validationResult.isValid()) {
-                    // Update the file status to Processing
-                    file.setStatus(File.Status.Processing);
-                    file.setUpdatedAt(LocalDateTime.now());
-                    fileRepository.save(file);
+                // Only validate Excel files
+                if (file.getFileType() == File.FileType.upload) {
+                    // Validate the Excel file
+                    ExcelValidator.ValidationResult validationResult = excelValidator.validateExcelFile(fileContent);
                     
-                    // Process valid records
-                    processFileRecords(file, validationResult.getRecords());
+                    if (validationResult.isValid()) {
+                        // Update the file status to Processing
+                        file.setStatus(File.Status.Processing);
+                        file.setUpdatedAt(LocalDateTime.now());
+                        fileRepository.save(file);
+                        
+                        // Process valid records
+                        processFileRecords(file, validationResult.getRecords());
+                    } else {
+                        // Update the file with validation errors
+                        file.setStatus(File.Status.Validation);
+                        file.setValidationErrors(validationResult.getErrors());
+                        file.setUpdatedAt(LocalDateTime.now());
+                        fileRepository.save(file);
+                    }
                 } else {
-                    // Update the file with validation errors
-                    file.setStatus(File.Status.Validation);
-                    file.setValidationErrors(validationResult.getErrors());
+                    // For non-upload files, just mark as Ready
+                    file.setStatus(File.Status.Ready);
                     file.setUpdatedAt(LocalDateTime.now());
                     fileRepository.save(file);
                 }
@@ -215,5 +249,41 @@ public class FileService {
     
     public Optional<FileRecord> getFileRecordById(UUID recordUuid) {
         return fileRecordRepository.findById(recordUuid);
+    }
+
+    public Resource getFileContentAsResource(UUID fileUuid) {
+        try {
+            // First check if the file exists in our database
+            Optional<File> optionalFile = fileRepository.findById(fileUuid);
+            if (optionalFile.isEmpty()) {
+                throw new RuntimeException("File not found with ID: " + fileUuid);
+            }
+
+            // Get the file from MinIO
+            InputStream fileContent = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioConfig.getBucketName())
+                            .object(fileUuid.toString())
+                            .build()
+            );
+
+            // Convert to Spring Resource that will close the stream when the resource is closed
+            File file = optionalFile.get();
+            return new org.springframework.core.io.InputStreamResource(fileContent) {
+                @Override
+                public String getFilename() {
+                    return file.getFileName();
+                }
+                
+                @Override
+                public long contentLength() {
+                    return file.getFileSize();
+                }
+
+            };
+        } catch (Exception e) {
+            log.error("Error retrieving file content", e);
+            throw new RuntimeException("Failed to retrieve file content: " + e.getMessage(), e);
+        }
     }
 }

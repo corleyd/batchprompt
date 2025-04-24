@@ -7,13 +7,14 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.support.TransactionSynchronizationAdapter;
+import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.batchprompt.jobs.client.FileClient;
 import com.batchprompt.jobs.client.PromptClient;
 import com.batchprompt.jobs.dto.FileDto;
 import com.batchprompt.jobs.dto.FileRecordDto;
+import com.batchprompt.jobs.dto.JobOutputMessage;
 import com.batchprompt.jobs.dto.JobTaskMessage;
 import com.batchprompt.jobs.dto.PromptDto;
 import com.batchprompt.jobs.exception.JobSubmissionException;
@@ -156,7 +157,7 @@ public class JobService {
                     .jobUuid(jobUuid)
                     .fileRecordUuid(record.getFileRecordUuid())
                     .modelName(modelName)
-                    .status(JobTask.Status.Submitted)
+                    .status(JobTask.Status.SUBMITTED)
                     .build();
                     
             jobTaskRepository.save(task);
@@ -176,7 +177,7 @@ public class JobService {
         }
         
         // Register a callback to be executed after the transaction is successfully committed
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronizationAdapter() {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
                 // Now that the transaction has committed, send all messages
@@ -199,47 +200,109 @@ public class JobService {
      */
     @Transactional
     public void updateJobStatus(UUID jobUuid) {
-        Job job = jobRepository.findById(jobUuid).orElse(null);
-        if (job == null) {
-            log.error("Job not found: {}", jobUuid);
-            return;
-        }
+        updateJobStatusWithRetry(jobUuid, 0);
+    }
+    
+    private void updateJobStatusWithRetry(UUID jobUuid, int retryCount) {
+        final int MAX_RETRIES = 10;
         
-        List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
-        if (tasks.isEmpty()) {
-            log.error("No tasks found for job: {}", jobUuid);
-            return;
-        }
-        
-        int completedCount = 0;
-        int failedCount = 0;
-        
-        for (JobTask task : tasks) {
-            if (task.getStatus() == JobTask.Status.Completed) {
-                completedCount++;
-            } else if (task.getStatus() == JobTask.Status.Failed) {
-                failedCount++;
+        try {
+            Job job = jobRepository.findById(jobUuid).orElse(null);
+            if (job == null) {
+                log.error("Job not found: {}", jobUuid);
+                return;
             }
-        }
-        
-        job.setCompletedTaskCount(completedCount + failedCount);
-        
-        // Update job status based on task status
-        if (completedCount + failedCount == tasks.size()) {
-            if (failedCount > 0 && completedCount > 0) {
-                job.setStatus(Job.Status.COMPLETED_WITH_ERRORS);
-            } else if (failedCount > 0) {
-                job.setStatus(Job.Status.FAILED);
+            
+            List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
+            if (tasks.isEmpty()) {
+                log.error("No tasks found for job: {}", jobUuid);
+                return;
+            }
+            
+            int completedCount = 0;
+            int failedCount = 0;
+            
+            for (JobTask task : tasks) {
+                if (task.getStatus() == JobTask.Status.COMPLETED) {
+                    completedCount++;
+                } else if (task.getStatus() == JobTask.Status.FAILED) {
+                    failedCount++;
+                }
+            }
+            
+            // We only update the count if it has changed
+            boolean countsChanged = job.getCompletedTaskCount() != (completedCount + failedCount); 
+            if (countsChanged) {
+                job.setCompletedTaskCount(completedCount + failedCount);
+            }
+            
+            Job.Status newStatus = null;
+            
+            // Update job status based on task status
+            if (completedCount + failedCount == tasks.size()) {
+                // All tasks are completed or failed, update to PENDING_OUTPUT
+                newStatus = Job.Status.PENDING_OUTPUT;
+            } else if (job.getStatus() == Job.Status.SUBMITTED) {
+                // First task started processing
+                newStatus = Job.Status.PROCESSING;
+            }
+            
+            // Only save if there are actual changes to make
+            if (countsChanged || (newStatus != null && job.getStatus() != newStatus)) {
+                if (newStatus != null) {
+                    job.setStatus(newStatus);
+                }
+                job.setUpdatedAt(LocalDateTime.now());
+                jobRepository.save(job);
+                
+                // If all tasks completed, and we're changing status to PENDING_OUTPUT
+                if (newStatus == Job.Status.PENDING_OUTPUT) {
+                    log.info("All tasks completed for job {}. Setting status to {} and queueing for output processing", 
+                             jobUuid, newStatus);
+                             
+                    // Queue the job for output processing after the transaction is committed
+                    final UUID finalJobUuid = job.getJobUuid();
+                    final String userId = job.getUserId();
+                    final boolean hasErrors = failedCount > 0;
+                    
+                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            // Send job output processing message
+                            JobOutputMessage outputMessage = JobOutputMessage.builder()
+                                    .jobUuid(finalJobUuid)
+                                    .userId(userId)
+                                    .hasErrors(hasErrors)
+                                    .build();
+                            
+                            messageProducer.sendJobOutput(outputMessage);
+                            log.info("Sent job output message for job {} after transaction commit", finalJobUuid);
+                        }
+                    });
+                } else if (countsChanged || newStatus != null) {
+                    log.info("Updated job {} status to {}, completed tasks: {}/{}", 
+                        jobUuid, job.getStatus(), job.getCompletedTaskCount(), tasks.size());
+                }
+            }
+        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
+            // Handle optimistic locking exception - this happens when another thread has updated the job
+            if (retryCount < MAX_RETRIES) {
+                log.info("Optimistic locking conflict detected for job {}, retrying update ({}/{})", 
+                    jobUuid, retryCount + 1, MAX_RETRIES);
+                    
+                // Small delay before retry to reduce contention
+                try {
+                    Thread.sleep(50 * (retryCount + 1));
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                }
+                
+                // Retry with incremented counter
+                updateJobStatusWithRetry(jobUuid, retryCount + 1);
             } else {
-                job.setStatus(Job.Status.COMPLETED);
+                log.warn("Failed to update job {} status after {} retries due to concurrent modifications", 
+                    jobUuid, MAX_RETRIES);
             }
-        } else if (job.getStatus() == Job.Status.SUBMITTED) {
-            job.setStatus(Job.Status.PROCESSING);
         }
-        
-        job.setUpdatedAt(LocalDateTime.now());
-        jobRepository.save(job);
-        
-        log.info("Updated job {} status to {}", jobUuid, job.getStatus());
     }
 }

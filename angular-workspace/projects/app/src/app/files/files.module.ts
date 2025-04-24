@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+import { MatIconModule } from '@angular/material/icon';
 
 import { FilesRoutingModule } from './files-routing.module';
 import { FilesComponent } from './files.component';
@@ -17,7 +18,8 @@ import { FileService } from './file.service';
   imports: [
     CommonModule,
     FilesRoutingModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MatIconModule
   ],
   providers: [FileService]
 })

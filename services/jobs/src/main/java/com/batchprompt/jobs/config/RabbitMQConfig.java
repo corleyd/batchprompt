@@ -19,10 +19,16 @@ public class RabbitMQConfig {
     private String exchangeName;
 
     @Value("${rabbitmq.queue.jobs.name}")
-    private String queueName;
+    private String jobsQueueName;
 
     @Value("${rabbitmq.routing.jobs.key}")
-    private String routingKey;
+    private String jobsRoutingKey;
+    
+    @Value("${rabbitmq.queue.output.name}")
+    private String outputQueueName;
+    
+    @Value("${rabbitmq.routing.output.key}")
+    private String outputRoutingKey;
 
     @Bean
     public DirectExchange exchange() {
@@ -31,12 +37,22 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue jobsQueue() {
-        return new Queue(queueName, true);
+        return new Queue(jobsQueueName, true);
+    }
+    
+    @Bean
+    public Queue outputQueue() {
+        return new Queue(outputQueueName, true);
     }
 
     @Bean
-    public Binding binding(Queue jobsQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(jobsQueue).to(exchange).with(routingKey);
+    public Binding jobsBinding(Queue jobsQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(jobsQueue).to(exchange).with(jobsRoutingKey);
+    }
+    
+    @Bean
+    public Binding outputBinding(Queue outputQueue, DirectExchange exchange) {
+        return BindingBuilder.bind(outputQueue).to(exchange).with(outputRoutingKey);
     }
 
     @Bean

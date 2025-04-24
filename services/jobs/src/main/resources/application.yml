@@ -5,6 +5,8 @@ spring:
   config:
     import:
       - ${HOME}/.batchprompt/local.yml
+  application:
+    name: jobs-service
   datasource:
     url: jdbc:postgresql://localhost:5432/batchprompt
     username: batchprompt
@@ -22,11 +24,6 @@ spring:
     schemas: jobs
     create-schemas: true
     baseline-on-migrate: true
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: ${auth0.issuer-uri}
   rabbitmq:
     host: localhost
     port: 5672
@@ -53,10 +50,15 @@ logging:
       total-size-cap: 1GB        
 
 services:
+  name: jobs-service
   files:
-    url: http://localhost:8083
+    url: ${FILES_SERVICE_URL:http://localhost:8083}
   prompts:
-    url: http://localhost:8082
+    url: ${PROMPTS_SERVICE_URL:http://localhost:8082}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
 
 rabbitmq:
   exchange:
@@ -64,6 +66,23 @@ rabbitmq:
   queue:
     jobs:
       name: jobs-queue
+      exchange: jobs-exchange
+      routing-key: jobs
+    output:
+      name: jobs-output-queue
+      exchange: jobs-output-exchange
+      routing-key: jobs-output
   routing:
     jobs:
       key: jobs.routing.key
+    output:
+      key: output.routing.key
+
+# Model configuration
+openai:
+  api-key: ${OPENAI_API_KEY:your-openai-api-key}
+  models:
+    gpt-3.5-turbo:
+      name: gpt-3.5-turbo
+    gpt-4:
+      name: gpt-4

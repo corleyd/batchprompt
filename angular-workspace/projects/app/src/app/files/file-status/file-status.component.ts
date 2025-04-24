@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { FileService } from '../file.service';
 import { interval, Subscription } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
-
 @Component({
   selector: 'app-file-status',
   templateUrl: './file-status.component.html',
@@ -81,6 +81,27 @@ export class FileStatusComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error refreshing status:', err);
+      }
+    });
+  }
+  
+  downloadFile(): void {
+    this.fileService.getDownloadUrl(this.file.fileUuid).subscribe({
+      next: (downloadUrl) => {
+        console.log('Download URL:', downloadUrl, this.file);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = this.file.fileName || 'download';
+        a.target = '_self';
+        a.click();
+
+        setTimeout(() => {
+          document.body.removeChild(a);
+        }, 1000);
+      },
+      error: (err) => {
+        console.error('Error initiating file download:', err);
       }
     });
   }

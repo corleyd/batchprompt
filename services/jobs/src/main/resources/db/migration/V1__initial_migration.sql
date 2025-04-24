@@ -8,7 +8,8 @@ create table if not exists job (
     task_count integer not null,
     completed_task_count integer not null,
     created_at timestamp not null,
-    updated_at timestamp not null
+    updated_at timestamp not null,
+    version integer not null
 );
 
 create table if not exists job_task (

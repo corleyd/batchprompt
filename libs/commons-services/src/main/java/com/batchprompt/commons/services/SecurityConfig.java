@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.RegexRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -47,10 +48,11 @@ public class SecurityConfig {
         });
         
         http.authorizeHttpRequests(authz -> authz
-                .requestMatchers("/api/public/**").permitAll()
-                .anyRequest().authenticated())
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.decoder(jwtDecoder())));
+            .requestMatchers("/api/public/**").permitAll()
+            .requestMatchers(RegexRequestMatcher.regexMatcher("^/api/files/[a-f0-9\\-]+/download/[a-f0-9\\-]+$")).permitAll()
+            .anyRequest().authenticated())
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.decoder(jwtDecoder())));
         return http.build();
     }
 
