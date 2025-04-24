@@ -17,16 +17,22 @@ public class ModelService {
     /**
      * Constructor to initialize supported models
      */
-    public ModelService(@Value("${openai.api-key}") String openaiApiKey) {
+    public ModelService(
+            @Value("${openai.api-key}") String openaiApiKey) {
+        
         // Initialize OpenAI models
         OpenAIChatModel gpt4o = new OpenAIChatModel("gpt-4o", openaiApiKey);
         OpenAIChatModel gpt4 = new OpenAIChatModel("gpt-4", openaiApiKey);
         OpenAIChatModel gpt35Turbo = new OpenAIChatModel("gpt-3.5-turbo", openaiApiKey);
         
+        // Initialize AWS models
+        AwsConverseChatModel deepseekR1 = new AwsConverseChatModel("deepseek-r1", "arn:aws:bedrock:us-east-1:187419035811:inference-profile/us.deepseek.r1-v1:0");
+        
         // Add models to the map
         modelMap.put(gpt4o.getName(), gpt4o);
         modelMap.put(gpt4.getName(), gpt4);
         modelMap.put(gpt35Turbo.getName(), gpt35Turbo);
+        modelMap.put(deepseekR1.getName(), deepseekR1);
     }
     
     /**
@@ -62,6 +68,10 @@ public class ModelService {
         
         if (model instanceof OpenAIChatModel) {
             return ModelProvider.OPENAI;
+        }
+        
+        if (model instanceof AwsConverseChatModel) {
+            return ModelProvider.AWS;
         }
         
         return null; // Default case if the model type is unknown

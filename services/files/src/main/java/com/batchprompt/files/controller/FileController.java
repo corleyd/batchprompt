@@ -2,15 +2,12 @@ package com.batchprompt.files.controller;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.simpleframework.xml.Path;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;

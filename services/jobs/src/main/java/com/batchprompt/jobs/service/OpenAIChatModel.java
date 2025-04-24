@@ -43,7 +43,7 @@ public class OpenAIChatModel implements ChatModel {
     }
     
     @Override
-    public String generateResponse(String prompt, String model, JsonNode recordData, @Nullable JsonNode outputSchema) {
+    public String generateResponse(String prompt, String model, @Nullable JsonNode outputSchema) {
         try {
             // Check if API key is available
             if (apiKey == null || apiKey.isEmpty()) {
@@ -75,7 +75,6 @@ public class OpenAIChatModel implements ChatModel {
             
             StringBuilder contentBuilder = new StringBuilder();
             contentBuilder.append(prompt).append("\n\n");
-            contentBuilder.append("Data: ").append(recordData.toString());
             
             if (outputSchema != null) {
                 contentBuilder.append("\n\nOutput should follow this JSON schema: ")

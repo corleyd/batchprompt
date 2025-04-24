@@ -2,6 +2,8 @@ package com.batchprompt.jobs.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
@@ -81,11 +83,12 @@ public class JobTaskWorker {
             if (promptDto.getOutputSchema() != null && !promptDto.getOutputSchema().isBlank()) {
                 outputSchema = objectMapper.readTree(promptDto.getOutputSchema());
             }
+
+            String promptText = replacePlaceholders(promptDto.getPromptText(), recordData);
             
             String responseText = chatModel.generateResponse(
-                    promptDto.getPromptText(),
+                    promptText,
                     message.getModelName(),
-                    recordData,
                     outputSchema
             );
             
@@ -153,5 +156,60 @@ public class JobTaskWorker {
         jobTask.setEndTimestamp(LocalDateTime.now());
         
         jobTaskRepository.save(jobTask);
+    }
+
+    private String replacePlaceholders(String promptText, JsonNode recordData) {
+        // Find all of the placeholders in the promt text (e.g., {{fieldName}})
+        // For each one, try to find a matching field in the record data.
+        //
+        // Matching is done as follows:
+        // 1. exact name
+        // 2. trim both sides and compare
+        // 3. trim both sides, convert to lowercase and compare
+        // 4. trim both sides, convert to lowercase and replace spaces with underscores
+
+        // First, find all placeholders in the prompt text
+        String regex = "\\{\\{\\s*([^\\s]+)\\s*\\}\\}";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(promptText);
+        while (matcher.find()) {
+            String placeholder = matcher.group(0);
+            String placeholderName = matcher.group(1).trim();
+            String fieldValue = null;
+
+            fieldValue = findMatchingFieldValue(placeholderName, recordData, s -> s);
+
+            if (fieldValue == null) {
+                fieldValue = findMatchingFieldValue(placeholderName, recordData, s-> s.trim());
+            }
+
+            if (fieldValue == null) {
+                fieldValue = findMatchingFieldValue(placeholderName, recordData, s -> s.trim().toLowerCase());
+            }
+
+            if (fieldValue == null) {
+                fieldValue = findMatchingFieldValue(placeholderName, recordData, s -> s.trim().toLowerCase().replace(" ", "_"));
+            }
+
+            if (fieldValue == null) {
+               log.warn("Field not found in record data: {}", placeholderName);
+               fieldValue = "";
+            }
+
+            promptText = promptText.replace(placeholder, fieldValue);
+        }
+        return promptText;
+    }
+
+    private String findMatchingFieldValue(String placeholderName, JsonNode recordData, java.util.function.Function<String, String> transform) {
+        String transformedPlaceholderName = placeholderName != null ? transform.apply(placeholderName) : null;
+
+        for (var property : recordData.properties()) {
+            String transformedPropertyName = transform.apply(property.getKey());
+            if (transformedPropertyName.equals(transformedPlaceholderName)) {
+                return property.getValue().asText();
+            }
+        }
+        return null;
     }
 }

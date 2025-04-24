@@ -37,7 +37,7 @@ logging:
     org.springframework.security: TRACE
     org.springframework.boot.autoconfigure: INFO
     org.springframework.context.annotation: INFO
-    com.batchprompt: DEBUG
+    com.batchprompt: TRACE
     org.flywaydb: TRACE
     org.hibernate: INFO
   file:
@@ -86,3 +86,12 @@ openai:
       name: gpt-3.5-turbo
     gpt-4:
       name: gpt-4
+
+# AWS configuration
+aws:
+  access-key: ${AWS_ACCESS_KEY:your-aws-access-key}
+  secret-key: ${AWS_SECRET_KEY:your-aws-secret-key}
+  region: ${AWS_REGION:us-east-1}
+  models:
+    deepseek-r1:
+      name: deepseek-r1

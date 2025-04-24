@@ -6,7 +6,8 @@ package com.batchprompt.jobs.service;
 public enum ModelProvider {
     OPENAI("OpenAI"),
     ANTHROPIC("Anthropic"),
-    GOOGLE("Google");
+    GOOGLE("Google"),
+    AWS("Amazon Web Services");
 
     private final String displayName;
 
