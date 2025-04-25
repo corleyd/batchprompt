@@ -185,6 +185,33 @@ public class FileClient {
     }
     
     /**
+     * Validate a file
+     * 
+     * @param fileUuid The UUID of the file to validate
+     * @param authToken The user's auth token, or null for service-to-service call
+     * @return true if validation was successful, false otherwise
+     */
+    public boolean validateFile(UUID fileUuid, String authToken) {
+        try {
+            String token = getEffectiveToken(authToken);
+            HttpHeaders headers = createAuthHeaders(token);
+            HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+            
+            ResponseEntity<Void> response = restTemplate.exchange(
+                filesServiceUrl + "/api/files/" + fileUuid + "/validate",
+                HttpMethod.POST,
+                requestEntity,
+                Void.class
+            );
+            
+            return response.getStatusCode().is2xxSuccessful();
+        } catch (Exception e) {
+            log.error("Error validating file {}: {}", fileUuid, e.getMessage(), e);
+            return false;
+        }
+    }
+    
+    /**
      * Get an effective token for the request. If user token is null, get a service token.
      * 
      * @param userToken The user's auth token or null

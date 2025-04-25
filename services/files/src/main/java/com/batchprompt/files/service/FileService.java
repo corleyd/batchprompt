@@ -172,8 +172,8 @@ public class FileService {
                                 .build()
                 );
                 
-                // Only validate Excel files
-                if (file.getFileType() == File.FileType.upload) {
+                // Only validate upload and result files
+                if (file.getFileType() == File.FileType.upload || file.getFileType() == File.FileType.result) {
                     // Validate the Excel file
                     ExcelValidator.ValidationResult validationResult = excelValidator.validateExcelFile(fileContent);
                     

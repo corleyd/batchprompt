@@ -88,6 +88,14 @@ public class JobOutputWorker {
                 return;
             }
             
+            // Validate the uploaded file
+            boolean validationSuccess = fileClient.validateFile(resultFileDto.getFileUuid(), null);
+            if (!validationSuccess) {
+                log.error("File validation failed for job: {}", jobUuid);
+                failJob(job);
+                return;
+            }
+            
             // Update job status to COMPLETED or COMPLETED_WITH_ERRORS
             Job.Status finalStatus = hasErrors ? Job.Status.COMPLETED_WITH_ERRORS : Job.Status.COMPLETED;
             job.setResultFileUuid(resultFileDto.getFileUuid());
