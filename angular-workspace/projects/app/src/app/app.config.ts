@@ -39,7 +39,7 @@ export const appConfig: ApplicationConfig = {
     ),
     importProvidersFrom(
       AuthModule.forRoot({
-        domain: 'dev-22kvna15vfzhdplk.us.auth0.com',
+        domain: 'auth.batchprompt.ai',
         clientId: 'YWtTkEee1GvY2vHz7jM5RmkaVU2Gc7NT',
         authorizationParams: {
           redirect_uri: window.location.origin,

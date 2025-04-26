@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Spreadsheet Icon -->
+  <rect x="20" y="20" width="160" height="160" rx="15" ry="15" fill="none" stroke="black" stroke-width="8"/>
+  <line x1="20" y1="72" x2="180" y2="72" stroke="black" stroke-width="8"/>
+  <line x1="20" y1="124" x2="180" y2="124" stroke="black" stroke-width="8"/>
+  <line x1="72" y1="20" x2="72" y2="180" stroke="black" stroke-width="8"/>
+  <line x1="124" y1="20" x2="124" y2="180" stroke="black" stroke-width="8"/>
+  <!-- Speech Bubble -->
+  <path d="M100 100 h72 a14 14 0 0 1 14 14 v43 a14 14 0 0 1 -14 14 h-43 l-22 22 v-22 h-7 a14 14 0 0 1 -14 -14 v-43 a14 14 0 0 1 14 -14 z" fill="#1E90FF"/>
+  <!-- Three dots inside speech bubble -->
+  <circle cx="122" cy="136" r="6" fill="white"/>
+  <circle cx="143" cy="136" r="6" fill="white"/>
+  <circle cx="164" cy="136" r="6" fill="white"/>
+</svg>
