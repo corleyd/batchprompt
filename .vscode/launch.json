@@ -1,0 +1,55 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "compounds": [
+        {
+          "name": "all",
+          "configurations": [
+            "jobs-api",
+            "prompts-api",
+            "files-api",
+            "jobs-task-worker",
+            "jobs-output-worker"
+          ]
+        }
+    ],    
+    "configurations": [
+        {
+            "type": "java",
+            "name": "files-api",
+            "request": "launch",
+            "mainClass": "com.batchprompt.files.api.FilesApiApplication",
+            "projectName": "files-api"
+        },
+        {
+            "type": "java",
+            "name": "prompts-api",
+            "request": "launch",
+            "mainClass": "com.batchprompt.prompts.api.PromptsApiApplication",
+            "projectName": "prompts-api"
+        },
+        {
+            "type": "java",
+            "name": "jobs-api",
+            "request": "launch",
+            "mainClass": "com.batchprompt.jobs.api.JobsApiApplication",
+            "projectName": "jobs-api"
+        },
+        {
+            "type": "java",
+            "name": "jobs-output-worker",
+            "request": "launch",
+            "mainClass": "com.batchprompt.jobs.output.worker.JobsOutputWorkerApplication",
+            "projectName": "jobs-output-worker"
+        },
+        {
+            "type": "java",
+            "name": "jobs-task-worker",
+            "request": "launch",
+            "mainClass": "com.batchprompt.jobs.task.worker.JobsTaskWorkerApplication",
+            "projectName": "jobs-task-worker"
+        }
+    ]
+}

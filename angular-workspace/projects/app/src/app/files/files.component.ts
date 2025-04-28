@@ -25,8 +25,8 @@ export class FilesComponent implements OnInit {
   statusFilter?: string;
   
   // Options for dropdowns
-  fileTypes = ['upload', 'result', 'profile', 'settings'];
-  statusTypes = ['Ready', 'Validation', 'Processing', 'Failed'];
+  fileTypes = ['UPLOAD', 'RESULT'];
+  statusTypes = ['READY', 'VALIDATION', 'PROCESSING', 'FAILED'];
   
   constructor(private fileService: FileService) { }
 

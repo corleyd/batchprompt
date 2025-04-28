@@ -1,0 +1,32 @@
+server:
+  port: 8084
+debug: true
+spring:
+  config:
+    import:
+      - classpath:jobs-core-application.yml
+  application:
+    name: jobs-api
+logging:
+  level:
+    root: INFO
+    org.springframework: DEBUG
+    org.springframework.security: TRACE
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.context.annotation: INFO
+    com.batchprompt: TRACE
+    org.flywaydb: TRACE
+    org.hibernate: INFO
+  file:
+    name: logs/{spring.application.name}.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: logs/${spring.application.name}-%d{yyyy-MM-dd}.%i.log
+      clean-history-on-start: false
+      max-file-size: 10MB
+      total-size-cap: 1GB        
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+

@@ -1,0 +1,40 @@
+server:
+  port: 8083
+debug: true
+spring:
+  config:
+    import:
+      - classpath:files-core-application.yml
+  application:
+    name: files-api
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+logging:
+  level:
+    root: INFO
+    org.springframework: DEBUG
+    org.springframework.security: TRACE
+    org.springframework.boot.autoconfigure: DEBUG
+    org.springframework.context.annotation: INFO
+    com.batchprompt: DEBUG
+    org.flywaydb: TRACE
+    org.hibernate: INFO
+    # org.hibernate.SQL: DEBUG
+    # org.hibernate.type: TRACE
+  file:
+    name: logs/${spring.application.name}.log
+  logback:
+    rollingpolicy:
+      file-name-pattern: logs/jobs-%d{yyyy-MM-dd}.%i.log
+      clean-history-on-start: false
+      max-file-size: 10MB
+      total-size-cap: 1GB    
+
+services:
+  name: files-api
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

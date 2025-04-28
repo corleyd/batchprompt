@@ -1,0 +1,78 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.4'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'java-library'
+}
+
+group = 'com.batchprompt'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = '21'
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs.add('-parameters')
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':common:common-services')
+    implementation project(':files:files-client')
+    implementation project(':prompts:prompts-client')
+    implementation project(':jobs:jobs-model')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+    implementation 'org.springframework.boot:spring-boot-starter-amqp'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.postgresql:postgresql'
+    implementation 'org.flywaydb:flyway-core'
+    implementation 'org.flywaydb:flyway-database-postgresql'
+    implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.9'
+    implementation 'org.apache.poi:poi:5.4.1'
+    implementation 'org.apache.poi:poi-ooxml:5.4.1'
+
+    // AWS SDK for Bedrock
+    implementation 'software.amazon.awssdk:bedrockruntime:2.23.0'
+    implementation 'software.amazon.awssdk:bedrock:2.23.0'
+
+    // MinIO dependencies
+    implementation 'io.minio:minio:8.5.7'
+
+    // Apache POI for Excel processing
+    implementation 'org.apache.poi:poi:5.2.5'
+    implementation 'org.apache.poi:poi-ooxml:5.2.5'
+
+    // Lombok dependency for boilerplate code reduction
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Auth0 dependencies
+    implementation 'com.auth0:auth0-spring-security-api:1.5.1'
+    implementation 'com.auth0:java-jwt:4.4.0'
+    implementation 'com.auth0:jwks-rsa:0.22.0'
+    
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    
+    // Auth0
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+    
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+test {
+    useJUnitPlatform()
+}

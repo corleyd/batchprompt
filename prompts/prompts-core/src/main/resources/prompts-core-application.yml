@@ -1,0 +1,21 @@
+spring:
+  config:
+    import:
+      - ${HOME}/.batchprompt/local.yml
+  datasource:
+    url: jdbc:postgresql://localhost:5432/batchprompt
+    username: batchprompt
+    password: batchprompt
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: prompts
+  flyway:
+    locations: classpath:db/migration
+    enabled: true
+    schemas: prompts
+    create-schemas: true
+    baseline-on-migrate: true

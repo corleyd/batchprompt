@@ -1,0 +1,71 @@
+
+spring:
+  config:
+    import:
+      - ${HOME}/.batchprompt/local.yml
+  datasource:
+    url: jdbc:postgresql://localhost:5432/batchprompt
+    username: batchprompt
+    password: batchprompt
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        default_schema: jobs
+  flyway:
+    locations: classpath:db/migration
+    enabled: true
+    schemas: jobs
+    create-schemas: true
+    baseline-on-migrate: true
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: batchprompt
+    password: batchprompt
+    virtual-host: /
+
+services:
+  name: jobs-service
+  files:
+    url: ${FILES_SERVICE_URL:http://localhost:8083}
+  prompts:
+    url: ${PROMPTS_SERVICE_URL:http://localhost:8082}
+
+rabbitmq:
+  exchange:
+    name: batchprompt-exchange
+  queue:
+    jobs:
+      name: jobs-queue
+      exchange: jobs-exchange
+      routing-key: jobs
+    output:
+      name: jobs-output-queue
+      exchange: jobs-output-exchange
+      routing-key: jobs-output
+  routing:
+    jobs:
+      key: jobs.routing.key
+    output:
+      key: output.routing.key
+
+# Model configuration
+openai:
+  api-key: ${OPENAI_API_KEY:your-openai-api-key}
+  models:
+    gpt-3.5-turbo:
+      name: gpt-3.5-turbo
+    gpt-4:
+      name: gpt-4
+
+# AWS configuration
+aws:
+  access-key: ${AWS_ACCESS_KEY:your-aws-access-key}
+  secret-key: ${AWS_SECRET_KEY:your-aws-secret-key}
+  region: ${AWS_REGION:us-east-1}
+  models:
+    deepseek-r1:
+      name: deepseek-r1
