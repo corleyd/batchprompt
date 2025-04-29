@@ -18,7 +18,7 @@ logging:
     org.flywaydb: TRACE
     org.hibernate: INFO
   file:
-    name: logs/{spring.application.name}.log
+    name: logs/${spring.application.name}.log
   logback:
     rollingpolicy:
       file-name-pattern: logs/${spring.application.name}-%d{yyyy-MM-dd}.%i.log

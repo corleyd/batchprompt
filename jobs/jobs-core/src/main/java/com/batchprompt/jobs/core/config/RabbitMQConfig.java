@@ -1,13 +1,18 @@
 package com.batchprompt.jobs.core.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,17 +23,14 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.exchange.name}")
     private String exchangeName;
 
-    @Value("${rabbitmq.queue.jobs.name}")
-    private String jobsQueueName;
-
-    @Value("${rabbitmq.routing.jobs.key}")
-    private String jobsRoutingKey;
+    @Value("${rabbitmq.queue.job-output.name}")
+    private String jobsOutputQueueName;
     
-    @Value("${rabbitmq.queue.output.name}")
-    private String outputQueueName;
+    @Value("${rabbitmq.queue.job-output.routing-key}")
+    private String jobsOutputRoutingKey;
     
-    @Value("${rabbitmq.routing.output.key}")
-    private String outputRoutingKey;
+    @Autowired
+    private ModelConfig modelConfig;
 
     @Bean
     public DirectExchange exchange() {
@@ -36,25 +38,40 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public Queue jobsQueue() {
-        return new Queue(jobsQueueName, true);
-    }
-    
+    public RabbitAdmin RabbitAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
+    }    
+
     @Bean
-    public Queue outputQueue() {
-        return new Queue(outputQueueName, true);
+    public Queue jobsOutputQueueName() {
+        return new Queue(jobsOutputQueueName, true);
     }
 
     @Bean
-    public Binding jobsBinding(Queue jobsQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(jobsQueue).to(exchange).with(jobsRoutingKey);
+    public Binding jobsOutputBinding(DirectExchange exchange, Queue jobsOutputQueueName) {
+        return BindingBuilder.bind(jobsOutputQueueName).to(exchange).with(jobsOutputRoutingKey);
     }
     
     @Bean
-    public Binding outputBinding(Queue outputQueue, DirectExchange exchange) {
-        return BindingBuilder.bind(outputQueue).to(exchange).with(outputRoutingKey);
+    public List<Queue> modelQueues(DirectExchange exchange, RabbitAdmin rabbitAdmin) {
+        List<Queue> queues = new ArrayList<>();
+        
+        // Create a queue for each model from configuration
+        if (modelConfig.getSupported() != null) {
+            for (ModelConfig.ModelDefinition modelDef : modelConfig.getSupported()) {
+                if (modelDef.getQueue() != null && !modelDef.getQueue().isEmpty()) {
+                    var queueName = modelDef.getQueue();
+                    var queue = new Queue(queueName, true);
+                    queues.add(queue);
+                    Binding binding = BindingBuilder.bind(queue).to(exchange).with(queueName);
+                    rabbitAdmin.declareBinding(binding);
+                    rabbitAdmin.declareQueue(queue);
+                }
+            }
+        }
+        return queues;
     }
-
+    
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -66,4 +83,5 @@ public class RabbitMQConfig {
         template.setMessageConverter(jsonMessageConverter());
         return template;
     }
+    
 }

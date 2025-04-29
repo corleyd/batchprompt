@@ -5,7 +5,6 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,12 +38,12 @@ public class JobTaskWorker {
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
 
-    @RabbitListener(queues = "${rabbitmq.queue.jobs.name}")
+    // This method will be called by the listener configurations created in JobTaskListenerConfig
     public void processJobTask(JobTaskMessage message) {
         UUID jobTaskUuid = message.getJobTaskUuid();
         UUID jobUuid = message.getJobUuid();
         
-        log.info("Processing job task: {}", jobTaskUuid);
+        log.info("Processing job task: {} for model: {}", jobTaskUuid, message.getModelName());
         
         JobTask jobTask = null;
         

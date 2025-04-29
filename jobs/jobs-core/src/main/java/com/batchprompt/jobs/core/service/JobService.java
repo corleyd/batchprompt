@@ -5,9 +5,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -32,8 +35,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
+@RequiredArgsConstructor
 public class JobService {
 
     private final JobRepository jobRepository;
@@ -42,6 +45,8 @@ public class JobService {
     private final PromptClient promptClient;
     private final ModelService modelService;
     private final MessageProducer messageProducer;
+    private final ObjectProvider<JobService> selfProvider;
+
     
     /**
      * Get all jobs
@@ -215,111 +220,127 @@ public class JobService {
      * 
      * @param jobUuid The UUID of the job to update
      */
-    @Transactional
+
     public void updateJobStatus(UUID jobUuid) {
-        updateJobStatusWithRetry(jobUuid, 0);
+        final int MAX_RETRIES = 10;
+        int retryCount = 0;
+        while (true) {
+            try {
+                
+                /*
+                 * Need a separate transaction for each retry. In order to do that, we need to
+                 * call updateJobStatusNoRetry() from self to ensure the spring proxy is used
+                 * and the transaction is created correctly.
+                 */
+                var self = selfProvider.getIfAvailable();
+                if (self == null) {
+                    throw new IllegalStateException("Self provider is not available");
+                }
+                self.updateJobStatusNoRetry(jobUuid);
+                break; // Exit loop if successful
+            } catch (ObjectOptimisticLockingFailureException e) {
+                // Handle optimistic locking exception - this happens when another thread has updated the job
+                if (retryCount < MAX_RETRIES) {
+                    log.info("Optimistic locking conflict detected for job {}, retrying update ({}/{})", 
+                        jobUuid, retryCount + 1, MAX_RETRIES);
+                    
+                    // Small delay before retry to reduce contention
+                    try {
+                        Thread.sleep(50 * (retryCount + 1));
+                    } catch (InterruptedException ie) {
+                        Thread.currentThread().interrupt();
+                    }
+                    
+                    retryCount++;
+                } else {
+                    log.error("Failed to update job {} status after {} retries due to concurrent modifications", 
+                        jobUuid, MAX_RETRIES);
+                    throw e;
+                }
+            }
+        }    
     }
     
-    private void updateJobStatusWithRetry(UUID jobUuid, int retryCount) {
-        final int MAX_RETRIES = 10;
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateJobStatusNoRetry(UUID jobUuid) {
         
-        try {
-            Job job = jobRepository.findById(jobUuid).orElse(null);
-            if (job == null) {
-                log.error("Job not found: {}", jobUuid);
-                return;
-            }
-            
-            List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
-            if (tasks.isEmpty()) {
-                log.error("No tasks found for job: {}", jobUuid);
-                return;
-            }
-            
-            int completedCount = 0;
-            int failedCount = 0;
-            
-            for (JobTask task : tasks) {
-                if (task.getStatus() == TaskStatus.COMPLETED) {
-                    completedCount++;
-                } else if (task.getStatus() == TaskStatus.FAILED) {
-                    failedCount++;
-                }
-            }
-            
-            // We only update the count if it has changed
-            boolean countsChanged = job.getCompletedTaskCount() != (completedCount + failedCount); 
-            if (countsChanged) {
-                job.setCompletedTaskCount(completedCount + failedCount);
-            }
-            
-            JobStatus newStatus = null;
-            
-            // Update job status based on task status
-            if (completedCount + failedCount == tasks.size()) {
-                // All tasks are completed or failed, update to PENDING_OUTPUT
-                newStatus = JobStatus.PENDING_OUTPUT;
-            } else if (job.getStatus() == JobStatus.SUBMITTED) {
-                // First task started processing
-                newStatus = JobStatus.PROCESSING;
-            }
-            
-            // Only save if there are actual changes to make
-            if (countsChanged || (newStatus != null && job.getStatus() != newStatus)) {
-                if (newStatus != null) {
-                    job.setStatus(newStatus);
-                }
-                job.setUpdatedAt(LocalDateTime.now());
-                jobRepository.save(job);
-                
-                // If all tasks completed, and we're changing status to PENDING_OUTPUT
-                if (newStatus == JobStatus.PENDING_OUTPUT) {
-                    log.info("All tasks completed for job {}. Setting status to {} and queueing for output processing", 
-                             jobUuid, newStatus);
-                             
-                    // Queue the job for output processing after the transaction is committed
-                    final UUID finalJobUuid = job.getJobUuid();
-                    final String userId = job.getUserId();
-                    final boolean hasErrors = failedCount > 0;
-                    
-                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                        @Override
-                        public void afterCommit() {
-                            // Send job output processing message
-                            JobOutputMessage outputMessage = JobOutputMessage.builder()
-                                    .jobUuid(finalJobUuid)
-                                    .userId(userId)
-                                    .hasErrors(hasErrors)
-                                    .build();
-                            
-                            messageProducer.sendJobOutput(outputMessage);
-                            log.info("Sent job output message for job {} after transaction commit", finalJobUuid);
-                        }
-                    });
-                } else if (countsChanged || newStatus != null) {
-                    log.info("Updated job {} status to {}, completed tasks: {}/{}", 
-                        jobUuid, job.getStatus(), job.getCompletedTaskCount(), tasks.size());
-                }
-            }
-        } catch (org.springframework.orm.ObjectOptimisticLockingFailureException e) {
-            // Handle optimistic locking exception - this happens when another thread has updated the job
-            if (retryCount < MAX_RETRIES) {
-                log.info("Optimistic locking conflict detected for job {}, retrying update ({}/{})", 
-                    jobUuid, retryCount + 1, MAX_RETRIES);
-                    
-                // Small delay before retry to reduce contention
-                try {
-                    Thread.sleep(50 * (retryCount + 1));
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
-                
-                // Retry with incremented counter
-                updateJobStatusWithRetry(jobUuid, retryCount + 1);
-            } else {
-                log.warn("Failed to update job {} status after {} retries due to concurrent modifications", 
-                    jobUuid, MAX_RETRIES);
+        Job job = jobRepository.findById(jobUuid).orElse(null);
+        if (job == null) {
+            log.error("Job not found: {}", jobUuid);
+            return;
+        }
+        
+        List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
+        if (tasks.isEmpty()) {
+            log.error("No tasks found for job: {}", jobUuid);
+            return;
+        }
+        
+        int completedCount = 0;
+        int failedCount = 0;
+        
+        for (JobTask task : tasks) {
+            if (task.getStatus() == TaskStatus.COMPLETED) {
+                completedCount++;
+            } else if (task.getStatus() == TaskStatus.FAILED) {
+                failedCount++;
             }
         }
+            
+        // We only update the count if it has changed
+        boolean countsChanged = job.getCompletedTaskCount() != (completedCount + failedCount); 
+        if (countsChanged) {
+            job.setCompletedTaskCount(completedCount + failedCount);
+        }
+        
+        JobStatus newStatus = null;
+        
+        // Update job status based on task status
+        if (completedCount + failedCount == tasks.size()) {
+            // All tasks are completed or failed, update to PENDING_OUTPUT
+            newStatus = JobStatus.PENDING_OUTPUT;
+        } else if (job.getStatus() == JobStatus.SUBMITTED) {
+            // First task started processing
+            newStatus = JobStatus.PROCESSING;
+        }
+        
+        // Only save if there are actual changes to make
+        if (countsChanged || (newStatus != null && job.getStatus() != newStatus)) {
+            if (newStatus != null) {
+                job.setStatus(newStatus);
+            }
+            job.setUpdatedAt(LocalDateTime.now());
+            jobRepository.save(job);
+            
+            // If all tasks completed, and we're changing status to PENDING_OUTPUT
+            if (newStatus == JobStatus.PENDING_OUTPUT) {
+                log.info("All tasks completed for job {}. Setting status to {} and queueing for output processing", 
+                            jobUuid, newStatus);
+                            
+                // Queue the job for output processing after the transaction is committed
+                final UUID finalJobUuid = job.getJobUuid();
+                final String userId = job.getUserId();
+                final boolean hasErrors = failedCount > 0;
+                
+                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        // Send job output processing message
+                        JobOutputMessage outputMessage = JobOutputMessage.builder()
+                                .jobUuid(finalJobUuid)
+                                .userId(userId)
+                                .hasErrors(hasErrors)
+                                .build();
+                        
+                        messageProducer.sendJobOutput(outputMessage);
+                        log.info("Sent job output message for job {} after transaction commit", finalJobUuid);
+                    }
+                });
+            } else if (countsChanged || newStatus != null) {
+                log.info("Updated job {} status to {}, completed tasks: {}/{}", 
+                    jobUuid, job.getStatus(), job.getCompletedTaskCount(), tasks.size());
+            }
+        }
+
     }
 }

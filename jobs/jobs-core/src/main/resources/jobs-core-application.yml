@@ -1,4 +1,3 @@
-
 spring:
   config:
     import:
@@ -38,34 +37,50 @@ rabbitmq:
   exchange:
     name: batchprompt-exchange
   queue:
-    jobs:
-      name: jobs-queue
-      exchange: jobs-exchange
-      routing-key: jobs
-    output:
-      name: jobs-output-queue
-      exchange: jobs-output-exchange
-      routing-key: jobs-output
-  routing:
-    jobs:
-      key: jobs.routing.key
-    output:
-      key: output.routing.key
+    job-output:
+      name: job-output-queue
+      routing-key: job-output-queue
 
 # Model configuration
 openai:
   api-key: ${OPENAI_API_KEY:your-openai-api-key}
-  models:
-    gpt-3.5-turbo:
-      name: gpt-3.5-turbo
-    gpt-4:
-      name: gpt-4
 
 # AWS configuration
 aws:
   access-key: ${AWS_ACCESS_KEY:your-aws-access-key}
   secret-key: ${AWS_SECRET_KEY:your-aws-secret-key}
   region: ${AWS_REGION:us-east-1}
-  models:
-    deepseek-r1:
-      name: deepseek-r1
+
+# Models configuration
+models:
+  supported:
+    - name: gpt-4o
+      provider: OPENAI
+      queue: gpt4o-queue
+    - name: gpt-4
+      provider: OPENAI
+      queue: gpt4-queue
+    - name: gpt-3.5-turbo
+      provider: OPENAI
+      queue: gpt35-queue
+    - name: deepseek-r1
+      provider: AWS
+      queue: deepseek-queue
+      properties:
+        arn: arn:aws:bedrock:us-east-1:187419035811:inference-profile/us.deepseek.r1-v1:0
+
+# Worker configuration
+workers:
+  configurations:
+    - queue: gpt4o-queue
+      concurrentRequests: 5
+      rateLimit: 20  # Requests per minute
+    - queue: gpt4-queue
+      concurrentRequests: 3 
+      rateLimit: 10  # Requests per minute
+    - queue: gpt35-queue
+      concurrentRequests: 10
+      rateLimit: 60  # Requests per minute
+    - queue: deepseek-queue
+      concurrentRequests: 5
+      rateLimit: 30  # Requests per minute

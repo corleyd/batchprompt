@@ -43,7 +43,7 @@ public class JobOutputWorker {
     private final FileClient fileClient;
     private final ObjectMapper objectMapper;
     
-    @RabbitListener(queues = "${rabbitmq.queue.output.name}")
+    @RabbitListener(queues = "${rabbitmq.queue.job-output.name}")
     @Transactional
     public void processJobOutput(JobOutputMessage message) {
         UUID jobUuid = message.getJobUuid();

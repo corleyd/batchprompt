@@ -8,31 +8,55 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.batchprompt.jobs.core.config.ModelConfig;
+import com.batchprompt.jobs.core.config.ModelConfig.ModelDefinition;
+
 @Service
 public class ModelService {
     
     // Map of model name to ChatModel instance
     private final Map<String, ChatModel> modelMap = new HashMap<>();
     
+    // Map of model name to queue name
+    private final Map<String, String> queueMap = new HashMap<>();
+    
     /**
-     * Constructor to initialize supported models
+     * Constructor to initialize supported models from configuration
      */
     public ModelService(
+            ModelConfig modelConfig,
             @Value("${openai.api-key}") String openaiApiKey) {
         
-        // Initialize OpenAI models
-        OpenAIChatModel gpt4o = new OpenAIChatModel("gpt-4o", openaiApiKey);
-        OpenAIChatModel gpt4 = new OpenAIChatModel("gpt-4", openaiApiKey);
-        OpenAIChatModel gpt35Turbo = new OpenAIChatModel("gpt-3.5-turbo", openaiApiKey);
-        
-        // Initialize AWS models
-        AwsConverseChatModel deepseekR1 = new AwsConverseChatModel("deepseek-r1", "arn:aws:bedrock:us-east-1:187419035811:inference-profile/us.deepseek.r1-v1:0");
-        
-        // Add models to the map
-        modelMap.put(gpt4o.getName(), gpt4o);
-        modelMap.put(gpt4.getName(), gpt4);
-        modelMap.put(gpt35Turbo.getName(), gpt35Turbo);
-        modelMap.put(deepseekR1.getName(), deepseekR1);
+        // Initialize models from configuration
+        for (ModelDefinition modelDef : modelConfig.getSupported()) {
+            ChatModel model = null;
+            
+            switch (modelDef.getProvider()) {
+                case OPENAI:
+                    model = new OpenAIChatModel(modelDef.getName(), openaiApiKey);
+                    break;
+                    
+                case AWS:
+                    String arn = (String) modelDef.getProperties().get("arn");
+                    if (arn != null) {
+                        model = new AwsConverseChatModel(modelDef.getName(), arn);
+                    }
+                    break;
+                    
+                default:
+                    // Skip unsupported provider types
+                    continue;
+            }
+            
+            if (model != null) {
+                modelMap.put(model.getName(), model);
+                
+                // Store the queue name for this model
+                if (modelDef.getQueue() != null && !modelDef.getQueue().isEmpty()) {
+                    queueMap.put(model.getName(), modelDef.getQueue());
+                }
+            }
+        }
     }
     
     /**
@@ -85,5 +109,15 @@ public class ModelService {
      */
     public ChatModel getModel(String modelName) {
         return modelMap.get(modelName);
+    }
+    
+    /**
+     * Get the queue name for a specific model
+     *
+     * @param modelName The name of the model
+     * @return The queue name for the model, or null if not found
+     */
+    public String getQueueForModel(String modelName) {
+        return queueMap.get(modelName);
     }
 }
