@@ -1,0 +1,34 @@
+<!-- Non-authenticated view -->
+<div class="landing-page" *ngIf="!(auth.isAuthenticated$ | async)">
+  <nav class="top-nav">
+    <div class="logo">BatchPrompt</div>
+    <div class="nav-actions">
+      <button class="btn login-btn" (click)="login()">LOG IN</button>
+      <button class="btn signup-btn" (click)="signup()">SIGN UP</button>
+    </div>
+  </nav>
+  
+  <div class="hero-section">
+    <h1>Batch AI Prompting made simple</h1>
+    <p>Upload a spreadsheet and generate chat responses</p>
+  </div>
+</div>
+
+<!-- Authenticated view with user button -->
+<div class="authenticated-landing" *ngIf="auth.isAuthenticated$ | async">
+  <nav class="top-nav">
+    <div class="logo">BatchPrompt</div>
+    <div class="user-button" (click)="navigateToDashboard()">
+      <div class="user-avatar">
+        <span class="user-initials">{{ getUserInitials((auth.user$ | async)?.name) }}</span>
+      </div>
+      <div class="user-name">{{ (auth.user$ | async)?.name }}</div>
+    </div>
+  </nav>
+  
+  <div class="hero-section">
+    <h1>Welcome back!</h1>
+    <p>Continue to your dashboard to manage your prompts and jobs</p>
+    <button class="cta-primary" (click)="navigateToDashboard()">GO TO DASHBOARD</button>
+  </div>
+</div>

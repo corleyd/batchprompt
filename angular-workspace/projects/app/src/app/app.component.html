@@ -27,26 +27,6 @@
 
   <!-- Main Content Area -->
   <div class="main-content">
-    <!-- Main page content for non-authenticated users -->
-    <div class="landing-page" *ngIf="!(auth.isAuthenticated$ | async)">
-      <nav class="top-nav">
-        <div class="logo">BatchPrompt</div>
-        <div class="nav-actions">
-          <button class="btn login-btn" (click)="login()">LOG IN</button>
-          <button class="btn signup-btn" (click)="login()">SIGN UP</button>
-        </div>
-      </nav>
-      
-      <div class="hero-section">
-        <h1>Batch AI Prompting made simple</h1>
-        <p>Upload a spreadsheet and generate chat responses</p>
-        <!-- <div class="cta-buttons">
-          <button class="cta-primary" (click)="login()">UPLOAD SPREADSHEET</button>
-          <button class="cta-secondary" (click)="login()">GET AN API KEY</button>
-        </div> -->
-      </div>
-    </div>
-    
     <!-- Router outlet for all pages -->
     <router-outlet></router-outlet>
   </div>

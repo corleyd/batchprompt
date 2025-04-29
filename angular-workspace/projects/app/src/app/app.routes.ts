@@ -1,11 +1,12 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from '@auth0/auth0-angular';
+import { LandingPageComponent } from './landing-page/landing-page.component';
 
 export const routes: Routes = [
   { 
     path: '', 
-    redirectTo: 'dashboard', 
-    pathMatch: 'full' 
+    component: LandingPageComponent,
+    pathMatch: 'full'
   },
   { 
     path: 'profile', 
@@ -44,6 +45,6 @@ export const routes: Routes = [
   },
   { 
     path: '**', 
-    redirectTo: 'dashboard' 
+    component: LandingPageComponent
   }
 ];
