@@ -1,33 +1,22 @@
 <div class="app-container" [ngClass]="{'with-sidebar': auth.isAuthenticated$ | async}">
-  <!-- Sidebar Navigation for authenticated users -->
-  <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
-    <div class="logo">
-      <!-- <img src="assets/logo.png" alt="Logo"> -->
-       BatchPrompt
-    </div>
-    <div class="nav-links">
-      <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-      <a routerLink="/files" routerLinkActive="active">Files</a>
-      <a routerLink="/jobs" routerLinkActive="active">Jobs</a>
-      <a routerLink="/prompts" routerLinkActive="active">Prompts</a>
-    </div>
-    <div class="user-section">
-      <div class="user-info">
-        <div class="user-avatar" [routerLink]="['/profile']">
-          <span class="user-initials">{{ getUserInitials((auth.user$ | async)?.name) }}</span>
-        </div>
-        <div class="user-details">
-          <span class="user-name">{{ (auth.user$ | async)?.name }}</span>
-          <a class="profile-link" [routerLink]="['/profile']">View Profile</a>
-          <button class="logout-btn" (click)="logout()">Log Out</button>
-        </div>
+
+  <app-toolbar></app-toolbar>
+
+  <div class="main-container">
+    <!-- Sidebar Navigation for authenticated users -->
+    <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
+      <div class="nav-links">
+        <a routerLink="/home" routerLinkActive="active">Home</a>
+        <a routerLink="/files" routerLinkActive="active">Files</a>
+        <a routerLink="/jobs" routerLinkActive="active">Jobs</a>
+        <a routerLink="/prompts" routerLinkActive="active">Prompts</a>
       </div>
     </div>
-  </div>
 
-  <!-- Main Content Area -->
-  <div class="main-content">
-    <!-- Router outlet for all pages -->
-    <router-outlet></router-outlet>
+    <!-- Main Content Area -->
+    <div class="main-content">
+      <!-- Router outlet for all pages -->
+      <router-outlet></router-outlet>
+    </div>
   </div>
 </div>

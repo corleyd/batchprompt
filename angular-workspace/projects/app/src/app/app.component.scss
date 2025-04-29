@@ -1,40 +1,27 @@
-// Variables
-$primary-color: #4361ee;
-$primary-hover: #3a56d4;
-$sidebar-bg: #f8f9fa;
-$sidebar-text: #444;
-$sidebar-active: #e3e9ff;
-$sidebar-active-text: #4361ee;
-$link-hover: #e9ecef;
-$text-color: #333;
-$text-muted: #6c757d;
-$border-color: #e9ecef;
-$danger-color: #dc3545;
-$danger-hover: #c82333;
-$body-bg: #ffffff;
+@import 'variables';
 
 // Main container
 .app-container {
   display: flex;
+  flex-direction: column;
   height: 100vh;
   background-color: $body-bg;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  
-  &.with-sidebar {
-    .main-content {
-      margin-left: 240px;
-      width: calc(100% - 240px);
-    }
-  }
 }
+
+.main-container {
+  display: flex;
+  flex-direction: row;;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+
 
 // Sidebar navigation
 .sidebar {
   width: 240px;
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
   background-color: $sidebar-bg;
   color: $sidebar-text;
   display: flex;
@@ -83,87 +70,8 @@ $body-bg: #ffffff;
       }
     }
   }
-
-  .user-section {
-    border-top: 1px solid $border-color;
-    padding: 1rem 1.25rem;
-    margin-top: auto;
-    
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-
-      .user-avatar {
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        background-color: $primary-color;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-        
-        &:hover {
-          transform: scale(1.05);
-          box-shadow: 0 2px 12px rgba($primary-color, 0.3);
-        }
-        
-        .user-initials {
-          font-size: 1rem;
-          font-weight: 600;
-          color: white;
-        }
-      }
-
-      .user-details {
-        display: flex;
-        flex-direction: column;
-        
-        .user-name {
-          font-weight: 600;
-          font-size: 0.95rem;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          max-width: 140px;
-          margin-bottom: 0.25rem;
-        }
-        
-        .profile-link {
-          color: $text-muted;
-          font-size: 0.8rem;
-          text-decoration: none;
-          margin-bottom: 0.5rem;
-          
-          &:hover {
-            color: $primary-color;
-            text-decoration: underline;
-          }
-        }
-        
-        .logout-btn {
-          background: transparent;
-          color: $danger-color;
-          border: 1px solid $border-color;
-          border-radius: 6px;
-          padding: 0.35rem 0.75rem;
-          font-size: 0.8rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          
-          &:hover {
-            background-color: $danger-color;
-            color: #fff;
-            border-color: $danger-color;
-          }
-        }
-      }
-    }
-  }
 }
+  
 
 // Main content area
 .main-content {

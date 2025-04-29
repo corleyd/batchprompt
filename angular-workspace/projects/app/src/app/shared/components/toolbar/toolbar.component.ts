@@ -1,20 +1,33 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Component, HostListener } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
-import { ToolbarComponent } from './shared/components/toolbar/toolbar.component';
 
 @Component({
-  selector: 'app-root',
+  selector: 'app-toolbar',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToolbarComponent ],
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  imports: [CommonModule, RouterLink, IconsModule ],
+  templateUrl: './toolbar.component.html',
+  styleUrls: ['./toolbar.component.scss']
 })
-export class AppComponent {
+export class ToolbarComponent {
   title = 'BatchPrompt';
+  showUserMenu = false;
 
   constructor(public auth: AuthService, private router: Router) {}
+
+  @HostListener('document:click', ['$event'])
+  closeMenuOnClickOutside(event: MouseEvent) {
+    const userButton = document.querySelector('.user-button');
+    if (this.showUserMenu && userButton && !userButton.contains(event.target as Node)) {
+      this.showUserMenu = false;
+    }
+  }
+
+  toggleUserMenu(event: MouseEvent) {
+    event.stopPropagation();
+    this.showUserMenu = !this.showUserMenu;
+  }
 
   signup() {
     this.auth.loginWithRedirect({
@@ -55,4 +68,5 @@ export class AppComponent {
     
     return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   }
-}
+}import { IconsModule } from '../../../icons/icons.module';
+

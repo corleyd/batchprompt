@@ -1,0 +1,36 @@
+<nav class="top-nav">
+    <a class="logo" [routerLink]="['/']">
+      <img src="assets/batchprompt-logo.svg">
+      BatchPrompt
+    </a>
+    <div class="nav-actions">
+      <ng-container *ngIf="!(auth.isAuthenticated$ | async)">
+        <button class="btn login-btn" (click)="login()">LOG IN</button>
+        <button class="btn signup-btn" (click)="signup()">SIGN UP</button>
+      </ng-container>
+      <ng-container *ngIf="auth.isAuthenticated$ | async">
+          <div class="btn user-button" (click)="toggleUserMenu($event)">
+            <div class="user-avatar">
+              <span class="user-initials">{{ getUserInitials((auth.user$ | async)?.name) }}</span>
+            </div>
+            <div class="user-name">{{ (auth.user$ | async)?.name }}</div>
+            <i-feather name="chevron-down" class="dropdown-icon"></i-feather>
+            
+            <!-- User dropdown menu -->
+            <div class="user-menu" *ngIf="showUserMenu">
+              <ul>
+                <li (click)="navigateToDashboard()">
+                  <i-feather name="user" class="menu-icon"></i-feather>
+                  <span>Account</span>
+                </li>
+                <li (click)="logout()">
+                    <i-feather name="log-out" class="menu-icon"></i-feather>
+                    <span>Log Out</span>
+                </li>
+              </ul>
+            </div>
+        </div>
+      </ng-container>
+    </div>
+  </nav>
+

@@ -28,7 +28,7 @@ export class LandingPageComponent implements OnInit {
   }
 
   navigateToDashboard() {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/home']);
   }
 
   /**
