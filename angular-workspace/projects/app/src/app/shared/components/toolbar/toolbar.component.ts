@@ -44,7 +44,7 @@ export class ToolbarComponent {
   }
 
   navigateToDashboard() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/dashboard/home']);
   }  
 
   /**

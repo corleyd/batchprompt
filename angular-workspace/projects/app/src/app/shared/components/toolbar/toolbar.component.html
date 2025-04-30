@@ -19,9 +19,13 @@
             <!-- User dropdown menu -->
             <div class="user-menu" *ngIf="showUserMenu">
               <ul>
-                <li (click)="navigateToDashboard()">
+                <li [routerLink]="['/dashboard']">
+                    <i-feather name="layout" class="menu-icon"></i-feather>
+                    <span>My Dashboard</span>
+                  </li>                
+                <li [routerLink]="['/profile']">
                   <i-feather name="user" class="menu-icon"></i-feather>
-                  <span>Account</span>
+                  <span>My Account</span>
                 </li>
                 <li (click)="logout()">
                     <i-feather name="log-out" class="menu-icon"></i-feather>

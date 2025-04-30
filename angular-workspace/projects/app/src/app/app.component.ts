@@ -31,7 +31,7 @@ export class AppComponent {
   }
 
   navigateToDashboard() {
-    this.router.navigate(['/home']);
+    this.router.navigate(['/dashboard/home']);
   }  
 
   /**
