@@ -75,7 +75,9 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let file of files">
+        <tr *ngFor="let file of files" 
+            (click)="navigateToFileStatus(file)" 
+            class="clickable-row">
           <td>{{ file.fileName }}</td>
           <td>{{ file.type }}</td>
           <td>
@@ -86,16 +88,20 @@
           <td>{{ file.createdAt | date:'medium' }}</td>
           <td>{{ file.fileSize | number }} bytes</td>
           <td class="file-actions">
-            <button *ngIf="file.status === 'READY'" (click)="createJob(file)" class="create-job-btn">
+            <button *ngIf="file.status === 'READY'" 
+                    (click)="createJob(file); $event.stopPropagation()" 
+                    class="create-job-btn">
               Create Job
             </button>
             <app-download-button 
-            [fileUuid]="file.fileUuid"
-            [fileName]="file.fileName"
-            [disabled]="file.status === 'PROCESSING'">
-          </app-download-button>
+                [fileUuid]="file.fileUuid"
+                [fileName]="file.fileName"
+                [disabled]="file.status === 'PROCESSING'"
+                (click)="$event.stopPropagation()">
+            </app-download-button>
 
-          <button (click)="deleteFile(file)" class="delete-btn">
+            <button (click)="deleteFile(file); $event.stopPropagation()" 
+                    class="delete-btn">
               Delete
             </button>
           </td>

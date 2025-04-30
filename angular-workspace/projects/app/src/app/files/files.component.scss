@@ -244,10 +244,24 @@
         }
       }
       
+      tbody {
+        tr.clickable-row {
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+          }
+          
+          &:active {
+            background-color: rgba(0, 0, 0, 0.1);
+          }
+        }
+      }
+
       .file-actions {
         display: flex;
         gap: 0.5rem;
-        
         button {
           padding: 0.4rem 0.75rem;
           border-radius: 0.25rem;
@@ -266,14 +280,14 @@
             }
           }
           
-          &.download-btn {
-            background-color: #4caf50;
-            color: white;
+          // &.download-btn {
+          //   background-color: #4caf50;
+          //   color: white;
             
-            &:hover {
-              background-color: #3d8b40;
-            }
-          }
+          //   &:hover {
+          //     background-color: #3d8b40;
+          //   }
+          // }
           
           &.delete-btn {
             background-color: $danger-color;

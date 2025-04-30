@@ -128,4 +128,10 @@ export class FilesComponent implements OnInit {
       });
     }
   }
+
+  navigateToFileStatus(file: any): void {
+    if (file && file.fileUuid) {
+      this.router.navigate(['/dashboard/files/status', file.fileUuid]);
+    }
+  }
 }
