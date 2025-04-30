@@ -7,7 +7,8 @@
     <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
       <div class="nav-links">
         <a routerLink="/home" routerLinkActive="active">Home</a>
-        <a routerLink="/files" routerLinkActive="active">Files</a>
+        <a routerLink="/files" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">My Files</a>
+        <a routerLink="/files/upload" routerLinkActive="active">Upload Files</a>
         <a routerLink="/jobs" routerLinkActive="active">Jobs</a>
         <a routerLink="/prompts" routerLinkActive="active">Prompts</a>
       </div>

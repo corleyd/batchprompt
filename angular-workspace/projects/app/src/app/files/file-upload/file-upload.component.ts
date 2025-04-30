@@ -1,11 +1,22 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { HttpEventType } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileService } from '../file.service';
 
 @Component({
   selector: 'app-file-upload',
   templateUrl: './file-upload.component.html',
-  styleUrls: ['./file-upload.component.scss']
+  styleUrls: ['./file-upload.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatProgressSpinnerModule
+  ]
 })
 export class FileUploadComponent {
   @Output() fileUploaded = new EventEmitter<void>();

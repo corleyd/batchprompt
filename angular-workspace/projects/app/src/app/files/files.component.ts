@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { FileService } from './file.service';
 
 @Component({
@@ -9,6 +10,7 @@ import { FileService } from './file.service';
 export class FilesComponent implements OnInit {
   files: any[] = [];
   loading = false;
+  error = false;
   
   // Pagination properties
   currentPage = 0;
@@ -28,7 +30,10 @@ export class FilesComponent implements OnInit {
   fileTypes = ['UPLOAD', 'RESULT'];
   statusTypes = ['READY', 'VALIDATION', 'PROCESSING', 'FAILED'];
   
-  constructor(private fileService: FileService) { }
+  constructor(
+    private fileService: FileService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loadFiles();
@@ -36,6 +41,8 @@ export class FilesComponent implements OnInit {
 
   loadFiles(): void {
     this.loading = true;
+    this.error = false;
+    
     this.fileService.getUserFiles(
       this.currentPage,
       this.pageSize,
@@ -52,6 +59,7 @@ export class FilesComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading files:', error);
+        this.error = true;
         this.loading = false;
       }
     });
@@ -98,5 +106,26 @@ export class FilesComponent implements OnInit {
   
   getPages(): number[] {
     return Array(this.totalPages).fill(0).map((_, i) => i);
+  }
+
+  // New methods for the updated template
+  createJob(file: any): void {
+    if (file && file.fileUuid) {
+      this.router.navigate(['/jobs/submit', file.fileUuid]);
+    }
+  }
+
+  deleteFile(file: any): void {
+    if (file && file.fileUuid && confirm('Are you sure you want to delete this file?')) {
+      this.fileService.deleteFile(file.fileUuid).subscribe({
+        next: () => {
+          this.refreshFiles();
+        },
+        error: (error: any) => {
+          console.error('Error deleting file:', error);
+          alert('Failed to delete file. Please try again.');
+        }
+      });
+    }
   }
 }

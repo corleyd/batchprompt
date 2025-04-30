@@ -6,6 +6,10 @@ const routes: Routes = [
   {
     path: '',
     component: FilesComponent
+  },
+  {
+    path: 'upload',
+    loadComponent: () => import('./file-upload-page/file-upload-page.component').then(m => m.FileUploadPageComponent)
   }
 ];
 

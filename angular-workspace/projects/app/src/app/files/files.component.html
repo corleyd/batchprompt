@@ -1,88 +1,157 @@
-<div class="files-container">
-  <h1>File Management</h1>
-  
-  <div class="file-upload-section">
-    <h2>Upload New Files</h2>
-    <app-file-upload (fileUploaded)="refreshFiles()"></app-file-upload>
+<div class="file-list-container">
+  <div class="file-list-header">
+    <h1>My Files</h1>
+    <a routerLink="/files/upload" class="new-file-btn">Upload New File</a>
   </div>
 
-  <div class="filter-section">
-    <h3>Filter Files</h3>
-    <div class="filter-controls">
-      <div class="filter-group">
-        <label for="fileType">File Type:</label>
-        <select id="fileType" [(ngModel)]="fileTypeFilter">
-          <option [ngValue]="undefined">All Types</option>
-          <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label for="status">Status:</label>
-        <select id="status" [(ngModel)]="statusFilter">
-          <option [ngValue]="undefined">All Statuses</option>
-          <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
-        </select>
-      </div>
-      
-      <div class="filter-actions">
-        <button (click)="applyFilters()" class="apply-button">Apply Filters</button>
-        <button (click)="clearFilters()" class="clear-button">Clear Filters</button>
-      </div>
-    </div>
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading files...</p>
   </div>
 
-  <div class="file-status-section">
-    <h2>Your Files</h2>
-    <div *ngIf="loading" class="loading">Loading files...</div>
-    
-    <div *ngIf="!loading && files.length === 0" class="no-files">
-      No files found. Upload files to get started!
-    </div>
-    
-    <div *ngIf="!loading && files.length > 0" class="sort-controls">
-      <span>Sort by: </span>
-      <button (click)="sort('fileName')" [ngClass]="{'active': sortBy === 'fileName'}">
-        Name <span *ngIf="sortBy === 'fileName'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
-      </button>
-      <button (click)="sort('fileType')" [ngClass]="{'active': sortBy === 'fileType'}">
-        Type <span *ngIf="sortBy === 'fileType'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
-      </button>
-      <button (click)="sort('status')" [ngClass]="{'active': sortBy === 'status'}">
-        Status <span *ngIf="sortBy === 'status'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
-      </button>
-      <button (click)="sort('createdAt')" [ngClass]="{'active': sortBy === 'createdAt'}">
-        Date <span *ngIf="sortBy === 'createdAt'">[{{sortDirection === 'asc' ? '↑' : '↓'}}]</span>
-      </button>
-    </div>
-    
-    <app-file-status 
-      *ngFor="let file of files" 
-      [file]="file"
-    ></app-file-status>
+  <div class="error-message" *ngIf="error">
+    <p>Failed to load files. Please try again.</p>
+    <button (click)="refreshFiles()" class="refresh-btn">Retry</button>
+  </div>
 
-    <div *ngIf="!loading && totalPages > 1" class="pagination-controls">
-      <div class="page-size">
-        <label for="pageSize">Items per page:</label>
-        <select id="pageSize" [ngModel]="pageSize" (ngModelChange)="changePageSize($event)">
-          <option [value]="5">5</option>
-          <option [value]="10">10</option>
-          <option [value]="20">20</option>
-          <option [value]="50">50</option>
-        </select>
-      </div>
-      <div class="page-navigation">
-        <button [disabled]="currentPage === 0" (click)="changePage(0)" class="page-nav">First</button>
-        <button [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)" class="page-nav">Previous</button>
-        <span class="page-info">Page {{currentPage + 1}} of {{totalPages}}</span>
-        <button [disabled]="currentPage === totalPages - 1" (click)="changePage(currentPage + 1)" class="page-nav">Next</button>
-        <button [disabled]="currentPage === totalPages - 1" (click)="changePage(totalPages - 1)" class="page-nav">Last</button>
-      </div>
+  <div class="empty-state" *ngIf="!loading && !error && files.length === 0">
+    <p>You don't have any files yet.</p>
+    <a routerLink="/files/upload" class="upload-file-btn">Upload Your First File</a>
+  </div>
+
+  <div class="filter-controls" *ngIf="!loading && !error && files.length > 0">
+    <div class="filter-group">
+      <label for="fileType">File Type:</label>
+      <select id="fileType" [(ngModel)]="fileTypeFilter">
+        <option [ngValue]="undefined">All Types</option>
+        <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label for="status">Status:</label>
+      <select id="status" [(ngModel)]="statusFilter">
+        <option [ngValue]="undefined">All Statuses</option>
+        <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
+      </select>
+    </div>
+    
+    <div class="filter-actions">
+      <button (click)="applyFilters()" class="apply-button">Apply Filters</button>
+      <button (click)="clearFilters()" class="clear-button">Clear</button>
     </div>
   </div>
 
-  <div class="actions">
-    <button (click)="refreshFiles()" class="refresh-button">Refresh Files</button>
+  <div class="files-table-container" *ngIf="!loading && !error && files.length > 0">
+    <table class="files-table">
+      <thead>
+        <tr>
+          <th (click)="sort('fileName')" class="sortable-header">
+            File Name
+            <span class="sort-icon" *ngIf="sortBy === 'fileName'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="sort('fileType')" class="sortable-header">
+            Type
+            <span class="sort-icon" *ngIf="sortBy === 'fileType'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="sort('status')" class="sortable-header">
+            Status
+            <span class="sort-icon" *ngIf="sortBy === 'status'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="sort('createdAt')" class="sortable-header">
+            Created
+            <span class="sort-icon" *ngIf="sortBy === 'createdAt'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th>Size</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let file of files">
+          <td>{{ file.fileName }}</td>
+          <td>{{ file.type }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="file.status.toLowerCase()">
+              {{ file.status }}
+            </span>
+          </td>
+          <td>{{ file.createdAt | date:'medium' }}</td>
+          <td>{{ file.fileSize | number }} bytes</td>
+          <td class="file-actions">
+            <button *ngIf="file.status === 'READY'" (click)="createJob(file)" class="create-job-btn">
+              Create Job
+            </button>
+            <app-download-button 
+            [fileUuid]="file.fileUuid"
+            [fileName]="file.fileName"
+            [disabled]="file.status === 'PROCESSING'">
+          </app-download-button>
+
+          <button (click)="deleteFile(file)" class="delete-btn">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-controls" *ngIf="!loading && !error && totalPages > 1">
+    <div class="page-info">
+      Showing {{ files.length ? (currentPage * pageSize) + 1 : 0 }} - {{ (currentPage * pageSize) + files.length }} of {{ totalItems }} files
+    </div>
+    
+    <div class="page-navigation">
+      <button 
+        class="page-button" 
+        [disabled]="currentPage === 0" 
+        (click)="changePage(currentPage - 1)"
+      >
+        Previous
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of [].constructor(totalPages < 5 ? totalPages : 5); let i = index"
+          class="page-number" 
+          [class.active]="(currentPage < 2 ? i : currentPage - 2 + i) === currentPage"
+          (click)="changePage(currentPage < 2 ? i : currentPage - 2 + i)"
+          [disabled]="(currentPage < 2 ? i : currentPage - 2 + i) >= totalPages"
+        >
+          {{ (currentPage < 2 ? i : currentPage - 2 + i) + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="page-button" 
+        [disabled]="currentPage >= totalPages - 1" 
+        (click)="changePage(currentPage + 1)"
+      >
+        Next
+      </button>
+    </div>
+    
+    <div class="page-size-selector">
+      <label for="pageSize">Items per page:</label>
+      <select id="pageSize" [(ngModel)]="pageSize" (change)="currentPage = 0; loadFiles()">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+        <option [value]="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="list-actions" *ngIf="!loading && !error && files.length > 0">
+    <button (click)="refreshFiles()" class="refresh-btn">Refresh Files</button>
     <a routerLink="/dashboard" class="back-button">Back to Dashboard</a>
   </div>
 </div>

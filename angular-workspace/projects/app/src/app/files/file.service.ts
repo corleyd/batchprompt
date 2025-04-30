@@ -65,4 +65,9 @@ export class FileService {
       responseType: 'blob'
     });
   }
+
+  // Delete a file
+  deleteFile(fileId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${fileId}`);
+  }
 }

@@ -7,7 +7,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { FilesRoutingModule } from './files-routing.module';
 import { FilesComponent } from './files.component';
-import { FileUploadComponent } from './file-upload/file-upload.component';
 import { FileStatusComponent } from './file-status/file-status.component';
 import { DownloadButtonComponent } from '../shared/components';
 import { FileService } from './file.service';
@@ -15,7 +14,6 @@ import { FileService } from './file.service';
 @NgModule({
   declarations: [
     FilesComponent,
-    FileUploadComponent,
     FileStatusComponent
   ],
   imports: [
