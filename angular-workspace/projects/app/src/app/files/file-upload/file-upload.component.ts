@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { FileService } from '../file.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-file-upload',
@@ -20,6 +21,7 @@ import { FileService } from '../file.service';
 })
 export class FileUploadComponent {
   @Output() fileUploaded = new EventEmitter<void>();
+  @Output() fileUploadedWithId = new EventEmitter<string>();
   
   selectedFiles?: FileList;
   currentFile?: File;
@@ -27,12 +29,20 @@ export class FileUploadComponent {
   message = '';
   errorMsg = '';
   isDragover = false;
+  uploadedFileId?: string;
 
-  constructor(private fileService: FileService) {}
+  constructor(
+    private fileService: FileService,
+    private router: Router
+  ) {}
 
   selectFile(event: any): void {
     this.selectedFiles = event.target.files;
     this.progress = 0;
+    // Auto upload when file is selected
+    if (this.selectedFiles && this.selectedFiles.length > 0) {
+      this.upload();
+    }
   }
 
   onDragOver(event: DragEvent): void {
@@ -55,6 +65,10 @@ export class FileUploadComponent {
     if (event.dataTransfer?.files) {
       this.selectedFiles = event.dataTransfer.files;
       this.progress = 0;
+      // Auto upload when file is dropped
+      if (this.selectedFiles && this.selectedFiles.length > 0) {
+        this.upload();
+      }
     }
   }
 
@@ -74,7 +88,13 @@ export class FileUploadComponent {
               this.progress = Math.round(100 * event.loaded / event.total);
             } else if (event.type === HttpEventType.Response) {
               this.message = 'File uploaded successfully!';
+              this.uploadedFileId = event.body?.fileUuid || event.body?.id;
               this.fileUploaded.emit();
+              if (this.uploadedFileId) {
+                this.fileUploadedWithId.emit(this.uploadedFileId);
+                // Navigate to file status page to show progress
+                this.router.navigate(['/dashboard/files/status', this.uploadedFileId]);
+              }
             }
           },
           error: (err: any) => {

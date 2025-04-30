@@ -111,7 +111,7 @@ export class FilesComponent implements OnInit {
   // New methods for the updated template
   createJob(file: any): void {
     if (file && file.fileUuid) {
-      this.router.navigate(['/jobs/submit', file.fileUuid]);
+      this.router.navigate(['/dashboard/jobs/submit', file.fileUuid]);
     }
   }
 

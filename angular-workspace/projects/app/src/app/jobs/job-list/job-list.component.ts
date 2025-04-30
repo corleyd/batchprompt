@@ -64,7 +64,7 @@ export class JobListComponent implements OnInit {
   }
 
   createNewJob(): void {
-    this.router.navigate(['/jobs/submit']);
+    this.router.navigate(['/dashboard/jobs/submit']);
   }
 
   getStatusClass(status: string): string {

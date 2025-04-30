@@ -5,20 +5,22 @@
     (dragover)="onDragOver($event)" 
     (dragleave)="onDragLeave($event)" 
     (drop)="onDrop($event)"
+    [class.disabled]="currentFile"
   >
     <div class="dropzone-content">
       <div class="icon">
         <i class="fa fa-cloud-upload" aria-hidden="true"></i>
       </div>
-      <h3>Drag & Drop Files Here</h3>
+      <h3>Drag & Drop File Here</h3>
       <p>or</p>
       <div class="file-input">
-        <label for="fileInput" class="file-label">
+        <label for="fileInput" class="file-label" [class.disabled]="currentFile">
           Select File
           <input
             type="file"
             id="fileInput"
             (change)="selectFile($event)"
+            [disabled]="currentFile"
           />
         </label>
       </div>
@@ -37,18 +39,12 @@
       ></div>
     </div>
     <span>{{ progress }}%</span>
+    <p class="upload-status">Uploading your file automatically. Please wait...</p>
   </div>
-
-  <button 
-    [disabled]="!selectedFiles" 
-    (click)="upload()" 
-    class="upload-button"
-  >
-    Upload
-  </button>
 
   <div *ngIf="message" class="success-message">
     {{ message }}
+    <p *ngIf="uploadedFileId">Your file is being processed. Redirecting to status page...</p>
   </div>
 
   <div *ngIf="errorMsg" class="error-message">

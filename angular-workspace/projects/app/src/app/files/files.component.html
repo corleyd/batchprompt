@@ -1,7 +1,7 @@
 <div class="file-list-container">
   <div class="file-list-header">
     <h1>My Files</h1>
-    <a routerLink="/files/upload" class="new-file-btn">Upload New File</a>
+    <a routerLink="files/upload" class="new-file-btn">Upload New File</a>
   </div>
 
   <div class="loading-container" *ngIf="loading">
@@ -16,7 +16,7 @@
 
   <div class="empty-state" *ngIf="!loading && !error && files.length === 0">
     <p>You don't have any files yet.</p>
-    <a routerLink="/files/upload" class="upload-file-btn">Upload Your First File</a>
+    <a routerLink="files/upload" class="upload-file-btn">Upload Your First File</a>
   </div>
 
   <div class="filter-controls" *ngIf="!loading && !error && files.length > 0">
@@ -152,6 +152,6 @@
 
   <div class="list-actions" *ngIf="!loading && !error && files.length > 0">
     <button (click)="refreshFiles()" class="refresh-btn">Refresh Files</button>
-    <a routerLink="/dashboard" class="back-button">Back to Dashboard</a>
+    <a routerLink="home" class="back-button">Back to Home</a>
   </div>
 </div>

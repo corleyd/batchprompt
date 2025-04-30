@@ -86,7 +86,7 @@ export class JobSubmitComponent implements OnInit {
         this.submitting = false;
         this.submitSuccess = true;
         setTimeout(() => {
-          this.router.navigate(['/jobs']);
+          this.router.navigate(['/dashboard/jobs']);
         }, 2000);
       },
       error: (error) => {

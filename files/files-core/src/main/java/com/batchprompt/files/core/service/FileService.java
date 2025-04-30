@@ -313,6 +313,17 @@ public class FileService {
         return fileRecordRepository.findByFileFileUuid(fileUuid);
     }
     
+    /**
+     * Get paginated records for a specific file
+     * 
+     * @param fileUuid The UUID of the file to get records for
+     * @param pageable Pageable object containing pagination and sorting information
+     * @return Page of file records
+     */
+    public Page<FileRecord> getRecordsByFileIdPaginated(UUID fileUuid, Pageable pageable) {
+        return fileRecordRepository.findByFileFileUuid(fileUuid, pageable);
+    }
+    
     public Optional<FileRecord> getFileRecordById(UUID recordUuid) {
         return fileRecordRepository.findById(recordUuid);
     }

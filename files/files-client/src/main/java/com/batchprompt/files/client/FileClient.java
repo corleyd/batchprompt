@@ -93,6 +93,50 @@ public class FileClient {
     }
     
     /**
+     * Get paginated records for a file
+     * 
+     * @param fileUuid The UUID of the file to get records for
+     * @param page The page number (0-based)
+     * @param size The page size
+     * @param sortBy The field to sort by (default: recordNumber)
+     * @param sortDirection The sort direction (asc or desc)
+     * @param authToken The user's auth token, or null for service-to-service call
+     * @return Page of file record DTOs
+     */
+    public Page<FileRecordDto> getFileRecordsPaginated(UUID fileUuid, int page, int size, 
+                                                      String sortBy, String sortDirection, String authToken) {
+        try {
+            String token = getEffectiveToken(authToken);
+            log.debug("Calling files service with auth token: {}", token);
+            
+            HttpHeaders headers = createAuthHeaders(token);
+            HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+            
+            String url = filesServiceUrl + "/api/files/" + fileUuid + "/records?paginate=true" +
+                         "&page=" + page + "&size=" + size;
+            
+            if (sortBy != null && !sortBy.isEmpty()) {
+                url += "&sortBy=" + sortBy;
+            }
+            
+            if (sortDirection != null && !sortDirection.isEmpty()) {
+                url += "&sortDirection=" + sortDirection;
+            }
+            
+            ResponseEntity<Page<FileRecordDto>> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<Page<FileRecordDto>>() {}
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error retrieving paginated file records for file {}: {}", fileUuid, e.getMessage(), e);
+            return null;
+        }
+    }
+    
+    /**
      * Get a file record by UUID
      * 
      * @param recordUuid The UUID of the record to retrieve

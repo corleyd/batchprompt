@@ -1,0 +1,102 @@
+<div class="file-status-page">
+  <div class="header">
+    <h2>File Status</h2>
+    <button mat-stroked-button (click)="goToFiles()">Back to Files</button>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    <p class="loading-text">Loading file details...</p>
+  </div>
+
+  <div class="error-container" *ngIf="error">
+    <div class="error-message">
+      <mat-icon>error</mat-icon>
+      <p>{{ errorMessage || 'An error occurred while loading the file' }}</p>
+    </div>
+    <button mat-stroked-button (click)="goToFiles()">Back to Files</button>
+  </div>
+
+  <div class="file-details-container" *ngIf="!loading && !error && file">
+    <div class="file-header">
+      <h3>{{ file.fileName }}</h3>
+      <div class="status-badge" [ngClass]="file.status.toLowerCase()">{{ getStatusText() }}</div>
+    </div>
+    
+    <div class="file-info">
+      <div class="info-item">
+        <span class="label">Type:</span>
+        <span>{{ file.type === 'RESULT' ? 'Result File' : 'Uploaded File' }}</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Size:</span>
+        <span>{{ file.fileSize | number }} bytes</span>
+      </div>
+      <div class="info-item">
+        <span class="label">Uploaded:</span>
+        <span>{{ file.createdAt | date:'medium' }}</span>
+      </div>
+    </div>
+    
+    <!-- Processing state with progress indicator -->
+    <div *ngIf="file.status === 'VALIDATION' || file.status === 'PROCESSING'" class="processing-container">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+      <p>{{ file.status === 'VALIDATION' ? 'Validating file...' : 'Processing file...' }}</p>
+      <p class="processing-note">This may take a few moments depending on the file size.</p>
+    </div>
+    
+    <!-- Error state -->
+    <div *ngIf="file.status === 'FAILED'" class="error-container">
+      <div class="error-message">
+        <mat-icon>error</mat-icon>
+        <p>{{ file.errorMessage || 'File processing failed' }}</p>
+      </div>
+    </div>
+    
+    <!-- Ready state with fields display -->
+    <div *ngIf="file.status === 'READY'" class="ready-container">
+      <div class="section-header">
+        <h4>File is Ready</h4>
+      </div>
+      
+      <div class="fields-section">
+        <h4>Available Fields</h4>
+        <p class="help-text">These fields are available for use in your prompts.</p>
+        
+        <div *ngIf="fileFields.length === 0" class="no-fields-message">
+          <p>No fields found in this file.</p>
+        </div>
+        
+        <div *ngIf="fileFields.length > 0" class="fields-table-container">
+          <table mat-table [dataSource]="fileFields" class="fields-table">
+            <!-- Field Name Column -->
+            <ng-container matColumnDef="fieldName">
+              <th mat-header-cell *matHeaderCellDef>Field Name</th>
+              <td mat-cell *matCellDef="let field">{{ field }}</td>
+            </ng-container>
+            
+            <!-- Sample Data Column -->
+            <ng-container matColumnDef="sampleData">
+              <th mat-header-cell *matHeaderCellDef>Sample Data</th>
+              <td mat-cell *matCellDef="let field" class="sample-data-cell">
+                <ng-container *ngIf="fieldSamples[field] !== undefined && fieldSamples[field] !== 'N/A'">
+                  <div class="sample-data-value" [title]="fieldSamples[field]">{{ fieldSamples[field] }}</div>
+                </ng-container>
+                <ng-container *ngIf="fieldSamples[field] === undefined || fieldSamples[field] === 'N/A'">
+                  <div class="no-sample">N/A</div>
+                </ng-container>
+              </td>
+            </ng-container>
+            
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+      </div>
+      
+      <div class="actions">
+        <button mat-raised-button color="primary" (click)="createJob()">Create Job with this File</button>
+      </div>
+    </div>
+  </div>
+</div>

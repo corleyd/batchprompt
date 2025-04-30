@@ -306,7 +306,7 @@ export class PromptEditComponent implements OnInit {
         next: (response) => {
           if (response) {
             this.saving = false;
-            this.router.navigate(['/prompts']);
+            this.router.navigate(['/dashboard/prompts']);
           }
         }
       });
@@ -322,7 +322,7 @@ export class PromptEditComponent implements OnInit {
   }
 
   cancel(): void {
-    this.router.navigate(['/prompts']);
+    this.router.navigate(['/dashboard/prompts']);
   }
 
   // Helper method to validate if JSON is valid

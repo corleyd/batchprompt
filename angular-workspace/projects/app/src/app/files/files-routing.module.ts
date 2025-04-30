@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { FilesComponent } from './files.component';
+import { FileStatusPageComponent } from './file-status-page/file-status-page.component';
 
 const routes: Routes = [
   {
@@ -10,6 +11,10 @@ const routes: Routes = [
   {
     path: 'upload',
     loadComponent: () => import('./file-upload-page/file-upload-page.component').then(m => m.FileUploadPageComponent)
+  },
+  {
+    path: 'status/:id',
+    component: FileStatusPageComponent
   }
 ];
 

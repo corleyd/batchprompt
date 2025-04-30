@@ -29,6 +29,7 @@ import com.batchprompt.common.services.ServiceAuthenticationService;
 import com.batchprompt.files.core.model.FileEntity;
 import com.batchprompt.files.core.model.FileMapper;
 import com.batchprompt.files.core.service.FileService;
+import com.batchprompt.files.core.model.FileRecord;
 import com.batchprompt.files.model.FileStatus;
 import com.batchprompt.files.model.FileType;
 import com.batchprompt.files.model.dto.FileDto;
@@ -133,12 +134,39 @@ public class FileController {
     }
 
     @GetMapping("/{fileUuid}/records")
-    public ResponseEntity<List<FileRecordDto>> getFileRecords(@PathVariable UUID fileUuid) {
+    public ResponseEntity<?> getFileRecords(
+            @PathVariable UUID fileUuid,
+            @RequestParam(required = false, defaultValue = "false") boolean paginate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "recordNumber") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+        
         return fileService.getFileById(fileUuid)
                 .map(file -> {
-                    List<FileRecordDto> records = fileMapper.toRecordDtoList(
-                            fileService.getRecordsByFileId(fileUuid));
-                    return ResponseEntity.ok(records);
+                    // If pagination is not requested, return all records as before
+                    if (!paginate) {
+                        List<FileRecordDto> records = fileMapper.toRecordDtoList(
+                                fileService.getRecordsByFileId(fileUuid));
+                        return ResponseEntity.ok(records);
+                    } 
+                    
+                    // Otherwise, use pagination
+                    // Create Pageable object with sort direction
+                    org.springframework.data.domain.Sort.Direction direction = 
+                        sortDirection.equalsIgnoreCase("asc") ? 
+                        org.springframework.data.domain.Sort.Direction.ASC : 
+                        org.springframework.data.domain.Sort.Direction.DESC;
+                        
+                    org.springframework.data.domain.Pageable pageable = 
+                        org.springframework.data.domain.PageRequest.of(
+                            page, size, 
+                            org.springframework.data.domain.Sort.by(direction, sortBy)
+                        );
+                    
+                    Page<FileRecord> recordsPage = fileService.getRecordsByFileIdPaginated(fileUuid, pageable);
+                    Page<FileRecordDto> dtoPage = recordsPage.map(record -> FileMapper.toDto(record));
+                    return ResponseEntity.ok(dtoPage);
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

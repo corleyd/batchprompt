@@ -16,7 +16,7 @@
 
   <div class="empty-state" *ngIf="!loading && !error && prompts.length === 0">
     <p>You don't have any prompts yet.</p>
-    <a routerLink="/prompts/new" class="create-button">Create Your First Prompt</a>
+    <a routerLink="prompts/new" class="create-button">Create Your First Prompt</a>
   </div>
 
   <div class="prompt-grid" *ngIf="!loading && !error && prompts.length > 0">

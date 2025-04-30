@@ -36,6 +36,23 @@ export class FileService {
     return this.http.get(`${this.apiUrl}/status/${fileId}`);
   }
 
+  // Get file details by id (including all metadata and fields)
+  getFileDetails(fileId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${fileId}`);
+  }
+
+  // Get file fields by id (column names and sample data)
+  getFileFields(fileId: string): Observable<any> {
+    return this.http.get<any[]>(`${this.apiUrl}/${fileId}/fields`);
+  }
+
+  // Get file records for sample data
+  getFileRecords(fileId: string, limit: number = 5): Observable<any> {
+    return this.http.get<any[]>(`${this.apiUrl}/${fileId}/records`, {
+      params: { size: limit.toString() }
+    });
+  }
+
   // Get user files with pagination, sorting and filtering
   getUserFiles(page: number = 0, size: number = 10, sortBy: string = 'createdAt', 
               sortDirection: string = 'desc', fileType?: string, status?: string): Observable<any> {
@@ -50,6 +67,15 @@ export class FileService {
       url += `&status=${status}`;
     }
     
+    // Return the full Page object which contains:
+    // - content: the array of items for the current page
+    // - totalElements: total number of items
+    // - totalPages: total number of pages
+    // - number: current page number
+    // - size: page size
+    // - first: whether this is the first page
+    // - last: whether this is the last page
+    // ... and other pagination metadata
     return this.http.get<any>(url);
   }
 

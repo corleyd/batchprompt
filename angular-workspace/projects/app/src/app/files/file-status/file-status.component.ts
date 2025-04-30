@@ -87,7 +87,7 @@ export class FileStatusComponent implements OnInit {
   
   createJob(): void {
     if (this.file && this.file.fileUuid) {
-      this.router.navigate(['/jobs/submit', this.file.fileUuid]);
+      this.router.navigate(['/dashboard/jobs/submit', this.file.fileUuid]);
     }
   }
 }
