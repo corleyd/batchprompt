@@ -1,9 +1,9 @@
 @import 'variables'; // Import your SCSS variables
 
-.main-container {
+.dashboard-container {
   display: flex;
   flex-direction: row;
-  height: 100vh;
+  height: 100%;
   flex: 1;
   position: relative;
   overflow: hidden;
@@ -12,11 +12,18 @@
 // Main content area
 .main-content {
   flex: 1;
-  overflow-y: auto;
+  overflow: hidden;
   position: relative;
-  padding: 1.5rem;
   color: $text-color;
   background-color: $body-bg;
+}
+
+.scrolling-content-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  padding: 1.5rem;
 }
 
 // Sidebar navigation

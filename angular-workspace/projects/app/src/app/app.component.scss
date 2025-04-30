@@ -12,11 +12,7 @@
 }
 
 .app-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  justify-content: start;
-  align-items: stretch;
   overflow: hidden;
   position: relative;
+  flex: 1;
 }

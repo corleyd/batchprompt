@@ -1,7 +1,7 @@
 <div class="prompt-list-container">
   <div class="header">
     <h1>Your Prompts</h1>
-    <a routerLink="/prompts/new" class="create-button">Create New Prompt</a>
+    <a routerLink="new" class="create-button">Create New Prompt</a>
   </div>
 
   <div class="loading-spinner" *ngIf="loading">
@@ -33,7 +33,7 @@
           <small>Updated: {{ prompt.updateTimestamp | date:'medium' }}</small>
         </div>
         <div class="prompt-actions">
-          <a [routerLink]="['/prompts', prompt.promptUuid]" class="edit-button">Edit</a>
+          <a [routerLink]="[ prompt.promptUuid]" class="edit-button">Edit</a>
           <button (click)="deletePrompt(prompt.promptUuid!)" class="delete-button">Delete</button>
         </div>
       </div>

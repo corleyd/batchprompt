@@ -33,7 +33,7 @@
       <div class="form-group">
         <label for="description">Description *</label>
         <input 
-          type="text" 
+          type="textarea"
           id="description" 
           formControlName="description" 
           placeholder="Enter a brief description"
@@ -59,21 +59,143 @@
         </div>
       </div>
 
+      <!-- Output Format Selection -->
       <div class="form-group">
-        <label for="outputSchema">Output Schema (JSON) *</label>
-        <div class="schema-header">
-          <small>Enter a JSON schema that describes the expected output structure</small>
-          <button type="button" class="format-btn" (click)="formatJsonSchema()">Format JSON</button>
+        <label for="outputFormat">Output Format *</label>
+        <select
+          id="outputFormat"
+          formControlName="outputFormat"
+          [class.is-invalid]="promptForm.get('outputFormat')?.invalid && promptForm.get('outputFormat')?.touched"
+        >
+          <option *ngFor="let option of outputFormatOptions" [value]="option.value">{{ option.label }}</option>
+        </select>
+        <div class="format-description">
+          <span *ngIf="promptForm.get('outputFormat')?.value === 'text_only'">
+            The entire LLM response will be saved to a column in your dataset.
+          </span>
+          <span *ngIf="promptForm.get('outputFormat')?.value === 'schema'">
+            The LLM response will be parsed according to a structured output format.
+          </span>
+          <span *ngIf="promptForm.get('outputFormat')?.value === 'schema_with_text'">
+            The LLM response will be parsed according to a structured output format and the full response text will be saved to a column.
+          </span>
         </div>
-        <textarea 
-          id="outputSchema" 
-          formControlName="outputSchema" 
-          rows="6" 
-          placeholder='{"example": "Enter your JSON schema here"}'
-          [class.is-invalid]="promptForm.get('outputSchema')?.invalid && promptForm.get('outputSchema')?.touched"
-        ></textarea>
-        <div class="validation-error" *ngIf="promptForm.get('outputSchema')?.invalid && promptForm.get('outputSchema')?.touched">
-          <span *ngIf="promptForm.get('outputSchema')?.errors?.['required']">Output schema is required.</span>
+      </div>
+
+      <!-- Response Column Name -->
+      <div class="form-group" *ngIf="promptForm.get('outputFormat')?.value === 'text_only' || 
+                                   promptForm.get('outputFormat')?.value === 'schema_with_text'">
+        <label for="responseColumnName">Response Column Name *</label>
+        <input 
+          type="text" 
+          id="responseColumnName" 
+          formControlName="responseColumnName" 
+          placeholder="Enter column name for the response text"
+          [class.is-invalid]="promptForm.get('responseColumnName')?.invalid && promptForm.get('responseColumnName')?.touched"
+        >
+        <div class="validation-error" *ngIf="promptForm.get('responseColumnName')?.invalid && promptForm.get('responseColumnName')?.touched">
+          <span *ngIf="promptForm.get('responseColumnName')?.errors?.['required']">Column name is required.</span>
+          <span *ngIf="promptForm.get('responseColumnName')?.errors?.['maxlength']">Column name cannot exceed 255 characters.</span>
+        </div>
+        <small class="form-hint">This is the name of the column where the LLM response will be stored.</small>
+      </div>
+
+      <!-- Show Output Schema section only for schema and schema_with_text modes -->
+      <div *ngIf="promptForm.get('outputFormat')?.value === 'schema' || promptForm.get('outputFormat')?.value === 'schema_with_text'">
+        <!-- Output Schema Section Header with Mode Toggle -->
+        <div class="schema-section-header">
+          <h3>{{ isAdvancedSchema ? 'Output Schema' : 'Structured Output' }}</h3>
+          <div class="schema-mode-toggle">
+            <button 
+              type="button" 
+              class="toggle-schema-mode" 
+              (click)="toggleSchemaMode()"
+            >
+              {{ isAdvancedSchema ? 'Switch to Simple Mode' : 'Switch to Advanced Mode' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Simple Schema Builder (Property-based) -->
+        <div class="schema-builder" *ngIf="!isAdvancedSchema">
+          <p class="schema-info">Define the properties that should be in the structured output. All properties will be required.</p>
+          
+          <div formArrayName="schemaProperties">
+            <div class="schema-property" *ngFor="let property of schemaProperties.controls; let i = index" [formGroupName]="i">
+              
+              <div class="property-fields">
+                <div class="property-name">
+                  <label [for]="'propertyName' + i">Name</label>
+                  <input 
+                    [id]="'propertyName' + i" 
+                    type="text" 
+                    formControlName="name" 
+                    placeholder="Property name"
+                    [class.is-invalid]="property.get('name')?.invalid && property.get('name')?.touched"
+                  >
+                  <div class="validation-error" *ngIf="property.get('name')?.invalid && property.get('name')?.touched">
+                    <span *ngIf="property.get('name')?.errors?.['required']">Property name is required.</span>
+                  </div>
+                </div>
+                
+                <div class="property-type">
+                  <label [for]="'propertyType' + i">Type</label>
+                  <select 
+                    [id]="'propertyType' + i" 
+                    formControlName="type"
+                    [class.is-invalid]="property.get('type')?.invalid && property.get('type')?.touched"
+                  >
+                    <option *ngFor="let type of propertyTypes" [value]="type">{{ type }}</option>
+                  </select>
+                  <div class="validation-error" *ngIf="property.get('type')?.invalid && property.get('type')?.touched">
+                    <span *ngIf="property.get('type')?.errors?.['required']">Property type is required.</span>
+                  </div>
+                </div>
+                
+                <div class="property-description">
+                  <label [for]="'propertyDesc' + i">Description</label>
+                  <textarea 
+                    [id]="'propertyDesc' + i" 
+                    formControlName="description" 
+                    placeholder="Property description"
+                    [class.is-invalid]="property.get('description')?.invalid && property.get('description')?.touched"
+                  ></textarea>
+                  <div class="validation-error" *ngIf="property.get('description')?.invalid && property.get('description')?.touched">
+                    <span *ngIf="property.get('description')?.errors?.['required']">Property description is required.</span>
+                  </div>
+                </div>
+                <button type="button" class="remove-property" (click)="removeSchemaProperty(i)" *ngIf="schemaProperties.length > 1">
+                  &times;
+                </button>
+
+              </div>
+            </div>
+          </div>
+          
+          <div class="add-property-action">
+            <button type="button" class="add-property" (click)="addSchemaProperty()">
+              + Add Property
+            </button>
+          </div>
+        </div>
+        
+        <!-- Advanced Schema Mode (JSON Editor) -->
+        <div class="form-group" *ngIf="isAdvancedSchema">
+          <label for="outputSchema">Output Schema (JSON) *</label>
+          <div class="schema-header">
+            <small>Enter a JSON schema that describes the expected output structure</small>
+            <button type="button" class="format-btn" (click)="formatJsonSchema()">Format JSON</button>
+          </div>
+          <textarea 
+            id="outputSchema" 
+            formControlName="outputSchema" 
+            rows="6" 
+            placeholder='{"example": "Enter your JSON schema here"}'
+            [class.is-invalid]="promptForm.get('outputSchema')?.invalid && promptForm.get('outputSchema')?.touched"
+          ></textarea>
+          <div class="validation-error" *ngIf="promptForm.get('outputSchema')?.invalid && promptForm.get('outputSchema')?.touched">
+            <span *ngIf="promptForm.get('outputSchema')?.errors?.['required']">Output schema is required.</span>
+          </div>
         </div>
       </div>
 
