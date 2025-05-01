@@ -1,78 +1,316 @@
 .home-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 1.5rem;
 }
 
 .welcome-section {
-  margin-bottom: 3rem;
+  margin-bottom: 2.5rem;
+  text-align: center;
   
   h1 {
     font-size: 2.5rem;
     margin-bottom: 1rem;
-    color: #333;
+    color: #2c3e50;
+    font-weight: 500;
   }
   
   p {
     font-size: 1.2rem;
-    color: #666;
+    color: #5d6d7e;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
   }
 }
 
-.navigation-section {
-  background-color: #f5f5f5;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  
-  .welcome-text {
-    margin-bottom: 1.5rem;
-    font-size: 1.1rem;
-  }
-}
-
-.nav-buttons {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
   gap: 1.5rem;
-  
-  @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: center;
-  }
+  margin-bottom: 2rem;
 }
 
-.nav-btn {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-size: 1rem;
-  font-weight: bold;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  cursor: pointer;
+.card {
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
   
   &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
     transform: translateY(-2px);
   }
-}
-
-.dashboard-btn {
-  background-color: #0066cc;
-  color: white;
   
-  &:hover {
-    background-color: #0055aa;
+  h2 {
+    font-size: 1.25rem;
+    color: #2c3e50;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    
+    i {
+      margin-right: 0.5rem;
+      color: #3498db;
+    }
   }
 }
 
-.profile-btn {
-  background-color: #4caf50;
-  color: white;
+.quick-actions-card {
+  grid-column: 1 / -1;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 0.5rem;
+  padding: 1.25rem 1rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  color: #2c3e50;
+  
+  i {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  span {
+    font-weight: 500;
+  }
   
   &:hover {
-    background-color: #3d9140;
+    transform: translateY(-3px);
+  }
+  
+  &.upload-btn {
+    i { color: #4caf50; }
+    &:hover {
+      background-color: #f1f8e9;
+      border-color: #c5e1a5;
+    }
+  }
+  
+  &.prompt-btn {
+    i { color: #ff9800; }
+    &:hover {
+      background-color: #fff8e1;
+      border-color: #ffe082;
+    }
+  }
+  
+  &.job-btn {
+    i { color: #3498db; }
+    &:hover {
+      background-color: #e3f2fd;
+      border-color: #90caf9;
+    }
+  }
+}
+
+.recent-files-card, .recent-jobs-card {
+  display: flex;
+  flex-direction: column;
+  
+  .empty-state {
+    padding: 1rem;
+    text-align: center;
+    color: #7f8c8d;
+    font-style: italic;
+  }
+}
+
+.recent-files-list, .recent-jobs-list {
+  margin-bottom: 1rem;
+  flex-grow: 1;
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.file-item, .job-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid #ecf0f1;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+  
+  &:hover {
+    background-color: #f8f9fa;
+  }
+}
+
+.file-info, .job-info {
+  flex: 1;
+  min-width: 0;
+  
+  .file-name, .job-name {
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #2c3e50;
+  }
+  
+  .file-meta, .job-meta {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    
+    > span {
+      margin-right: 0.75rem;
+      
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+  
+  .with-prompt {
+    font-size: 0.85rem;
+    color: #7f8c8d;
+    font-style: italic;
+  }
+}
+
+.file-actions, .job-actions {
+  display: flex;
+  gap: 0.5rem;
+  
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #7f8c8d;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background-color: #ecf0f1;
+      color: #2c3e50;
+    }
+    
+    &.view-btn:hover {
+      color: #3498db;
+    }
+    
+    &.job-btn:hover {
+      color: #4caf50;
+    }
+  }
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  
+  &.ready {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  &.processing, &.status-processing, &.validation {
+    background-color: #fff8e1;
+    color: #f57f17;
+  }
+  
+  &.status-completed, &.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  &.failed, &.status-failed {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  &.status-pending {
+    background-color: #e1f5fe;
+    color: #01579b;
+  }
+}
+
+.view-all-link {
+  margin-top: auto;
+  display: block;
+  text-align: right;
+  color: #3498db;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  
+  i {
+    margin-left: 0.25rem;
+    transition: transform 0.2s ease;
+  }
+  
+  &:hover {
+    color: #2980b9;
+    
+    i {
+      transform: translateX(3px);
+    }
+  }
+}
+
+.prompts-card {
+  background-color: #f9f9f9;
+  
+  p {
+    color: #5d6d7e;
+    line-height: 1.5;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-action-btn {
+    display: inline-block;
+    background-color: #3498db;
+    color: white;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    margin-top: auto;
+    
+    i {
+      margin-left: 0.5rem;
+      transition: transform 0.2s ease;
+    }
+    
+    &:hover {
+      background-color: #2980b9;
+      
+      i {
+        transform: translateX(3px);
+      }
+    }
   }
 }

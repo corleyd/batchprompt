@@ -1,15 +1,94 @@
 <div class="home-container">
   <div class="welcome-section">
-    <h1>Heading</h1>
-    <p>Paragraph</p>
+    <h1>Welcome to BatchPrompt</h1>
+    <p>Process your data with AI models using custom prompts - all in one streamlined workflow.</p>
   </div>
 
-  <div class="navigation-section">
-      <p class="welcome-text">Do Something</p>
-      <div class="nav-buttons">
-        <a routerLink="/dashboard" class="nav-btn dashboard-btn">Upload a File</a>
-        <a routerLink="/profile" class="nav-btn profile-btn">Create a new Prompt</a>
-        <a routerLink="/profile" class="nav-btn profile-btn">Run a Job</a>
+  <div class="dashboard-grid">
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-card card">
+      <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+      <div class="action-buttons">
+        <a routerLink="/dashboard/files/upload" class="action-btn upload-btn">
+          <i class="fas fa-upload"></i>
+          <span>Upload Files</span>
+        </a>
+        <a routerLink="/dashboard/prompts/new" class="action-btn prompt-btn">
+          <i class="fas fa-code"></i>
+          <span>Create Prompt</span>
+        </a>
+        <a routerLink="/dashboard/jobs/submit" class="action-btn job-btn">
+          <i class="fas fa-play-circle"></i>
+          <span>Run a Job</span>
+        </a>
       </div>
+    </div>
+
+    <!-- Recent Files Section -->
+    <div class="recent-files-card card" *ngIf="recentFiles && recentFiles.length > 0">
+      <h2><i class="fas fa-file-alt"></i> Recent Files</h2>
+      <div class="recent-files-list">
+        <div class="empty-state" *ngIf="recentFiles.length === 0">
+          <p>No recently uploaded files</p>
+        </div>
+        <div class="file-item" *ngFor="let file of recentFiles">
+          <div class="file-info">
+            <div class="file-name">{{file.fileName}}</div>
+            <div class="file-meta">
+              <span class="status-badge" [ngClass]="file.status.toLowerCase()">{{file.status}}</span>
+              <span>{{file.createdAt | date:'short'}}</span>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button [routerLink]="['/dashboard/files/status', file.fileUuid]" class="view-btn">
+              <i class="fas fa-eye"></i>
+            </button>
+            <button *ngIf="file.status === 'READY'" [routerLink]="['/dashboard/jobs/submit', file.fileUuid]" class="job-btn">
+              <i class="fas fa-play"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <a routerLink="/dashboard/files" class="view-all-link">View all files <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <!-- Recent Jobs Section -->
+    <div class="recent-jobs-card card" *ngIf="recentJobs && recentJobs.length > 0">
+      <h2><i class="fas fa-tasks"></i> Recent Jobs</h2>
+      <div class="recent-jobs-list">
+        <div class="empty-state" *ngIf="recentJobs.length === 0">
+          <p>No recently created jobs</p>
+        </div>
+        <div class="job-item" *ngFor="let job of recentJobs">
+          <div class="job-info">
+            <div class="job-name">{{job.fileName}} <span class="with-prompt">with {{job.promptName}}</span></div>
+            <div class="job-meta">
+              <span class="status-badge" [ngClass]="getStatusClass(job.status)">
+                {{job.status}}
+                <ng-container *ngIf="job.status === 'PROCESSING'">
+                  ({{job.completedTaskCount}}/{{job.taskCount}})
+                </ng-container>
+              </span>
+              <span>{{job.createdAt | date:'short'}}</span>
+            </div>
+          </div>
+          <div class="job-actions">
+            <button [routerLink]="['/dashboard/jobs']" class="view-btn">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      <a routerLink="/dashboard/jobs" class="view-all-link">View all jobs <i class="fas fa-arrow-right"></i></a>
+    </div>
+
+    <!-- Prompts Card -->
+    <div class="prompts-card card">
+      <h2><i class="fas fa-comment-alt"></i> My Prompts</h2>
+      <p>Create, manage and use custom prompts for your batch processing jobs.</p>
+      <a routerLink="/dashboard/prompts" class="card-action-btn">
+        Manage Prompts <i class="fas fa-arrow-right"></i>
+      </a>
+    </div>
   </div>
 </div>
