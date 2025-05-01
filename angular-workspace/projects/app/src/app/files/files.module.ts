@@ -10,6 +10,7 @@ import { FilesComponent } from './files.component';
 import { FileStatusComponent } from './file-status/file-status.component';
 import { DownloadButtonComponent } from '../shared/components';
 import { FileService } from './file.service';
+import { IconsModule } from '../icons/icons.module';
 
 @NgModule({
   declarations: [
@@ -24,7 +25,8 @@ import { FileService } from './file.service';
     MatIconModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    DownloadButtonComponent
+    DownloadButtonComponent,
+    IconsModule
   ],
   providers: [FileService]
 })

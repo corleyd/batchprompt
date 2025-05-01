@@ -1,11 +1,20 @@
 <div class="file-upload-page-container">
-  <h1>Upload New File</h1>
-  
-  <div class="upload-section">
-    <app-file-upload (fileUploaded)="fileUploaded()"></app-file-upload>
+  <!-- <h1>Upload Your Data</h1>
+   -->
+  <div class="upload-card">
+    <div class="card-icon">
+      <i-feather name="upload"></i-feather>
+    </div>
+    <h2>Upload Your Data</h2>
+    <p class="description">Import spreadsheets or CSV files with your dataset</p>
+    
+    <div class="upload-section">
+      <app-file-upload (fileUploaded)="fileUploaded()"></app-file-upload>
+    </div>
   </div>
 
   <div class="actions">
-    <a routerLink="files" class="view-files-button">View My Files</a>
+    <a routerLink="/files" class="primary-button">View My Files</a>
+    <a routerLink="/dashboard" class="secondary-button">Back to Dashboard</a>
   </div>
 </div>

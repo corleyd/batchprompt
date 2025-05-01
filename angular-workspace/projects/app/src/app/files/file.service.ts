@@ -86,7 +86,7 @@ export class FileService {
   }
 
   // Download a file
-  downloadFile(fileId: string): Observable<Blob> {
+  downloadFile(fileId: string, fileName?: string): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/${fileId}/content`, {
       responseType: 'blob'
     });

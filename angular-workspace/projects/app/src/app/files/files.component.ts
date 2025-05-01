@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FileService } from './file.service';
 
@@ -29,6 +29,9 @@ export class FilesComponent implements OnInit {
   // Options for dropdowns
   fileTypes = ['UPLOAD', 'RESULT'];
   statusTypes = ['READY', 'VALIDATION', 'PROCESSING', 'FAILED'];
+  
+  // Context menu control
+  activeContextMenuFile: string | null = null;
   
   constructor(
     private fileService: FileService,
@@ -132,6 +135,45 @@ export class FilesComponent implements OnInit {
   navigateToFileStatus(file: any): void {
     if (file && file.fileUuid) {
       this.router.navigate(['/dashboard/files/status', file.fileUuid]);
+    }
+  }
+
+  // Context menu methods
+  toggleContextMenu(event: MouseEvent, file: any): void {
+    event.stopPropagation();
+    // Toggle the menu - close if already open, open if closed
+    this.activeContextMenuFile = this.activeContextMenuFile === file.fileUuid ? null : file.fileUuid;
+  }
+
+  // Close the context menu when clicking outside
+  @HostListener('document:click')
+  closeContextMenu(): void {
+    this.activeContextMenuFile = null;
+  }
+
+  // Handle file download
+  downloadFile(file: any): void {
+    if (file && file.fileUuid && file.status !== 'PROCESSING') {
+      this.fileService.downloadFile(file.fileUuid, file.fileName).subscribe({
+        next: (response: any) => {
+          // Create a blob from the response
+          const blob = new Blob([response], { type: 'application/octet-stream' });
+          
+          // Create a temporary link element to trigger the download
+          const link = document.createElement('a');
+          link.href = window.URL.createObjectURL(blob);
+          link.download = file.fileName;
+          
+          // Append to body, click the link, then remove it
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        },
+        error: (error: any) => {
+          console.error('Error downloading file:', error);
+          alert('Failed to download file. Please try again.');
+        }
+      });
     }
   }
 }

@@ -43,11 +43,17 @@
   </div>
 
   <div *ngIf="message" class="success-message">
+    <div class="message-icon">
+      <i class="fa fa-check-circle"></i>
+    </div>
     {{ message }}
     <p *ngIf="uploadedFileId">Your file is being processed. Redirecting to status page...</p>
   </div>
 
   <div *ngIf="errorMsg" class="error-message">
+    <div class="message-icon">
+      <i class="fa fa-exclamation-circle"></i>
+    </div>
     {{ errorMsg }}
   </div>
 </div>

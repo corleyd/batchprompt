@@ -5,6 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Router } from '@angular/router';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
+import { Icons } from 'angular-feather/lib/icons.provider';
+import { IconsModule } from '../../icons/icons.module';
 
 @Component({
   selector: 'app-file-upload-page',
@@ -16,7 +18,8 @@ import { FileUploadComponent } from '../file-upload/file-upload.component';
     RouterModule,
     FileUploadComponent,
     MatIconModule,
-    MatButtonModule
+    MatButtonModule,
+    IconsModule
   ]
 })
 export class FileUploadPageComponent {

@@ -77,6 +77,8 @@ export class JobListComponent implements OnInit {
         return 'status-processing';
       case 'PENDING':
         return 'status-pending';
+      case 'QUEUED':
+        return 'status-queued';
       default:
         return '';
     }

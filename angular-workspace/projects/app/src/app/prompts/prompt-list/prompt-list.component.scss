@@ -1,206 +1,272 @@
+// Variables to match the screenshot's color scheme
+$primary-blue: #4285f4; // Button blue from screenshot
+$hover-blue: #3367d6; // Darker blue for hover states
+$background-color: #ffffff; // White background
+$card-bg: #ffffff; // White background for cards
+$text-primary: #333333; // Dark text for readability
+$text-secondary: #666666; // Secondary text color
+$border-color: #e0e0e0; // Light gray border color
+$ready-green: #91c789; // Green color for "READY" status
+$border-radius: 4px; // Smaller border radius as seen in the screenshot
+$header-bg: #f5f7fa;
+
 .prompt-list-container {
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+  background-color: $background-color;
+  min-height: 100vh;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 30px;
   
   h1 {
+    font-size: 24px;
+    color: $text-primary;
+    font-weight: 500;
     margin: 0;
-    color: #333;
   }
 }
 
-.create-button {
-  background-color: #0066cc;
+.primary-button {
+  background-color: $primary-blue;
   color: white;
-  padding: 0.6rem 1.2rem;
-  border-radius: 4px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: background-color 0.3s, transform 0.2s;
+  border: none;
+  padding: 8px 16px;
+  border-radius: $border-radius;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
   
   &:hover {
-    background-color: #0055aa;
-    transform: translateY(-2px);
+    background-color: $hover-blue;
   }
 }
 
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3rem;
+.secondary-button {
+  background-color: white;
+  color: $text-primary;
+  border: 1px solid $border-color;
+  padding: 8px 16px;
+  border-radius: $border-radius;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
   
-  .spinner {
-    width: 40px;
-    height: 40px;
-    border: 4px solid rgba(0, 102, 204, 0.2);
-    border-radius: 50%;
-    border-top-color: #0066cc;
-    animation: spin 1s linear infinite;
-    margin-bottom: 1rem;
-  }
-  
-  p {
-    color: #666;
+  &:hover {
+    background-color: #f5f5f5;
   }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.error-message {
-  background-color: #fff0f0;
-  border-left: 4px solid #e74c3c;
-  padding: 1rem;
-  margin-bottom: 2rem;
+.action-button {
+  background-color: $primary-blue;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: $border-radius;
+  font-weight: 400;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
   
-  p {
-    margin: 0 0 1rem 0;
-    color: #c0392b;
+  &:hover {
+    background-color: $hover-blue;
   }
   
-  button {
-    background-color: #e74c3c;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
-    cursor: pointer;
+  &.delete {
+    background-color: white;
+    color: $text-primary;
+    border: 1px solid $border-color;
     
     &:hover {
-      background-color: #c0392b;
+      background-color: #f5f5f5;
     }
-  }
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  
-  p {
-    margin-bottom: 1.5rem;
-    color: #666;
-    font-size: 1.1rem;
   }
 }
 
 .prompt-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 2rem;
+  gap: 16px;
+  margin-bottom: 30px;
 }
 
-.prompt-card {
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  transition: transform 0.3s, box-shadow 0.3s;
+.card {
+  background-color: $card-bg;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  overflow: hidden; // This ensures content doesn't overflow the rounded corners
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0; /* Remove any default padding */
   
   &:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
-}
-
-.prompt-header {
-  padding: 1.2rem 1.5rem;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #eee;
   
-  h3 {
+  .prompt-header {
     margin: 0;
-    color: #333;
-    font-size: 1.25rem;
+    padding: 0;
+    position: relative;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100%;
+      background-color: #f5f7fa;
+      z-index: 0;
+    }
+    
+    h3 {
+      position: relative;
+      z-index: 1;
+      margin: 0;
+      padding: 12px 16px;
+      font-size: 16px;
+      color: #333;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background-color: $border-color;
+      z-index: 1;
+    }
+  }
+  
+  .prompt-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+  
+  .prompt-description {
+    padding: 12px 16px;
+    flex-grow: 1;
+    
+    p {
+      margin: 0;
+      color: $text-secondary;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+  }
+  
+  .prompt-footer {
+    padding: 12px 16px;
+    border-top: 1px solid $border-color;
+    display: flex;
+    flex-direction: column;
+    
+    .prompt-dates {
+      margin-bottom: 10px;
+      
+      small {
+        display: block;
+        color: $text-secondary;
+        font-size: 12px;
+        margin-bottom: 4px;
+      }
+    }
+    
+    .prompt-actions {
+      display: flex;
+      justify-content: flex-start;
+      gap: 8px;
+    }
   }
 }
 
-.prompt-description {
-  padding: 1.5rem;
+// Remove .prompt-card styling as we've restructured and put the styling in .card
+
+.loading-spinner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 0;
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba($primary-blue, 0.2);
+    border-radius: 50%;
+    border-top-color: $primary-blue;
+    animation: spin 1s linear infinite;
+  }
   
   p {
-    margin: 0;
-    color: #555;
-    line-height: 1.4;
+    margin-top: 16px;
+    color: $text-secondary;
   }
 }
 
-.prompt-footer {
-  padding: 1rem 1.5rem;
-  background-color: #f9f9f9;
-  border-top: 1px solid #eee;
-}
-
-.prompt-dates {
-  margin-bottom: 1rem;
-  
-  small {
-    display: block;
-    color: #888;
-    margin-bottom: 0.3rem;
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 
-.prompt-actions {
+.error-message {
   display: flex;
-  justify-content: space-between;
-}
-
-.edit-button, .delete-button {
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: bold;
-  transition: background-color 0.3s;
-  cursor: pointer;
-}
-
-.edit-button {
-  background-color: #3498db;
-  color: white;
-  text-decoration: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  text-align: center;
   
-  &:hover {
-    background-color: #2980b9;
+  p {
+    color: #f44336;
+    margin-bottom: 16px;
   }
 }
 
-.delete-button {
-  background-color: #e74c3c;
-  color: white;
-  border: none;
+.empty-state {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
   
-  &:hover {
-    background-color: #c0392b;
+  .card {
+    padding: 24px; /* Keep padding only for the empty state card */
+    text-align: center;
+    max-width: 500px;
+    
+    h2 {
+      color: $text-primary;
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 18px;
+      font-weight: 500;
+    }
+    
+    p {
+      color: $text-secondary;
+      margin-bottom: 20px;
+    }
   }
 }
 
 .navigation {
-  margin-top: 2rem;
-  
-  .back-button {
-    display: inline-block;
-    background-color: #f2f2f2;
-    color: #333;
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: background-color 0.3s, transform 0.2s;
-    
-    &:hover {
-      background-color: #e0e0e0;
-      transform: translateY(-2px);
-    }
-  }
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-start;
 }

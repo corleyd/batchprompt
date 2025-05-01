@@ -1,7 +1,7 @@
 <div class="job-list-container">
-  <div class="job-list-header">
-    <h1>Jobs</h1>
-    <button class="new-job-btn" (click)="createNewJob()">Create New Job</button>
+  <div class="job-list-header section-header">
+    <h1>Manage Your Processing Jobs</h1>
+    <button class="primary-btn new-job-btn" (click)="createNewJob()">Create New Job</button>
   </div>
 
   <div class="loading-container" *ngIf="loading">
@@ -9,17 +9,21 @@
     <p>Loading jobs...</p>
   </div>
 
-  <div class="error-message" *ngIf="error">
+  <div class="error-message alert-box" *ngIf="error">
     <p>Failed to load jobs. Please try again.</p>
-    <button (click)="refreshJobs()" class="refresh-btn">Retry</button>
+    <button (click)="refreshJobs()" class="secondary-btn refresh-btn">Retry</button>
   </div>
 
-  <div class="empty-state" *ngIf="!loading && !error && jobs.length === 0">
-    <p>You don't have any jobs yet.</p>
-    <button (click)="createNewJob()" class="create-job-btn">Create Your First Job</button>
+  <div class="empty-state content-box" *ngIf="!loading && !error && jobs.length === 0">
+    <div class="empty-state-icon">
+      <i class="fa fa-file-text-o" aria-hidden="true"></i>
+    </div>
+    <h3>You don't have any jobs yet</h3>
+    <p>Create your first job to start processing data with AI</p>
+    <button (click)="createNewJob()" class="primary-btn create-job-btn">Create Your First Job</button>
   </div>
 
-  <div class="jobs-table-container" *ngIf="!loading && !error && jobs.length > 0">
+  <div class="jobs-table-container content-box" *ngIf="!loading && !error && jobs.length > 0">
     <table class="jobs-table">
       <thead>
         <tr>
@@ -58,7 +62,7 @@
       </thead>
       <tbody>
         <tr *ngFor="let job of jobs">
-          <td>{{ job.fileName }}</td>
+          <td><span class="file-name">{{ job.fileName }}</span></td>
           <td>{{ job.promptName }}</td>
           <td>{{ job.modelName }}</td>
           <td>
@@ -75,9 +79,10 @@
               *ngIf="job.status === 'COMPLETED' && job.resultFileUuid"
               [fileUuid]="job.resultFileUuid"
               [fileName]="'Results_' + job.jobUuid + '.xlsx'"
-              [buttonText]="'Download Results'"
+              [buttonText]="'Download'"
+              buttonClass="download-button"
             ></app-download-button>
-            <button *ngIf="job.status === 'COMPLETED' && !job.resultFileUuid" class="view-results-btn">View Results</button>
+            <button *ngIf="job.status === 'COMPLETED' && !job.resultFileUuid" class="secondary-btn view-results-btn">View Results</button>
           </td>
         </tr>
       </tbody>
@@ -121,7 +126,7 @@
     
     <div class="page-size-selector">
       <label for="pageSize">Items per page:</label>
-      <select id="pageSize" [(ngModel)]="pageSize" (change)="currentPage = 0; loadJobs()">
+      <select id="pageSize" class="select-control" [(ngModel)]="pageSize" (change)="currentPage = 0; loadJobs()">
         <option [value]="5">5</option>
         <option [value]="10">10</option>
         <option [value]="20">20</option>
@@ -131,6 +136,6 @@
   </div>
 
   <div class="list-actions" *ngIf="!loading && !error && jobs.length > 0">
-    <button (click)="refreshJobs()" class="refresh-btn">Refresh Jobs</button>
+    <button (click)="refreshJobs()" class="secondary-btn refresh-btn">Refresh Jobs</button>
   </div>
 </div>

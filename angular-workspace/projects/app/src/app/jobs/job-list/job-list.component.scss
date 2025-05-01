@@ -1,35 +1,95 @@
+/* Job List Component Styles */
+
+// Colors from the landing page
+$primary-blue: #3498db;
+$primary-blue-dark: #2980b9;
+$light-bg: #f8f9fa;
+$text-dark: #333;
+$text-muted: #6c757d;
+$border-color: #dee2e6;
+$success-color: #28a745;
+$warning-color: #ffc107;
+$danger-color: #dc3545;
+$info-color: #17a2b8;
+
 .job-list-container {
-  padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 2rem 1rem;
 }
 
-.job-list-header {
+.section-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  
+  margin-bottom: 2rem;
+
   h1 {
+    font-size: 2rem;
+    font-weight: 600;
+    color: $text-dark;
     margin: 0;
-    font-size: 24px;
-    color: #333;
   }
 }
 
-.new-job-btn {
-  background-color: #0c7cba;
-  color: white;
-  border: none;
-  padding: 8px 16px;
+.content-box {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.alert-box {
+  background-color: #fcf0f0;
+  border-left: 4px solid $danger-color;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
   border-radius: 4px;
+
+  p {
+    margin: 0 0 0.5rem 0;
+    color: darken($danger-color, 10%);
+  }
+}
+
+.primary-btn {
+  background-color: white;
+  color: $text-dark;
+  border: 1px solid $text-dark;
+  border-radius: 0;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: normal;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  transition: background-color 0.2s;
-  
+  transition: all 0.2s;
+
   &:hover {
-    background-color: #0a6a9e;
+    background-color: #f8f9fa;
+  }
+
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+.secondary-btn {
+  background-color: white;
+  color: $primary-blue;
+  border: 1px solid $primary-blue;
+  border-radius: 4px;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: rgba($primary-blue, 0.05);
+  }
+
+  &:active {
+    transform: translateY(1px);
   }
 }
 
@@ -37,311 +97,284 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 40px 0;
+  justify-content: center;
+  padding: 3rem;
   
   .spinner {
-    border: 4px solid rgba(0, 0, 0, 0.1);
+    border: 4px solid rgba($primary-blue, 0.1);
+    border-top: 4px solid $primary-blue;
     border-radius: 50%;
-    border-top: 4px solid #0c7cba;
     width: 40px;
     height: 40px;
     animation: spin 1s linear infinite;
-    margin-bottom: 16px;
+    margin-bottom: 1rem;
   }
-  
+
+  p {
+    color: $text-muted;
+    font-size: 1rem;
+  }
+
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
 }
 
-.error-message {
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 16px;
-  border-radius: 4px;
-  margin: 20px 0;
-  text-align: center;
-  
-  button {
-    background-color: #c62828;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    margin-top: 10px;
-    cursor: pointer;
-    
-    &:hover {
-      background-color: #b71c1c;
-    }
-  }
-}
-
 .empty-state {
-  background-color: #f5f5f5;
-  padding: 40px 20px;
-  border-radius: 4px;
-  margin: 20px 0;
   text-align: center;
-  
-  p {
-    margin-bottom: 20px;
-    color: #666;
-    font-size: 16px;
+  padding: 3rem 1rem;
+
+  .empty-state-icon {
+    font-size: 3rem;
+    color: $text-muted;
+    margin-bottom: 1rem;
   }
-  
-  .create-job-btn {
-    background-color: #0c7cba;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
+
+  h3 {
+    font-size: 1.4rem;
     font-weight: 500;
-    
-    &:hover {
-      background-color: #0a6a9e;
-    }
+    color: $text-dark;
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    color: $text-muted;
+    margin-bottom: 1.5rem;
+  }
+
+  .create-job-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 1rem;
   }
 }
 
 .jobs-table-container {
   overflow-x: auto;
-  margin: 20px 0;
 }
 
 .jobs-table {
   width: 100%;
-  border-collapse: collapse;
-  background-color: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-  
-  th, td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #e0e0e0;
-  }
-  
+  border-collapse: separate;
+  border-spacing: 0;
+
   th {
-    background-color: #f5f5f5;
-    font-weight: 500;
-    color: #333;
-    position: sticky;
-    top: 0;
-  }
-  
-  tr:hover {
-    background-color: #f9f9f9;
+    background-color: $light-bg;
+    color: $text-dark;
+    font-weight: 600;
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 2px solid $border-color;
+
+    &.sortable-header {
+      cursor: pointer;
+      user-select: none;
+      position: relative;
+
+      &:hover {
+        background-color: darken($light-bg, 3%);
+      }
+
+      .sort-icon {
+        margin-left: 6px;
+        font-size: 0.8rem;
+      }
+    }
   }
 
-  .sortable-header {
-    cursor: pointer;
-    user-select: none;
-    position: relative;
-    padding-right: 25px;
-    
-    &:hover {
-      background-color: #e0e0e0;
-    }
-    
-    .sort-icon {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid $border-color;
+    color: $text-dark;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+
+  tr:hover td {
+    background-color: rgba($primary-blue, 0.03);
+  }
+
+  .file-name {
+    font-weight: 500;
   }
 }
 
 .status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
   display: inline-block;
-}
+  padding: 0.25rem 0.75rem;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 500;
 
-.status-completed {
-  background-color: #e8f5e9;
-  color: #2e7d32;
-}
+  &.status-queued {
+    background-color: rgba($info-color, 0.1);
+    color: $info-color;
+  }
 
-.status-failed {
-  background-color: #ffebee;
-  color: #c62828;
-}
+  &.status-processing {
+    background-color: rgba($warning-color, 0.1);
+    color: darken($warning-color, 15%);
+  }
 
-.status-processing {
-  background-color: #e3f2fd;
-  color: #1565c0;
-}
+  &.status-completed {
+    background-color: rgba($success-color, 0.1);
+    color: $success-color;
+  }
 
-.status-pending {
-  background-color: #fff8e1;
-  color: #f57f17;
+  &.status-failed {
+    background-color: rgba($danger-color, 0.1);
+    color: $danger-color;
+  }
 }
 
 .job-actions {
-  button {
-    padding: 6px 12px;
-    border-radius: 4px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-right: 5px;
-    border: none;
-  }
-  
-  .view-results-btn {
-    background-color: #0c7cba;
-    color: white;
-    
-    &:hover {
-      background-color: #0a6a9e;
+  white-space: nowrap;
+
+  button, app-download-button {
+    display: inline-block;
+    margin-right: 0.5rem;
+
+    &:last-child {
+      margin-right: 0;
     }
   }
-  
-  .view-details-btn {
-    background-color: #757575;
-    color: white;
+
+  .download-btn {
+    padding: 0.4rem 1.5rem;
+    font-size: 0.85rem;
+    background-color: white;
+    color: $text-dark;
+    border: 1px solid $text-dark;
+    border-radius: 0;
+    font-weight: normal;
     
     &:hover {
-      background-color: #616161;
+      background-color: #f8f9fa;
     }
   }
 }
 
-.list-actions {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
-  
-  .refresh-btn {
-    background-color: #f5f5f5;
-    color: #333;
-    border: 1px solid #ddd;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    
-    &:hover {
-      background-color: #e0e0e0;
-    }
-  }
-}
-
-/* Pagination Controls */
 .pagination-controls {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 20px 0;
-  padding: 10px;
-  background-color: #f5f5f5;
-  border-radius: 4px;
   flex-wrap: wrap;
-  gap: 10px;
-  
+  gap: 1rem;
+  margin-top: 1.5rem;
+
   .page-info {
-    color: #666;
-    font-size: 14px;
+    color: $text-muted;
+    font-size: 0.9rem;
   }
-  
+
   .page-navigation {
     display: flex;
     align-items: center;
-    gap: 8px;
-    
+
     .page-button {
-      background-color: #fff;
-      border: 1px solid #ddd;
-      color: #333;
-      padding: 6px 12px;
-      border-radius: 4px;
+      background-color: white;
+      border: 1px solid $border-color;
+      color: $text-dark;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.9rem;
       cursor: pointer;
-      font-size: 14px;
-      
-      &:hover:not([disabled]) {
-        background-color: #e0e0e0;
+      transition: all 0.2s;
+
+      &:first-child {
+        border-radius: 4px 0 0 4px;
       }
-      
-      &[disabled] {
+
+      &:last-child {
+        border-radius: 0 4px 4px 0;
+      }
+
+      &:hover:not(:disabled) {
+        background-color: $light-bg;
+      }
+
+      &:disabled {
         opacity: 0.5;
         cursor: not-allowed;
       }
     }
-    
+
     .page-numbers {
       display: flex;
-      gap: 5px;
       
       .page-number {
-        min-width: 32px;
-        height: 32px;
-        border-radius: 4px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        background-color: white;
+        border-top: 1px solid $border-color;
+        border-bottom: 1px solid $border-color;
+        border-left: none;
+        border-right: 1px solid $border-color;
+        color: $text-dark;
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
         cursor: pointer;
-        border: 1px solid #ddd;
-        background-color: #fff;
-        
-        &:hover:not([disabled]) {
-          background-color: #e0e0e0;
+        transition: all 0.2s;
+
+        &:hover:not(:disabled) {
+          background-color: $light-bg;
         }
-        
+
         &.active {
-          background-color: #0c7cba;
+          background-color: $primary-blue;
           color: white;
-          border-color: #0c7cba;
+          border-color: $primary-blue;
         }
-        
-        &[disabled] {
+
+        &:disabled {
           opacity: 0.5;
           cursor: not-allowed;
         }
       }
     }
   }
-  
+
   .page-size-selector {
     display: flex;
     align-items: center;
-    gap: 8px;
     
     label {
-      font-size: 14px;
-      color: #666;
+      margin-right: 0.5rem;
+      color: $text-muted;
+      font-size: 0.9rem;
     }
-    
-    select {
-      padding: 5px 10px;
-      border: 1px solid #ddd;
+
+    .select-control {
+      padding: 0.4rem;
+      border: 1px solid $border-color;
       border-radius: 4px;
-      background-color: #fff;
-      cursor: pointer;
+      color: $text-dark;
+      background-color: white;
     }
   }
 }
 
+.list-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+
+  .refresh-btn {
+    padding: 0.5rem 1rem;
+  }
+}
+
 @media (max-width: 768px) {
-  .pagination-controls {
+  .section-header {
     flex-direction: column;
     align-items: flex-start;
     
-    .page-navigation {
-      order: 1;
-      margin: 10px 0;
+    h1 {
+      margin-bottom: 1rem;
     }
-    
-    .page-info {
-      order: 0;
-    }
-    
-    .page-size-selector {
-      order: 2;
-    }
+  }
+  
+  .pagination-controls {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

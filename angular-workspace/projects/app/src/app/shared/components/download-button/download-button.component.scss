@@ -10,16 +10,21 @@ button {
   transition: background-color 0.3s ease;
 
   &.download-button {
-    background-color: #4caf50;
-    color: white;
-    border: none;
+    background-color: white;
+    color: #333;
+    border: 1px solid #333;
+    border-radius: 0;
+    padding: 8px 24px;
+    font-size: 0.9rem;
+    font-weight: normal;
+    transition: background-color 0.2s;
     
     &:hover {
-      background-color: #43a047;
+      background-color: #f8f9fa;
     }
     
     &:disabled {
-      background-color: #a5d6a7;
+      opacity: 0.6;
       cursor: not-allowed;
     }
   }

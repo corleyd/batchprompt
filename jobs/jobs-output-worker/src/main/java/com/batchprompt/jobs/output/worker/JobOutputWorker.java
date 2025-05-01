@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -71,6 +72,13 @@ public class JobOutputWorker {
                 failJob(job);
                 return;
             }
+
+            FileDto inputFile = fileClient.getFile(job.getFileUuid(), null);
+            if (inputFile == null) {
+                log.error("File not found for job: {}", jobUuid);
+                failJob(job);
+                return;
+            }
             
             // Update job status to GENERATING_OUTPUT
             job.setStatus(JobStatus.GENERATING_OUTPUT);
@@ -93,9 +101,9 @@ public class JobOutputWorker {
                 return;
             }
             
-            // Upload Excel file to file service
-            String fileName = "results_" + job.getJobUuid() + ".xlsx";
-            
+            // Create the result file name by adding the prompt name and the date/time in YYYYMMDDHHMMSS to the original file name
+            String fileName = createOutputFileName(inputFile, prompt); 
+
             // Use a try-with-resources to ensure the FileInputStream is properly closed
             try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
                 FileDto resultFileDto = fileClient.uploadFile(
@@ -150,6 +158,27 @@ public class JobOutputWorker {
                 }
             }
         }
+    }
+
+    /**
+     * Create a unique output file name based on the original file name, prompt name, and current date/time
+     * 
+     * @param inputFile The input file
+     * @param prompt The prompt
+     * @return The generated output file name
+     */
+
+    private String createOutputFileName(FileDto inputFile, PromptDto prompt) {
+        String originalFileName = inputFile.getFileName();
+        String promptName = prompt.getName().replaceAll("[^a-zA-Z0-9]", "_");
+        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+
+        // Remove the file extension from the original file name
+        int lastDotIndex = originalFileName.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+            originalFileName = originalFileName.substring(0, lastDotIndex);
+        }
+        return String.format("%s_%s_%s.xlsx", originalFileName, promptName, dateTime);
     }
     
     /**

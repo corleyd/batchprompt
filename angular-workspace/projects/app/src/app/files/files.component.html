@@ -1,7 +1,7 @@
 <div class="file-list-container">
   <div class="file-list-header">
     <h1>My Files</h1>
-    <a routerLink="files/upload" class="new-file-btn">Upload New File</a>
+    <a routerLink="files/upload" class="btn primary-btn">Upload New File</a>
   </div>
 
   <div class="loading-container" *ngIf="loading">
@@ -11,18 +11,18 @@
 
   <div class="error-message" *ngIf="error">
     <p>Failed to load files. Please try again.</p>
-    <button (click)="refreshFiles()" class="refresh-btn">Retry</button>
+    <button (click)="refreshFiles()" class="btn secondary-btn">Retry</button>
   </div>
 
   <div class="empty-state" *ngIf="!loading && !error && files.length === 0">
     <p>You don't have any files yet.</p>
-    <a routerLink="files/upload" class="upload-file-btn">Upload Your First File</a>
+    <a routerLink="files/upload" class="btn primary-btn">Upload Your First File</a>
   </div>
 
   <div class="filter-controls" *ngIf="!loading && !error && files.length > 0">
     <div class="filter-group">
       <label for="fileType">File Type:</label>
-      <select id="fileType" [(ngModel)]="fileTypeFilter">
+      <select id="fileType" [(ngModel)]="fileTypeFilter" class="form-control">
         <option [ngValue]="undefined">All Types</option>
         <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
       </select>
@@ -30,19 +30,19 @@
     
     <div class="filter-group">
       <label for="status">Status:</label>
-      <select id="status" [(ngModel)]="statusFilter">
+      <select id="status" [(ngModel)]="statusFilter" class="form-control">
         <option [ngValue]="undefined">All Statuses</option>
         <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
       </select>
     </div>
     
     <div class="filter-actions">
-      <button (click)="applyFilters()" class="apply-button">Apply Filters</button>
-      <button (click)="clearFilters()" class="clear-button">Clear</button>
+      <button (click)="applyFilters()" class="btn primary-btn">Apply Filters</button>
+      <button (click)="clearFilters()" class="btn secondary-btn">Clear</button>
     </div>
   </div>
 
-  <div class="files-table-container" *ngIf="!loading && !error && files.length > 0">
+  <div class="card files-table-container" *ngIf="!loading && !error && files.length > 0">
     <table class="files-table">
       <thead>
         <tr>
@@ -88,22 +88,32 @@
           <td>{{ file.createdAt | date:'medium' }}</td>
           <td>{{ file.fileSize | number }} bytes</td>
           <td class="file-actions">
-            <button *ngIf="file.status === 'READY'" 
-                    (click)="createJob(file); $event.stopPropagation()" 
-                    class="create-job-btn">
-              Create Job
-            </button>
-            <app-download-button 
-                [fileUuid]="file.fileUuid"
-                [fileName]="file.fileName"
-                [disabled]="file.status === 'PROCESSING'"
-                (click)="$event.stopPropagation()">
-            </app-download-button>
-
-            <button (click)="deleteFile(file); $event.stopPropagation()" 
-                    class="delete-btn">
-              Delete
-            </button>
+            <div class="actions-container">
+              <button *ngIf="file.status === 'READY'" 
+                      (click)="createJob(file); $event.stopPropagation()" 
+                      class="btn action-btn">
+                Create Job
+              </button>
+              
+              <button class="btn secondary-btn context-menu-trigger" 
+                      (click)="toggleContextMenu($event, file)">
+                <i-feather name="more-vertical" class="context-menu-icon"></i-feather>
+              </button>
+              
+              <div class="context-menu" *ngIf="activeContextMenuFile === file.fileUuid">
+                <div class="context-menu-item" 
+                     (click)="$event.stopPropagation(); downloadFile(file);"
+                     [class.disabled]="file.status === 'PROCESSING'">
+                  <i-feather name="download" class="menu-icon"></i-feather>
+                  Download
+                </div>
+                <div class="context-menu-item delete-action" 
+                     (click)="$event.stopPropagation(); deleteFile(file);">
+                  <i-feather name="trash-2" class="menu-icon"></i-feather>
+                  Delete
+                </div>
+              </div>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -117,7 +127,7 @@
     
     <div class="page-navigation">
       <button 
-        class="page-button" 
+        class="btn page-button" 
         [disabled]="currentPage === 0" 
         (click)="changePage(currentPage - 1)"
       >
@@ -127,7 +137,7 @@
       <div class="page-numbers">
         <button 
           *ngFor="let page of [].constructor(totalPages < 5 ? totalPages : 5); let i = index"
-          class="page-number" 
+          class="btn page-number" 
           [class.active]="(currentPage < 2 ? i : currentPage - 2 + i) === currentPage"
           (click)="changePage(currentPage < 2 ? i : currentPage - 2 + i)"
           [disabled]="(currentPage < 2 ? i : currentPage - 2 + i) >= totalPages"
@@ -137,7 +147,7 @@
       </div>
 
       <button 
-        class="page-button" 
+        class="btn page-button" 
         [disabled]="currentPage >= totalPages - 1" 
         (click)="changePage(currentPage + 1)"
       >
@@ -147,7 +157,7 @@
     
     <div class="page-size-selector">
       <label for="pageSize">Items per page:</label>
-      <select id="pageSize" [(ngModel)]="pageSize" (change)="currentPage = 0; loadFiles()">
+      <select id="pageSize" [(ngModel)]="pageSize" (change)="currentPage = 0; loadFiles()" class="form-control">
         <option [value]="5">5</option>
         <option [value]="10">10</option>
         <option [value]="20">20</option>
@@ -157,7 +167,7 @@
   </div>
 
   <div class="list-actions" *ngIf="!loading && !error && files.length > 0">
-    <button (click)="refreshFiles()" class="refresh-btn">Refresh Files</button>
-    <a routerLink="home" class="back-button">Back to Home</a>
+    <button (click)="refreshFiles()" class="btn secondary-btn">Refresh Files</button>
+    <a routerLink="home" class="btn primary-btn">Back to Home</a>
   </div>
 </div>

@@ -8,33 +8,8 @@
         <p class="hero-subtitle">Process entire datasets with AI models using custom prompts - all in one streamlined workflow.</p>
         
         <!-- Dashboard Access for logged-in users -->
-        <div *ngIf="auth.isAuthenticated$ | async" class="dashboard-access">
-          <div class="welcome-user">
-            <div class="user-avatar" *ngIf="auth.user$ | async as user">
-              <span class="initials">{{ getUserInitials(user.name) }}</span>
-            </div>
-            <div class="welcome-message" *ngIf="auth.user$ | async as user">
-              <p>Welcome back, {{ (user?.name ?? '').split(' ')[0] || 'there' }}!</p>
-              <button class="dashboard-btn" (click)="navigateToDashboard()">
-                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
-              </button>
-            </div>
-          </div>
-          
-          <div class="quick-actions">
-            <h3>Quick Actions</h3>
-            <div class="action-buttons">
-              <a routerLink="/dashboard/files/upload" class="action-btn">
-                <i class="fas fa-upload"></i> Upload Files
-              </a>
-              <a routerLink="/dashboard/prompts/new" class="action-btn">
-                <i class="fas fa-code"></i> Create Prompt
-              </a>
-              <a routerLink="/dashboard/jobs/submit" class="action-btn">
-                <i class="fas fa-play-circle"></i> Run Job
-              </a>
-            </div>
-          </div>
+        <div *ngIf="auth.isAuthenticated$ | async" class="cta-buttons">
+            <button class="signup-btn" (click)="navigateToDashboard()">Go to My Dashboard</button>
         </div>
         
         <!-- CTA for non-authenticated users -->
@@ -43,14 +18,14 @@
           <button class="login-btn" (click)="login()">Login</button>
         </div>
       </div>
-      <div class="hero-image">
+      <!-- <div class="hero-image">
         <img src="assets/images/batch-processing.svg" alt="BatchPrompt AI Data Processing" />
-      </div>
+      </div> -->
     </div>
   </div>
 
   <!-- Main Features Section -->
-  <div class="features-section" *ngIf="!(auth.isAuthenticated$ | async)">
+  <div class="features-section">
     <div class="container">
       <h2>Transform Your Data Processing Workflow</h2>
       <div class="features-grid">
@@ -79,7 +54,7 @@
   </div>
 
   <!-- How It Works Section -->
-  <div class="how-it-works-section" *ngIf="!(auth.isAuthenticated$ | async)">
+  <div class="how-it-works-section">
     <div class="container">
       <h2>How BatchPrompt Works</h2>
       <div class="steps">
@@ -108,7 +83,7 @@
   </div>
   
   <!-- Use Cases Section -->
-  <div class="use-cases-section" *ngIf="!(auth.isAuthenticated$ | async)">
+  <div class="use-cases-section">
     <div class="container">
       <h2>Powerful Use Cases</h2>
       <div class="use-cases-grid">
@@ -133,7 +108,7 @@
   </div>
   
   <!-- Bottom CTA Section -->
-  <div class="bottom-cta-section" *ngIf="!(auth.isAuthenticated$ | async)">
+  <div class="bottom-cta-section">
     <div class="container">
       <h2>Ready to Transform Your Data Workflow?</h2>
       <p>Join thousands of data professionals who use BatchPrompt to scale their AI-powered data processing.</p>

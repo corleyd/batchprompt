@@ -1,7 +1,7 @@
 <div class="prompt-list-container">
   <div class="header">
-    <h1>Your Prompts</h1>
-    <a routerLink="new" class="create-button">Create New Prompt</a>
+    <h1>My Prompts</h1>
+    <button routerLink="new" class="primary-button">Upload New Prompt</button>
   </div>
 
   <div class="loading-spinner" *ngIf="loading">
@@ -11,16 +11,19 @@
 
   <div class="error-message" *ngIf="error">
     <p>Failed to load prompts. Please try again later.</p>
-    <button (click)="loadPrompts()">Retry</button>
+    <button (click)="loadPrompts()" class="secondary-button">Retry</button>
   </div>
 
   <div class="empty-state" *ngIf="!loading && !error && prompts.length === 0">
-    <p>You don't have any prompts yet.</p>
-    <a routerLink="/dashboard/prompts/new" class="create-button">Create Your First Prompt</a>
+    <div class="card">
+      <h2>You don't have any prompts yet</h2>
+      <p>Create your first prompt to get started with batch processing</p>
+      <button routerLink="/dashboard/prompts/new" class="primary-button">Create Your First Prompt</button>
+    </div>
   </div>
 
   <div class="prompt-grid" *ngIf="!loading && !error && prompts.length > 0">
-    <div class="prompt-card" *ngFor="let prompt of prompts">
+    <div class="card" *ngFor="let prompt of prompts">
       <div class="prompt-header">
         <h3>{{ prompt.name }}</h3>
       </div>
@@ -33,14 +36,14 @@
           <small>Updated: {{ prompt.updateTimestamp | date:'medium' }}</small>
         </div>
         <div class="prompt-actions">
-          <a [routerLink]="[ prompt.promptUuid]" class="edit-button">Edit</a>
-          <button (click)="deletePrompt(prompt.promptUuid!)" class="delete-button">Delete</button>
+          <button [routerLink]="[ prompt.promptUuid]" class="action-button">Edit</button>
+          <button (click)="deletePrompt(prompt.promptUuid!)" class="action-button delete">Delete</button>
         </div>
       </div>
     </div>
   </div>
 
   <div class="navigation">
-    <a routerLink="/dashboard" class="back-button">Back to Dashboard</a>
+    <button routerLink="/dashboard" class="secondary-button">Back to Dashboard</button>
   </div>
 </div>
