@@ -61,30 +61,30 @@
 
       <!-- Output Format Selection -->
       <div class="form-group">
-        <label for="outputFormat">Output Format *</label>
+        <label for="outputMethod">Output Format *</label>
         <select
-          id="outputFormat"
-          formControlName="outputFormat"
-          [class.is-invalid]="promptForm.get('outputFormat')?.invalid && promptForm.get('outputFormat')?.touched"
+          id="outputMethod"
+          formControlName="outputMethod"
+          [class.is-invalid]="promptForm.get('outputMethod')?.invalid && promptForm.get('outputMethod')?.touched"
         >
-          <option *ngFor="let option of outputFormatOptions" [value]="option.value">{{ option.label }}</option>
+          <option *ngFor="let option of outputMethodOptions" [value]="option.value">{{ option.label }}</option>
         </select>
         <div class="format-description">
-          <span *ngIf="promptForm.get('outputFormat')?.value === 'text_only'">
+          <span *ngIf="promptForm.get('outputMethod')?.value === 'TEXT'">
             The entire LLM response will be saved to a column in your dataset.
           </span>
-          <span *ngIf="promptForm.get('outputFormat')?.value === 'schema'">
+          <span *ngIf="promptForm.get('outputMethod')?.value === 'STRUCTURED'">
             The LLM response will be parsed according to a structured output format.
           </span>
-          <span *ngIf="promptForm.get('outputFormat')?.value === 'schema_with_text'">
+          <span *ngIf="promptForm.get('outputMethod')?.value === 'BOTH'">
             The LLM response will be parsed according to a structured output format and the full response text will be saved to a column.
           </span>
         </div>
       </div>
 
       <!-- Response Column Name -->
-      <div class="form-group" *ngIf="promptForm.get('outputFormat')?.value === 'text_only' || 
-                                   promptForm.get('outputFormat')?.value === 'schema_with_text'">
+      <div class="form-group" *ngIf="promptForm.get('outputMethod')?.value === 'TEXT' || 
+                                   promptForm.get('outputMethod')?.value === 'BOTH'">
         <label for="responseColumnName">Response Column Name *</label>
         <input 
           type="text" 
@@ -100,8 +100,8 @@
         <small class="form-hint">This is the name of the column where the LLM response will be stored.</small>
       </div>
 
-      <!-- Show Output Schema section only for schema and schema_with_text modes -->
-      <div *ngIf="promptForm.get('outputFormat')?.value === 'schema' || promptForm.get('outputFormat')?.value === 'schema_with_text'">
+      <!-- Show Output Schema section only for schema and both modes -->
+      <div *ngIf="promptForm.get('outputMethod')?.value === 'STRUCTURED' || promptForm.get('outputMethod')?.value === 'BOTH'">
         <!-- Output Schema Section Header with Mode Toggle -->
         <div class="schema-section-header">
           <h3>{{ isAdvancedSchema ? 'Output Schema' : 'Structured Output' }}</h3>

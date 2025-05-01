@@ -4,10 +4,9 @@ export interface Prompt {
   name: string;
   description: string;
   promptText: string;
-  outputFormat?: 'text_only' | 'schema' | 'schema_with_text';
-  responseColumnName?: string;
-  includeFullResponse?: boolean;
-  outputSchema: string;
+  outputMethod?: 'TEXT' | 'STRUCTURED' | 'BOTH';
+  responseTextColumnName?: string;
+  responseJsonSchema: string;
   createTimestamp?: Date;
   updateTimestamp?: Date;
 }

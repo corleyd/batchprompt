@@ -83,8 +83,8 @@ public class JobTaskWorker {
             
             // Convert output schema to JsonNode if it exists
             JsonNode outputSchema = null;
-            if (promptDto.getOutputSchema() != null && !promptDto.getOutputSchema().isBlank()) {
-                outputSchema = objectMapper.readTree(promptDto.getOutputSchema());
+            if (promptDto.getResponseJsonSchema() != null && !promptDto.getResponseJsonSchema().isBlank()) {
+                outputSchema = objectMapper.readTree(promptDto.getResponseJsonSchema());
             }
 
             String promptText = replacePlaceholders(promptDto.getPromptText(), recordData);

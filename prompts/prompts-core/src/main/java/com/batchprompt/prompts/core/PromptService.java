@@ -50,7 +50,7 @@ public class PromptService {
                     existingPrompt.setName(promptDetails.getName());
                     existingPrompt.setDescription(promptDetails.getDescription());
                     existingPrompt.setPromptText(promptDetails.getPromptText());
-                    existingPrompt.setOutputSchema(promptDetails.getOutputSchema());
+                    existingPrompt.setResponseJsonSchema(promptDetails.getResponseJsonSchema());
                     existingPrompt.setUpdateTimestamp(LocalDateTime.now());
                     return promptRepository.save(existingPrompt);
                 });

@@ -5,11 +5,14 @@ import java.util.UUID;
 
 import org.hibernate.annotations.Type;
 
+import com.batchprompt.prompts.model.PromptOutputMethod;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -41,9 +44,16 @@ public class Prompt {
     @Column(name = "prompt_text", nullable = false, columnDefinition = "text")
     private String promptText;
 
-    @Column(name = "output_schema", nullable = false, columnDefinition = "jsonb")
+    @Column(name = "output_method", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private PromptOutputMethod outputMethod;
+
+    @Column(name = "response_text_column_name", nullable = false)
+    private String responseTextColumnName;
+
+    @Column(name = "response_json_schema", nullable = false, columnDefinition = "jsonb")
     @Type(JsonType.class)
-    private JsonNode outputSchema;
+    private JsonNode responseJsonSchema;
 
     @Column(name = "create_timestamp", nullable = false)
     private LocalDateTime createTimestamp;

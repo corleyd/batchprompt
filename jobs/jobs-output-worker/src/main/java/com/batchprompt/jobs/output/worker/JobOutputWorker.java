@@ -26,6 +26,9 @@ import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
+import com.batchprompt.prompts.client.PromptClient;
+import com.batchprompt.prompts.model.PromptOutputMethod;
+import com.batchprompt.prompts.model.dto.PromptDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,6 +44,7 @@ public class JobOutputWorker {
     private final JobRepository jobRepository;
     private final JobTaskRepository jobTaskRepository;
     private final FileClient fileClient;
+    private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
     
     @RabbitListener(queues = "${rabbitmq.queue.job-output.name}")
@@ -58,6 +62,13 @@ public class JobOutputWorker {
                 log.error("Job not found: {}", jobUuid);
                 return;
             }
+
+            PromptDto prompt = promptClient.getPrompt(job.getPromptUuid(), null);
+            if (prompt == null) {
+                log.error("Prompt not found for job: {}", jobUuid);
+                failJob(job);
+                return;
+            }
             
             // Update job status to GENERATING_OUTPUT
             job.setStatus(JobStatus.GENERATING_OUTPUT);
@@ -73,7 +84,7 @@ public class JobOutputWorker {
             }
             
             // Generate Excel file
-            byte[] excelBytes = generateExcelFile(job, tasks);
+            byte[] excelBytes = generateExcelFile(job, prompt, tasks);
             if (excelBytes == null) {
                 log.error("Failed to generate Excel file for job: {}", jobUuid);
                 failJob(job);
@@ -127,13 +138,13 @@ public class JobOutputWorker {
      * @param tasks The job tasks
      * @return The Excel file content as a byte array
      */
-    private byte[] generateExcelFile(Job job, List<JobTask> tasks) {
+    private byte[] generateExcelFile(Job job, PromptDto prompt, List<JobTask> tasks) {
         try (Workbook workbook = new XSSFWorkbook()) {
             Sheet sheet = workbook.createSheet("Results");
             
             // Create header row
             Row headerRow = sheet.createRow(0);
-            List<String> headers = getHeaders(job, tasks);
+            List<String> headers = getHeaders(job, prompt, tasks);
             int colIndex = 0;
             
             for (String header : headers) {
@@ -146,7 +157,7 @@ public class JobOutputWorker {
             for (JobTask task : tasks) {
                 try {
                     Row row = sheet.createRow(rowIndex++);
-                    populateRow(row, task, headers);
+                    populateRow(row, prompt, task, headers);
                 } catch (Exception e) {
                     log.error("Error processing task {} for job {}: {}", 
                               task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
@@ -176,7 +187,7 @@ public class JobOutputWorker {
      * @param tasks The job tasks
      * @return List of header names
      */
-    private List<String> getHeaders(Job job, List<JobTask> tasks) {
+    private List<String> getHeaders(Job job, PromptDto prompt, List<JobTask> tasks) {
         List<String> headers = new ArrayList<>();
         headers.add("record_number");
         
@@ -197,8 +208,15 @@ public class JobOutputWorker {
         }
         
         // Add error and full response columns
+        if (prompt.getOutputMethod() != PromptOutputMethod.STRUCTURED) {
+            String responseTextHeader = prompt.getResponseTextColumnName();
+            if (responseTextHeader == null) {
+                responseTextHeader = "response_text";
+            }
+            headers.add(responseTextHeader);
+        }
+
         headers.add("error_message");
-        headers.add("response_text");
         
         return headers;
     }
@@ -231,7 +249,7 @@ public class JobOutputWorker {
      * @param headers The Excel headers
      * @throws JsonProcessingException If there's an error parsing JSON
      */
-    private void populateRow(Row row, JobTask task, List<String> headers) throws JsonProcessingException {
+    private void populateRow(Row row, PromptDto prompt, JobTask task, List<String> headers) throws JsonProcessingException {
         // Fetch the file record to get the record number
         FileRecordDto recordDto = null;
         try {
@@ -284,7 +302,15 @@ public class JobOutputWorker {
                 }
             }
         }
-        
+                
+        // Add response text column
+        if (prompt.getOutputMethod() != PromptOutputMethod.STRUCTURED) {
+            Cell responseTextCell = row.createCell(colIndex++);
+            if (task.getResponseText() != null) {
+                responseTextCell.setCellValue(task.getResponseText());
+            }
+        }
+
         // Add error message column
         Cell errorCell = row.createCell(colIndex++);
         if (errorParsingJson != null) {
@@ -293,12 +319,6 @@ public class JobOutputWorker {
         } else if (task.getStatus() == TaskStatus.FAILED && task.getErrorMessage() != null) {
             // If task failed with error
             errorCell.setCellValue(task.getErrorMessage());
-        }
-        
-        // Add response text column
-        Cell responseCell = row.createCell(colIndex);
-        if (task.getResponseText() != null) {
-            responseCell.setCellValue(task.getResponseText());
         }
     }
     

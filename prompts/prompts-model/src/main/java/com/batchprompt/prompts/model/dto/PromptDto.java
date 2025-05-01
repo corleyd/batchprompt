@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.batchprompt.prompts.model.PromptOutputMethod;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -18,7 +20,9 @@ public class PromptDto {
     private String name;
     private String description;
     private String promptText;
-    private String outputSchema;
+    private PromptOutputMethod outputMethod;
+    private String responseJsonSchema;
+    private String responseTextColumnName;
     private LocalDateTime createTimestamp;
     private LocalDateTime updateTimestamp;
 }

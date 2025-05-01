@@ -29,10 +29,10 @@ export class PromptEditComponent implements OnInit {
   promptId: string | null = null;
   isAdvancedSchema = false;
   propertyTypes = ['string', 'number', 'boolean', 'array', 'integer'];
-  outputFormatOptions = [
-    { value: 'text_only', label: 'Text Only' },
-    { value: 'schema', label: 'Structured Output' },
-    { value: 'schema_with_text', label: 'Structured Output with Full Response Text' }
+  outputMethodOptions = [
+    { value: 'TEXT', label: 'Text Only' },
+    { value: 'STRUCTURED', label: 'Structured Output' },
+    { value: 'BOTH', label: 'Structured Output with Full Response Text' }
   ];
 
   constructor(
@@ -43,18 +43,17 @@ export class PromptEditComponent implements OnInit {
     private auth: AuthService
   ) {
     this.promptForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(255)]],
-      description: ['', [Validators.required, Validators.maxLength(255)]],
+      name: ['', [Validators.required]],
+      description: ['', [Validators.required]],
       promptText: ['', [Validators.required]],
-      outputFormat: ['text_only', [Validators.required]],
-      responseColumnName: ['response_text', [Validators.required, Validators.maxLength(255)]],
-      includeFullResponse: [false],
+      outputMethod: ['TEXT', [Validators.required]],
+      responseColumnName: ['response_text', [Validators.required]],
       outputSchema: ['{}', []],
       schemaProperties: this.fb.array([])
     });
 
-    // Update form validation based on outputFormat selection
-    this.promptForm.get('outputFormat')?.valueChanges.subscribe(format => {
+    // Update form validation based on outputMethod selection
+    this.promptForm.get('outputMethod')?.valueChanges.subscribe(format => {
       this.updateFormValidation(format);
     });
   }
@@ -77,12 +76,43 @@ export class PromptEditComponent implements OnInit {
     const schemaControl = this.promptForm.get('outputSchema');
     const responseColumnNameControl = this.promptForm.get('responseColumnName');
     
-    if (format === 'text_only') {
+    // Handle schema controls
+    if (format === 'TEXT') {
       schemaControl?.clearValidators();
       responseColumnNameControl?.setValidators([Validators.required, Validators.maxLength(255)]);
+      
+      // Handle schema properties individually for TEXT mode
+      for (let i = 0; i < this.schemaProperties.length; i++) {
+        const propertyGroup = this.schemaProperties.at(i) as FormGroup;
+        propertyGroup.get('name')?.clearValidators();
+        propertyGroup.get('type')?.clearValidators();
+        propertyGroup.get('description')?.clearValidators();
+        
+        propertyGroup.get('name')?.updateValueAndValidity({emitEvent: false});
+        propertyGroup.get('type')?.updateValueAndValidity({emitEvent: false});
+        propertyGroup.get('description')?.updateValueAndValidity({emitEvent: false});
+      }
     } else {
       schemaControl?.setValidators([Validators.required]);
-      if (format === 'schema_with_text') {
+      
+      // Ensure at least one schema property for non-TEXT modes
+      if (this.schemaProperties.length === 0) {
+        this.addSchemaProperty();
+      }
+      
+      // Apply proper validators for non-TEXT modes
+      for (let i = 0; i < this.schemaProperties.length; i++) {
+        const propertyGroup = this.schemaProperties.at(i) as FormGroup;
+        propertyGroup.get('name')?.setValidators([Validators.required]);
+        propertyGroup.get('type')?.setValidators([Validators.required]);
+        propertyGroup.get('description')?.setValidators([Validators.required]);
+        
+        propertyGroup.get('name')?.updateValueAndValidity({emitEvent: false});
+        propertyGroup.get('type')?.updateValueAndValidity({emitEvent: false});
+        propertyGroup.get('description')?.updateValueAndValidity({emitEvent: false});
+      }
+      
+      if (format === 'BOTH') {
         responseColumnNameControl?.setValidators([Validators.required, Validators.maxLength(255)]);
       } else {
         responseColumnNameControl?.clearValidators();
@@ -217,18 +247,18 @@ export class PromptEditComponent implements OnInit {
     this.promptService.getPromptById(promptId)
       .subscribe({
         next: (prompt) => {
+          console.log("PROMPT", prompt);
           this.promptForm.patchValue({
             name: prompt.name,
             description: prompt.description,
             promptText: prompt.promptText,
-            outputSchema: prompt.outputSchema,
-            outputFormat: prompt.outputFormat || 'schema',
-            responseColumnName: prompt.responseColumnName || 'response_text',
-            includeFullResponse: prompt.includeFullResponse || false
+            outputSchema: prompt.responseJsonSchema,
+            outputMethod: prompt.outputMethod || 'TEXT',
+            responseColumnName: prompt.responseTextColumnName || 'response_text',
           });
           
           // Determine if it's a simple schema
-          this.isAdvancedSchema = !this.isSimpleSchema(prompt.outputSchema);
+          this.isAdvancedSchema = !this.isSimpleSchema(prompt.responseJsonSchema);
           
           if (!this.isAdvancedSchema) {
             try {
@@ -249,31 +279,49 @@ export class PromptEditComponent implements OnInit {
   }
 
   onSubmit(): void {
-    if (this.promptForm.invalid) {
+    // Get current output format
+    const outputMethod = this.promptForm.get('outputMethod')?.value;
+    
+    // For TEXT mode, manually validate only the relevant controls
+    if (outputMethod === 'TEXT') {
+      const relevantControls = ['name', 'description', 'promptText', 'responseColumnName'];
+      const isValid = relevantControls.every(controlName => {
+        const control = this.promptForm.get(controlName);
+        return control && control.valid;
+      });
+      
+      // If any of the relevant controls are invalid, mark them as touched and return
+      if (!isValid) {
+        relevantControls.forEach(controlName => {
+          const control = this.promptForm.get(controlName);
+          if (control) {
+            control.markAsTouched();
+          }
+        });
+        return;
+      }
+    } else if (this.promptForm.invalid) {
+      // For other formats, check the entire form
       this.markFormGroupTouched(this.promptForm);
       return;
     }
 
     // Make sure output schema is updated from properties if in simple mode
-    if (!this.isAdvancedSchema && this.promptForm.get('outputFormat')?.value !== 'text_only') {
+    if (!this.isAdvancedSchema && outputMethod !== 'TEXT') {
       this.updateOutputSchemaFromProperties();
     }
 
     this.saving = true;
-    const outputFormat = this.promptForm.get('outputFormat')?.value;
     
     const promptData: Prompt = {
       name: this.promptForm.get('name')?.value,
       description: this.promptForm.get('description')?.value,
       promptText: this.promptForm.get('promptText')?.value,
-      outputFormat: outputFormat,
-      responseColumnName: outputFormat === 'text_only' || outputFormat === 'schema_with_text' 
+      outputMethod: outputMethod,
+      responseTextColumnName: outputMethod === 'TEXT' || outputMethod === 'BOTH' 
         ? this.promptForm.get('responseColumnName')?.value 
         : undefined,
-      includeFullResponse: outputFormat === 'schema_with_text' 
-        ? true 
-        : (outputFormat === 'text_only' ? false : this.promptForm.get('includeFullResponse')?.value),
-      outputSchema: outputFormat === 'text_only' 
+      responseJsonSchema: outputMethod === 'TEXT' 
         ? '{}' 
         : this.promptForm.get('outputSchema')?.value,
       userId: ''
