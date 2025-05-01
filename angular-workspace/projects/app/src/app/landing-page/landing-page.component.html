@@ -1,7 +1,184 @@
-<!-- Non-authenticated view -->
+<!-- SEO meta tags are added in the component TS file -->
 <div class="landing-page">
+  <!-- Hero Section with dynamic content for logged-in users -->
   <div class="hero-section">
-    <h1>Batch AI prompting made simple</h1>
-    <p>Upload a spreadsheet and generate chat responses</p>
+    <div class="container">
+      <div class="hero-content">
+        <h1>AI Batch Processing Made Powerful & Simple</h1>
+        <p class="hero-subtitle">Process entire datasets with AI models using custom prompts - all in one streamlined workflow.</p>
+        
+        <!-- Dashboard Access for logged-in users -->
+        <div *ngIf="auth.isAuthenticated$ | async" class="dashboard-access">
+          <div class="welcome-user">
+            <div class="user-avatar" *ngIf="auth.user$ | async as user">
+              <span class="initials">{{ getUserInitials(user.name) }}</span>
+            </div>
+            <div class="welcome-message" *ngIf="auth.user$ | async as user">
+              <p>Welcome back, {{ (user?.name ?? '').split(' ')[0] || 'there' }}!</p>
+              <button class="dashboard-btn" (click)="navigateToDashboard()">
+                <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+              </button>
+            </div>
+          </div>
+          
+          <div class="quick-actions">
+            <h3>Quick Actions</h3>
+            <div class="action-buttons">
+              <a routerLink="/dashboard/files/upload" class="action-btn">
+                <i class="fas fa-upload"></i> Upload Files
+              </a>
+              <a routerLink="/dashboard/prompts/new" class="action-btn">
+                <i class="fas fa-code"></i> Create Prompt
+              </a>
+              <a routerLink="/dashboard/jobs/submit" class="action-btn">
+                <i class="fas fa-play-circle"></i> Run Job
+              </a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- CTA for non-authenticated users -->
+        <div *ngIf="!(auth.isAuthenticated$ | async)" class="cta-buttons">
+          <button class="signup-btn" (click)="signup()">Get Started</button>
+          <button class="login-btn" (click)="login()">Login</button>
+        </div>
+      </div>
+      <div class="hero-image">
+        <img src="assets/images/batch-processing.svg" alt="BatchPrompt AI Data Processing" />
+      </div>
+    </div>
   </div>
+
+  <!-- Main Features Section -->
+  <div class="features-section" *ngIf="!(auth.isAuthenticated$ | async)">
+    <div class="container">
+      <h2>Transform Your Data Processing Workflow</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class="fas fa-file-excel"></i>
+          <h3>Batch Processing</h3>
+          <p>Process thousands of records in one go. Simply upload your dataset and let BatchPrompt handle the rest.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-code"></i>
+          <h3>Custom Prompts</h3>
+          <p>Design reusable prompts with placeholders that automatically fill with your data variables.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-robot"></i>
+          <h3>Multiple AI Models</h3>
+          <p>Choose from various AI models to get the best results for your specific use case.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-table"></i>
+          <h3>Structured Output</h3>
+          <p>Get responses in structured JSON format that can be directly integrated into your data pipeline.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How It Works Section -->
+  <div class="how-it-works-section" *ngIf="!(auth.isAuthenticated$ | async)">
+    <div class="container">
+      <h2>How BatchPrompt Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3>Upload Your Data</h3>
+          <p>Import spreadsheets or CSV files with your dataset.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3>Create a Prompt</h3>
+          <p>Design a template with variables that will be filled from your data.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3>Run Your Job</h3>
+          <p>Select your dataset, prompt, and AI model to process your data in batch.</p>
+        </div>
+        <div class="step">
+          <div class="step-number">4</div>
+          <h3>Download Results</h3>
+          <p>Get your processed data with AI-generated responses in a structured format.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Use Cases Section -->
+  <div class="use-cases-section" *ngIf="!(auth.isAuthenticated$ | async)">
+    <div class="container">
+      <h2>Powerful Use Cases</h2>
+      <div class="use-cases-grid">
+        <div class="use-case">
+          <h3>Content Generation</h3>
+          <p>Generate product descriptions, marketing copy, or social media posts in bulk.</p>
+        </div>
+        <div class="use-case">
+          <h3>Data Analysis</h3>
+          <p>Extract insights, categorize content, or summarize large volumes of text data.</p>
+        </div>
+        <div class="use-case">
+          <h3>Customer Support</h3>
+          <p>Generate response templates for common customer inquiries or feedback.</p>
+        </div>
+        <div class="use-case">
+          <h3>Document Processing</h3>
+          <p>Extract structured information from unstructured text in legal documents, reports, or forms.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Bottom CTA Section -->
+  <div class="bottom-cta-section" *ngIf="!(auth.isAuthenticated$ | async)">
+    <div class="container">
+      <h2>Ready to Transform Your Data Workflow?</h2>
+      <p>Join thousands of data professionals who use BatchPrompt to scale their AI-powered data processing.</p>
+      <div class="cta-buttons">
+        <button class="signup-btn" (click)="signup()">Get Started Free</button>
+        <button class="login-btn" (click)="login()">Login</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer Section -->
+  <footer class="footer-section">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <h3>BatchPrompt</h3>
+          <p>AI Batch Processing Platform</p>
+        </div>
+        <div class="footer-links">
+          <h4>Resources</h4>
+          <ul>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">API Reference</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Company</h4>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Pricing</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-links">
+          <h4>Legal</h4>
+          <ul>
+            <li><a href="#">Terms of Service</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 BatchPrompt. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 </div>

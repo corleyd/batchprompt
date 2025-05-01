@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
+import { Title, Meta } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-landing-page',
@@ -11,10 +12,31 @@ import { AuthService } from '@auth0/auth0-angular';
   styleUrl: './landing-page.component.scss'
 })
 export class LandingPageComponent implements OnInit {
-  constructor(public auth: AuthService, private router: Router) {}
+  constructor(
+    public auth: AuthService, 
+    private router: Router,
+    private titleService: Title,
+    private metaService: Meta
+  ) {}
 
   ngOnInit() {
-    // No automatic redirect - user will navigate manually via the button
+    // Set SEO metadata
+    this.titleService.setTitle('BatchPrompt - AI Batch Processing Platform');
+    this.metaService.addTags([
+      { name: 'description', content: 'Process datasets with AI models using custom prompts. BatchPrompt streamlines your data workflow with powerful batch processing capabilities.' },
+      { name: 'keywords', content: 'batch processing, AI, prompts, data processing, LLM, large language models, data workflow, structured output' },
+      { property: 'og:title', content: 'BatchPrompt - AI Batch Processing Platform' },
+      { property: 'og:description', content: 'Process datasets with AI models using custom prompts. BatchPrompt streamlines your data workflow with powerful batch processing capabilities.' },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:url', content: 'https://batchprompt.com' },
+      { property: 'og:image', content: 'https://batchprompt.com/assets/images/batchprompt-banner.jpg' },
+      { name: 'twitter:card', content: 'summary_large_image' }
+    ]);
+
+    // Check if user is authenticated, but no automatic redirect
+    this.auth.isAuthenticated$.subscribe(isAuthenticated => {
+      // You can use this for conditional UI rendering if needed
+    });
   }
 
   login() {
