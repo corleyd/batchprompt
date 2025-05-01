@@ -1,7 +1,8 @@
 package com.batchprompt.jobs.output.worker;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +55,7 @@ public class JobOutputWorker {
         boolean hasErrors = message.isHasErrors();
         
         log.info("Processing job output for job {}", jobUuid);
+        File tempFile = null;
         
         try {
             // Get the job
@@ -84,8 +86,8 @@ public class JobOutputWorker {
             }
             
             // Generate Excel file
-            byte[] excelBytes = generateExcelFile(job, prompt, tasks);
-            if (excelBytes == null) {
+            tempFile = generateExcelFile(job, prompt, tasks);
+            if (tempFile == null) {
                 log.error("Failed to generate Excel file for job: {}", jobUuid);
                 failJob(job);
                 return;
@@ -93,30 +95,42 @@ public class JobOutputWorker {
             
             // Upload Excel file to file service
             String fileName = "results_" + job.getJobUuid() + ".xlsx";
-            FileDto resultFileDto = uploadExcelFile(excelBytes, fileName, job.getUserId(), "RESULT", null, job.getUserId());
             
-            if (resultFileDto == null) {
-                log.error("Failed to upload Excel file for job: {}", jobUuid);
-                failJob(job);
-                return;
+            // Use a try-with-resources to ensure the FileInputStream is properly closed
+            try (FileInputStream fileInputStream = new FileInputStream(tempFile)) {
+                FileDto resultFileDto = fileClient.uploadFile(
+                    fileInputStream,
+                    fileName,
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    tempFile.length(),
+                    "RESULT",
+                    null,
+                    job.getUserId()
+                );
+                
+                if (resultFileDto == null) {
+                    log.error("Failed to upload Excel file for job: {}", jobUuid);
+                    failJob(job);
+                    return;
+                }
+                
+                // Validate the uploaded file
+                boolean validationSuccess = fileClient.validateFile(resultFileDto.getFileUuid(), null);
+                if (!validationSuccess) {
+                    log.error("File validation failed for job: {}", jobUuid);
+                    failJob(job);
+                    return;
+                }
+                
+                // Update job status to COMPLETED or COMPLETED_WITH_ERRORS
+                JobStatus finalStatus = hasErrors ? JobStatus.COMPLETED_WITH_ERRORS : JobStatus.COMPLETED;
+                job.setResultFileUuid(resultFileDto.getFileUuid());
+                job.setStatus(finalStatus);
+                job.setUpdatedAt(LocalDateTime.now());
+                jobRepository.save(job);
+                
+                log.info("Job output processing completed for job {}. Status: {}", jobUuid, finalStatus);
             }
-            
-            // Validate the uploaded file
-            boolean validationSuccess = fileClient.validateFile(resultFileDto.getFileUuid(), null);
-            if (!validationSuccess) {
-                log.error("File validation failed for job: {}", jobUuid);
-                failJob(job);
-                return;
-            }
-            
-            // Update job status to COMPLETED or COMPLETED_WITH_ERRORS
-            JobStatus finalStatus = hasErrors ? JobStatus.COMPLETED_WITH_ERRORS : JobStatus.COMPLETED;
-            job.setResultFileUuid(resultFileDto.getFileUuid());
-            job.setStatus(finalStatus);
-            job.setUpdatedAt(LocalDateTime.now());
-            jobRepository.save(job);
-            
-            log.info("Job output processing completed for job {}. Status: {}", jobUuid, finalStatus);
         } catch (Exception e) {
             log.error("Error processing job output for job: {}", jobUuid, e);
             // Try to update the job status to FAILED
@@ -128,6 +142,13 @@ public class JobOutputWorker {
             } catch (Exception ex) {
                 log.error("Failed to update job status to FAILED for job: {}", jobUuid, ex);
             }
+        } finally {
+            // Clean up the temporary file
+            if (tempFile != null && tempFile.exists()) {
+                if (!tempFile.delete()) {
+                    tempFile.deleteOnExit();
+                }
+            }
         }
     }
     
@@ -135,47 +156,68 @@ public class JobOutputWorker {
      * Generate Excel file with job results
      * 
      * @param job The job
+     * @param prompt The prompt
      * @param tasks The job tasks
-     * @return The Excel file content as a byte array
+     * @return The temporary file containing the Excel data
      */
-    private byte[] generateExcelFile(Job job, PromptDto prompt, List<JobTask> tasks) {
-        try (Workbook workbook = new XSSFWorkbook()) {
-            Sheet sheet = workbook.createSheet("Results");
+    private File generateExcelFile(Job job, PromptDto prompt, List<JobTask> tasks) {
+        File tempFile = null;
+        try {
+            // Create a temporary file
+            tempFile = File.createTempFile("job_output_" + job.getJobUuid(), ".xlsx");
             
-            // Create header row
-            Row headerRow = sheet.createRow(0);
-            List<String> headers = getHeaders(job, prompt, tasks);
-            int colIndex = 0;
-            
-            for (String header : headers) {
-                Cell cell = headerRow.createCell(colIndex++);
-                cell.setCellValue(header);
-            }
-            
-            // Create data rows
-            int rowIndex = 1;
-            for (JobTask task : tasks) {
-                try {
-                    Row row = sheet.createRow(rowIndex++);
-                    populateRow(row, prompt, task, headers);
-                } catch (Exception e) {
-                    log.error("Error processing task {} for job {}: {}", 
-                              task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
-                    // Continue with the next task even if this one fails
+            try (Workbook workbook = new XSSFWorkbook();
+                 FileOutputStream fileOut = new FileOutputStream(tempFile)) {
+                
+                Sheet sheet = workbook.createSheet("Results");
+                
+                // Create header row
+                Row headerRow = sheet.createRow(0);
+                List<String> headers = getHeaders(job, prompt, tasks);
+                int colIndex = 0;
+                
+                for (String header : headers) {
+                    Cell cell = headerRow.createCell(colIndex++);
+                    cell.setCellValue(header);
                 }
+                
+                // Create data rows
+                int rowIndex = 1;
+                for (JobTask task : tasks) {
+                    try {
+                        Row row = sheet.createRow(rowIndex++);
+                        populateRow(row, prompt, task, headers);
+                    } catch (Exception e) {
+                        log.error("Error processing task {} for job {}: {}", 
+                                  task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
+                        // Continue with the next task even if this one fails
+                    }
+                    
+                    // Flush workbook to disk periodically to keep memory usage low
+                    if (rowIndex % 100 == 0) {
+                        workbook.write(fileOut);
+                        fileOut.flush();
+                    }
+                }
+                
+                // Auto-size columns
+                for (int i = 0; i < headers.size(); i++) {
+                    sheet.autoSizeColumn(i);
+                }
+                
+                // Write the workbook to the file
+                workbook.write(fileOut);
             }
             
-            // Auto-size columns
-            for (int i = 0; i < headers.size(); i++) {
-                sheet.autoSizeColumn(i);
-            }
+            // Return the temporary file reference instead of reading it into memory
+            return tempFile;
             
-            // Write the Excel file to a byte array
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            workbook.write(outputStream);
-            return outputStream.toByteArray();
         } catch (Exception e) {
             log.error("Error generating Excel file for job {}: {}", job.getJobUuid(), e.getMessage());
+            // Clean up the temp file if there was an error
+            if (tempFile != null && tempFile.exists()) {
+                tempFile.delete();
+            }
             return null;
         }
     }
@@ -319,37 +361,6 @@ public class JobOutputWorker {
         } else if (task.getStatus() == TaskStatus.FAILED && task.getErrorMessage() != null) {
             // If task failed with error
             errorCell.setCellValue(task.getErrorMessage());
-        }
-    }
-    
-    /**
-     * Upload the Excel file to the file service
-     * 
-     * @param fileContent The file content
-     * @param fileName The file name
-     * @param userId The user ID
-     * @param fileType The file type (upload or result)
-     * @return True if upload was successful
-     */
-    private FileDto uploadExcelFile(byte[] fileContent, String fileName, String userId, String fileType, String authToken, String requestedUserId) {
-        try {
-            // Convert byte array to input stream
-            ByteArrayInputStream inputStream = new ByteArrayInputStream(fileContent);
-            
-            // Use the authToken if provided, otherwise FileClient will use service-to-service auth
-            return fileClient.uploadFile(
-                    inputStream,
-                    fileName,
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    fileContent.length,
-                    fileType,
-                    authToken,
-                    requestedUserId
-            );
-            
-        } catch (Exception e) {
-            log.error("Error uploading Excel file: {}", e.getMessage());
-            return null;
         }
     }
     

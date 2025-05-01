@@ -3,7 +3,6 @@ package com.batchprompt.files.core.service;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -25,8 +24,6 @@ import com.batchprompt.files.model.FileStatus;
 import com.batchprompt.files.model.FileType;
 import com.batchprompt.files.model.dto.FileDto;
 import com.batchprompt.files.model.dto.FileFieldDto;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.minio.GetObjectArgs;
 import io.minio.MinioClient;
@@ -44,7 +41,6 @@ public class FileService {
     private final FileFieldService fileFieldService;
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
-    private final ObjectMapper objectMapper;
     private final ExcelValidator excelValidator;
 
     public List<FileEntity> getAllFiles() {
@@ -180,20 +176,26 @@ public class FileService {
                 
                 // Only validate upload and result files
                 if (file.getFileType() == FileType.UPLOAD || file.getFileType() == FileType.RESULT) {
-                    // Validate the Excel file
-                    ExcelValidator.ValidationResult validationResult = excelValidator.validateExcelFile(fileContent);
+                    // Delete any existing records for this file
+                    fileRecordRepository.deleteByFileFileUuid(file.getFileUuid());
+                    
+                    // Define a simple record processor to save records directly to the database
+                    ExcelValidator.RecordProcessor recordProcessor = fileRecord -> {
+                        fileRecordRepository.save(fileRecord);
+                    };
+                    
+                    // Validate the Excel file with streaming processor that passes back FileRecord objects
+                    ExcelValidator.ValidationResult validationResult = 
+                        excelValidator.validateExcelFile(fileContent, file, recordProcessor);
                     
                     if (validationResult.isValid()) {
-                        // Update the file status to Processing
-                        file.setStatus(FileStatus.PROCESSING);
-                        file.setUpdatedAt(LocalDateTime.now());
-                        fileRepository.save(file);
-                        
-                        // Process valid records
-                        processFileRecords(file, validationResult.getRecords());
-                        
                         // Process and save fields information
                         processFileFields(file, validationResult.getFields());
+                        
+                        // Update file status to Ready
+                        file.setStatus(FileStatus.READY);
+                        file.setUpdatedAt(LocalDateTime.now());
+                        fileRepository.save(file);
                     } else {
                         // Update the file with validation errors
                         file.setStatus(FileStatus.VALIDATION);
@@ -242,40 +244,6 @@ public class FileService {
         } catch (Exception e) {
             log.error("Error processing file fields", e);
             throw new RuntimeException("Failed to process file fields", e);
-        }
-    }
-
-    @Transactional
-    public void processFileRecords(FileEntity file, List<Map<String, String>> records) {
-        try {
-            // Delete any existing records for this file
-            fileRecordRepository.deleteByFileFileUuid(file.getFileUuid());
-            
-            // Create and save all file records
-            int recordNumber = 0;
-            for (Map<String, String> record : records) {
-                recordNumber++;
-                
-                JsonNode jsonRecord = objectMapper.valueToTree(record);
-                
-                FileRecord fileRecord = FileRecord.builder()
-                        .fileRecordUuid(UUID.randomUUID())
-                        .file(file)
-                        .recordNumber(recordNumber)
-                        .record(jsonRecord)
-                        .build();
-                
-                fileRecordRepository.save(fileRecord);
-            }
-            
-            // Update file status to Ready
-            file.setStatus(FileStatus.READY);
-            file.setUpdatedAt(LocalDateTime.now());
-            fileRepository.save(file);
-            
-        } catch (Exception e) {
-            log.error("Error processing file records", e);
-            throw new RuntimeException("Failed to process file records", e);
         }
     }
 
@@ -363,4 +331,5 @@ public class FileService {
             throw new RuntimeException("Failed to retrieve file content: " + e.getMessage(), e);
         }
     }
+    
 }

@@ -1,5 +1,7 @@
 package com.batchprompt.files.core.service.validation;
 
+import com.batchprompt.files.core.model.FileEntity;
+import com.batchprompt.files.core.model.FileRecord;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -15,12 +17,24 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class ExcelValidator {
 
     private final ObjectMapper objectMapper;
+
+    /**
+     * Interface for processing records as they are read from the Excel file
+     */
+    public interface RecordProcessor {
+        /**
+         * Process a validated record from the Excel file
+         * @param fileRecord The FileRecord to process
+         */
+        void processRecord(FileRecord fileRecord);
+    }
 
     public static class FieldInfo {
         private final String fieldName;
@@ -55,14 +69,14 @@ public class ExcelValidator {
     public static class ValidationResult {
         private final boolean valid;
         private final JsonNode errors;
-        private final List<Map<String, String>> records;
         private final List<FieldInfo> fields;
+        private final int recordCount;
 
-        public ValidationResult(boolean valid, JsonNode errors, List<Map<String, String>> records, List<FieldInfo> fields) {
+        public ValidationResult(boolean valid, JsonNode errors, List<FieldInfo> fields, int recordCount) {
             this.valid = valid;
             this.errors = errors;
-            this.records = records;
             this.fields = fields;
+            this.recordCount = recordCount;
         }
 
         public boolean isValid() {
@@ -72,26 +86,35 @@ public class ExcelValidator {
         public JsonNode getErrors() {
             return errors;
         }
-
-        public List<Map<String, String>> getRecords() {
-            return records;
-        }
         
         public List<FieldInfo> getFields() {
             return fields;
         }
+        
+        public int getRecordCount() {
+            return recordCount;
+        }
     }
 
-    public ValidationResult validateExcelFile(InputStream inputStream) {
+    /**
+     * Validates an Excel file and returns field information and validation errors.
+     * Records are processed via the callback to avoid loading all records into memory.
+     * 
+     * @param inputStream The Excel file input stream
+     * @param fileEntity The file entity for which records are being created
+     * @param recordProcessor Callback to handle each valid record 
+     * @return ValidationResult with field information and any validation errors
+     */
+    public ValidationResult validateExcelFile(InputStream inputStream, FileEntity fileEntity, RecordProcessor recordProcessor) {
         List<String> validationErrors = new ArrayList<>();
-        List<Map<String, String>> records = new ArrayList<>();
         List<FieldInfo> fields = new ArrayList<>();
+        int recordCount = 0;
 
         try (Workbook workbook = new XSSFWorkbook(inputStream)) {
             // Validation rule 1: Must have exactly one worksheet
             if (workbook.getNumberOfSheets() != 1) {
                 validationErrors.add("File must contain exactly one worksheet");
-                return createValidationResult(validationErrors, records, fields);
+                return createValidationResult(validationErrors, fields, recordCount);
             }
 
             Sheet sheet = workbook.getSheetAt(0);
@@ -100,7 +123,7 @@ public class ExcelValidator {
             Row headerRow = sheet.getRow(0);
             if (headerRow == null) {
                 validationErrors.add("File must contain header row");
-                return createValidationResult(validationErrors, records, fields);
+                return createValidationResult(validationErrors, fields, recordCount);
             }
 
             // Extract column names from header row and create field info
@@ -118,13 +141,12 @@ public class ExcelValidator {
             
             if (columnNames.isEmpty()) {
                 validationErrors.add("Header row must contain at least one column");
-                return createValidationResult(validationErrors, records, fields);
+                return createValidationResult(validationErrors, fields, recordCount);
             }
             
             int headerColumnCount = columnNames.size();
 
             // Validate data rows
-            int rowCount = 0;
             for (Row row : sheet) {
                 // Skip header row
                 if (row.getRowNum() == 0) continue;
@@ -141,8 +163,6 @@ public class ExcelValidator {
                     continue;  // Skip empty rows
                 }
                 
-                rowCount++;
-                
                 // Check if data row has more columns than header
                 int lastCellNum = row.getLastCellNum();
                 if (lastCellNum > headerColumnCount) {
@@ -151,21 +171,32 @@ public class ExcelValidator {
                 }
                 
                 // Process valid row into a record
-                Map<String, String> record = new HashMap<>();
+                Map<String, String> recordMap = new HashMap<>();
                 // Store the original row number from the file
-                record.put("_rowNum", String.valueOf(row.getRowNum() + 1)); // +1 to convert to 1-based index for user display
+                recordMap.put("_rowNum", String.valueOf(row.getRowNum() + 1)); // +1 to convert to 1-based index for user display
                 for (int i = 0; i < headerColumnCount; i++) {
                     Cell cell = row.getCell(i);
                     String value = (cell != null) ? getCellValueAsString(cell) : "";
-                    record.put(columnNames.get(i), value);
+                    recordMap.put(columnNames.get(i), value);
                 }
                 
-                records.add(record);
+                // Create a FileRecord instance directly
+                JsonNode jsonRecord = objectMapper.valueToTree(recordMap);
+                FileRecord fileRecord = FileRecord.builder()
+                        .fileRecordUuid(UUID.randomUUID())
+                        .file(fileEntity)
+                        .recordNumber(recordCount + 1) // Record numbers start at 1
+                        .record(jsonRecord)
+                        .build();
+                
+                // Process the FileRecord immediately via the callback
+                recordProcessor.processRecord(fileRecord);
+                recordCount++;
             }
             
-            if (rowCount == 0) {
+            if (recordCount == 0) {
                 validationErrors.add("File must contain at least one data row");
-                return createValidationResult(validationErrors, records, fields);
+                return createValidationResult(validationErrors, fields, recordCount);
             }
             
         } catch (IOException e) {
@@ -174,7 +205,7 @@ public class ExcelValidator {
             validationErrors.add("Error processing file: " + e.getMessage());
         }
         
-        return createValidationResult(validationErrors, records, fields);
+        return createValidationResult(validationErrors, fields, recordCount);
     }
 
     /**
@@ -210,7 +241,7 @@ public class ExcelValidator {
         return "STRING";
     }
 
-    private ValidationResult createValidationResult(List<String> errors, List<Map<String, String>> records, List<FieldInfo> fields) {
+    private ValidationResult createValidationResult(List<String> errors, List<FieldInfo> fields, int recordCount) {
         ObjectNode errorsNode = objectMapper.createObjectNode();
         ArrayNode errorsArray = errorsNode.putArray("errors");
         
@@ -218,7 +249,7 @@ public class ExcelValidator {
             errorsArray.add(error);
         }
         
-        return new ValidationResult(errors.isEmpty(), errorsNode, records, fields);
+        return new ValidationResult(errors.isEmpty(), errorsNode, fields, recordCount);
     }
 
     private String getCellValueAsString(Cell cell) {
