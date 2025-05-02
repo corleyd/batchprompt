@@ -18,6 +18,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,6 +60,9 @@ public class JobOutputWorker {
     private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
+
+    @Value("${job.output.task.batch.size:100}")
+    private int taskBatchSize;
     
     @RabbitListener(queues = "${rabbitmq.queue.job-output.name}")
     @Transactional
@@ -134,16 +142,8 @@ public class JobOutputWorker {
             job.setUpdatedAt(LocalDateTime.now());
             jobRepository.save(job);
             
-            // Get all tasks for the job
-            List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
-            if (tasks.isEmpty()) {
-                log.error("No tasks found for job: {}", jobUuid);
-                failJob(job);
-                return;
-            }
-            
             // Generate Excel file
-            tempFile = generateExcelFile(job, prompt, tasks, outputFileFields, structuredFields);
+            tempFile = generateExcelFile(job, prompt, outputFileFields, structuredFields);
             if (tempFile == null) {
                 log.error("Failed to generate Excel file for job: {}", jobUuid);
                 failJob(job);
@@ -238,7 +238,8 @@ public class JobOutputWorker {
      * @param tasks The job tasks
      * @return The temporary file containing the Excel data
      */
-    private File generateExcelFile(Job job, PromptDto prompt, List<JobTask> tasks, List<FileFieldDto> outputFileFields, List<String> structuredFields) {
+    private File generateExcelFile(Job job, PromptDto prompt, List<FileFieldDto> outputFileFields, List<String> structuredFields) {
+
         File tempFile = null;
         try {
             // Create a temporary file
@@ -258,25 +259,32 @@ public class JobOutputWorker {
                     Cell cell = headerRow.createCell(colIndex++);
                     cell.setCellValue(header);
                 }
-                
+
                 // Create data rows
                 int rowIndex = 1;
-                for (JobTask task : tasks) {
-                    try {
-                        Row row = sheet.createRow(rowIndex++);
-                        populateRow(row, prompt, task, outputFileFields, structuredFields);
-                    } catch (Exception e) {
-                        log.error("Error processing task {} for job {}: {}", 
-                                  task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
-                        // Continue with the next task even if this one fails
+                int page = 0;
+                Page<JobTask> taskPage;
+                do {
+                    Pageable pageable = PageRequest.of(page, taskBatchSize).withSort(Sort.by(Sort.Direction.ASC, "recordNumber"));
+                    taskPage = jobTaskRepository.findByJobUuid(job.getJobUuid(), pageable);
+                    for (JobTask task : taskPage.getContent()) {
+                        try {
+                            Row row = sheet.createRow(rowIndex++);
+                            populateRow(row, prompt, task, outputFileFields, structuredFields);
+                        } catch (Exception e) {
+                            log.error("Error processing task {} for job {}: {}", 
+                                      task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
+                            // Continue with the next task even if this one fails
+                        }
+                        
+                        // Flush workbook to disk periodically to keep memory usage low
+                        if (rowIndex % 100 == 0) {
+                            workbook.write(fileOut);
+                            fileOut.flush();
+                        }
                     }
-                    
-                    // Flush workbook to disk periodically to keep memory usage low
-                    if (rowIndex % 100 == 0) {
-                        workbook.write(fileOut);
-                        fileOut.flush();
-                    }
-                }
+                    page++;
+                } while (taskPage.hasNext());
                 
                 // Auto-size columns
                 for (int i = 0; i < headers.size(); i++) {

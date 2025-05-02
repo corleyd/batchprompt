@@ -20,6 +20,7 @@ public class JobDto {
     private UUID fileUuid;
     private String fileName;
     private UUID promptUuid;
+    private String promptName;
     private String modelName;
     private JobStatus status;
     private Integer taskCount;

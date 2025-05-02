@@ -50,8 +50,20 @@ export class JobService {
     return this.http.get<any>(`${this.apiUrl}/${jobUuid}`);
   }
 
-  // Get tasks for a job
-  getJobTasks(jobUuid: string): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${jobUuid}/tasks`);
+  // Get tasks for a job with pagination and sorting
+  getJobTasks(
+    jobUuid: string,
+    page: number = 0, 
+    size: number = 20, 
+    sort: string = 'createdAt', 
+    direction: string = 'desc'
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort)
+      .set('direction', direction);
+    
+    return this.http.get<any>(`${this.apiUrl}/${jobUuid}/tasks`, { params });
   }
 }

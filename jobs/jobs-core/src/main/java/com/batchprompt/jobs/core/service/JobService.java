@@ -21,17 +21,18 @@ import com.batchprompt.files.model.dto.FileDto;
 import com.batchprompt.files.model.dto.FileRecordDto;
 import com.batchprompt.jobs.core.exception.JobSubmissionException;
 import com.batchprompt.jobs.core.model.Job;
+import com.batchprompt.jobs.core.model.JobOutputField;
 import com.batchprompt.jobs.core.model.JobTask;
+import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
+import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
-import com.batchprompt.jobs.core.model.JobOutputField;
-import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,6 +100,17 @@ public class JobService {
      */
     public List<JobTask> getTasksByJobId(UUID jobUuid) {
         return jobTaskRepository.findByJobUuid(jobUuid);
+    }
+    
+    /**
+     * Get paginated tasks for a specific job with sorting
+     * 
+     * @param jobUuid The UUID of the job to retrieve tasks for
+     * @param pageable Pageable object containing pagination and sorting information
+     * @return Page of tasks for the job
+     */
+    public Page<JobTask> getTasksByJobIdPaginated(UUID jobUuid, Pageable pageable) {
+        return jobTaskRepository.findByJobUuid(jobUuid, pageable);
     }
     
     /**
@@ -202,6 +214,7 @@ public class JobService {
                     .jobTaskUuid(jobTaskUuid)
                     .jobUuid(jobUuid)
                     .fileRecordUuid(record.getFileRecordUuid())
+                    .recordNumber(record.getRecordNumber())
                     .modelName(modelName)
                     .status(TaskStatus.SUBMITTED)
                     .build();
@@ -381,6 +394,27 @@ public class JobService {
                     jobUuid, job.getStatus(), job.getCompletedTaskCount(), tasks.size());
             }
         }
+    }
 
+    public JobDto convertToDto(Job job) {
+        var builder = JobDto.builder()
+                .jobUuid(job.getJobUuid())
+                .userId(job.getUserId())
+                .fileUuid(job.getFileUuid())
+                .fileName(job.getFileName())
+                .resultFileUuid(job.getResultFileUuid())
+                .promptUuid(job.getPromptUuid())
+                .modelName(job.getModelName())
+                .status(job.getStatus())
+                .taskCount(job.getTaskCount())
+                .completedTaskCount(job.getCompletedTaskCount())
+                .createdAt(job.getCreatedAt())
+                .updatedAt(job.getUpdatedAt());
+
+        PromptDto prompt = promptClient.getPrompt(job.getPromptUuid(), null);
+        if (prompt != null) {
+            builder.promptName(prompt.getName());
+        }
+        return builder.build();
     }
 }

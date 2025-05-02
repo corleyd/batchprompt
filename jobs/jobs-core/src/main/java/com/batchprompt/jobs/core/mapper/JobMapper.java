@@ -35,6 +35,7 @@ public class JobMapper {
                 .jobTaskUuid(jobTask.getJobTaskUuid())
                 .jobUuid(jobTask.getJobUuid())
                 .fileRecordUuid(jobTask.getFileRecordUuid())
+                .recordNumber(jobTask.getRecordNumber())
                 .modelName(jobTask.getModelName())
                 .status(jobTask.getStatus())
                 .errorMessage(jobTask.getErrorMessage())

@@ -24,6 +24,11 @@ logging:
       file-name-pattern: logs/${spring.application.name}-%d{yyyy-MM-dd}.%i.log
       clean-history-on-start: false
       max-file-size: 10MB
-      total-size-cap: 1GB        
+      total-size-cap: 1GB
+
+# Job output worker specific configuration
+jobs:
+  output:
+    task-batch-size: 100 # Number of tasks to process at a time
 
 

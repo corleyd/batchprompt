@@ -19,13 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.batchprompt.jobs.core.mapper.JobMapper;
+import com.batchprompt.jobs.core.model.Job;
+import com.batchprompt.jobs.core.model.JobTask;
+import com.batchprompt.jobs.core.service.JobService;
+import com.batchprompt.jobs.core.service.ModelService;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobSubmissionDto;
 import com.batchprompt.jobs.model.dto.JobTaskDto;
-import com.batchprompt.jobs.core.mapper.JobMapper;
-import com.batchprompt.jobs.core.model.Job;
-import com.batchprompt.jobs.core.service.JobService;
-import com.batchprompt.jobs.core.service.ModelService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,9 @@ public class JobsController {
 
     @GetMapping
     public ResponseEntity<List<JobDto>> getAllJobs() {
-        List<Job> jobs = jobService.getAllJobs();
-        return ResponseEntity.ok(jobMapper.toDtoList(jobs));
+        return ResponseEntity.ok(jobService.getAllJobs().stream()
+            .map(job -> jobService.convertToDto(job))
+            .toList());
     }
 
     @GetMapping("/{jobUuid}")
@@ -51,7 +53,7 @@ public class JobsController {
         if (job == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(jobMapper.toDto(job));
+        return ResponseEntity.ok(jobService.convertToDto(job));
     }
 
     @GetMapping("/user")
@@ -72,18 +74,35 @@ public class JobsController {
         Page<Job> jobPage = jobService.getJobsByUserIdPaginated(userId, pageable);
         
         // Convert to DTOs and preserve pagination metadata
-        Page<JobDto> jobDtoPage = jobPage.map(jobMapper::toDto);
+        Page<JobDto> jobDtoPage = jobPage.map(job -> jobService.convertToDto(job));
         
         return ResponseEntity.ok(jobDtoPage);
     }
 
     @GetMapping("/{jobUuid}/tasks")
-    public ResponseEntity<List<JobTaskDto>> getJobTasks(@PathVariable UUID jobUuid) {
+    public ResponseEntity<?> getJobTasks(
+            @PathVariable UUID jobUuid,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "20") int size,
+            @RequestParam(required = false, defaultValue = "createdAt") String sort,
+            @RequestParam(required = false, defaultValue = "desc") String direction) {
+        
         Job job = jobService.getJobById(jobUuid);
         if (job == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(jobMapper.toTaskDtoList(jobService.getTasksByJobId(jobUuid)));
+        
+        // Create pageable object with sorting
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+        
+        // Get paginated and sorted job tasks
+        Page<JobTask> taskPage = jobService.getTasksByJobIdPaginated(jobUuid, pageable);
+        
+        // Convert to DTOs and preserve pagination metadata
+        Page<JobTaskDto> taskDtoPage = taskPage.map(jobMapper::toDto);
+        
+        return ResponseEntity.ok(taskDtoPage);
     }
 
     @GetMapping("/models")
@@ -108,6 +127,6 @@ public class JobsController {
                 "Bearer " + authToken
         );
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(jobMapper.toDto(job));
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.convertToDto(job));
     }
 }

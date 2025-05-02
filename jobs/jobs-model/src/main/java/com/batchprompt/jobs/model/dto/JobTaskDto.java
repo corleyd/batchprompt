@@ -18,6 +18,7 @@ public class JobTaskDto {
     private UUID jobTaskUuid;
     private UUID jobUuid;
     private UUID fileRecordUuid;
+    private int recordNumber;
     private String modelName;
     private TaskStatus status;
     private String responseText;

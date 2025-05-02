@@ -34,6 +34,9 @@ public class JobTask {
     
     @Column(name = "file_record_uuid", nullable = false)
     private UUID fileRecordUuid;
+
+    @Column(name = "record_number", nullable = false)
+    private Integer recordNumber;
     
     @Column(name = "model_name", nullable = false)
     private String modelName;
