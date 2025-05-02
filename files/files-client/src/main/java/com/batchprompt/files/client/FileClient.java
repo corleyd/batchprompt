@@ -20,6 +20,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.batchprompt.common.services.ServiceAuthenticationService;
 import com.batchprompt.files.model.dto.FileDto;
+import com.batchprompt.files.model.dto.FileFieldDto;
 import com.batchprompt.files.model.dto.FileRecordDto;
 
 import lombok.RequiredArgsConstructor;
@@ -257,6 +258,32 @@ public class FileClient {
     }
     
     /**
+     * Get fields for a file
+     * 
+     * @param fileUuid The UUID of the file to get fields for
+     * @param authToken The user's auth token, or null for service-to-service call
+     * @return List of file field DTOs
+     */
+    public List<FileFieldDto> getFileFields(UUID fileUuid, String authToken) {
+        try {
+            String token = getEffectiveToken(authToken);
+            HttpHeaders headers = createAuthHeaders(token);
+            HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+            
+            ResponseEntity<List<FileFieldDto>> response = restTemplate.exchange(
+                filesServiceUrl + "/api/files/" + fileUuid + "/fields",
+                HttpMethod.GET,
+                requestEntity,
+                new ParameterizedTypeReference<List<FileFieldDto>>() {}
+            );
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error retrieving file fields for file {}: {}", fileUuid, e.getMessage(), e);
+            return null;
+        }
+    }
+    
+    /**
      * Get an effective token for the request. If user token is null, get a service token.
      * 
      * @param userToken The user's auth token or null
@@ -287,4 +314,5 @@ public class FileClient {
         }
         return headers;
     }
+    
 }

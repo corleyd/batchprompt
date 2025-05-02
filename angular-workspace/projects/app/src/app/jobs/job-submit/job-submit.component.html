@@ -52,6 +52,39 @@
         </div>
       </div>
 
+      <!-- Field Selection Section -->
+      <div class="form-group fields-section" *ngIf="jobForm.get('fileUuid')?.value">
+        <div class="fields-header">
+          <label class="field-include-label">
+            <input type="checkbox" formControlName="includeAllFields" id="includeAllFields">
+            Include all fields from the input file
+          </label>
+        </div>
+        
+        <div *ngIf="!includeAllFields" class="fields-selection">
+          <div *ngIf="fieldsLoading" class="fields-loading">
+            <div class="spinner small"></div>
+            <p>Loading fields...</p>
+          </div>
+          
+          <div *ngIf="!fieldsLoading && fileFields.length === 0" class="no-fields-message">
+            No fields available for this file
+          </div>
+          
+          <div *ngIf="!fieldsLoading && fileFields.length > 0" class="fields-list">
+            <p class="field-instruction">Select the fields to include:</p>
+            <div *ngFor="let field of fileFields" class="field-item">
+              <label>
+                <input type="checkbox" 
+                      [checked]="isFieldSelected(field.fieldUuid)"
+                      (change)="toggleFieldSelection(field.fieldUuid, $event)">
+                {{ field.fieldName }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div *ngIf="errorMessage" class="error-banner">
         {{ errorMessage }}
       </div>

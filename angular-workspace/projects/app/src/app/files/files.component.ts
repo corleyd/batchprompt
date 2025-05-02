@@ -23,7 +23,7 @@ export class FilesComponent implements OnInit {
   sortDirection = 'desc';
   
   // Filter properties
-  fileTypeFilter?: string;
+  fileTypeFilter?: string = 'UPLOAD';
   statusFilter?: string;
   
   // Options for dropdowns

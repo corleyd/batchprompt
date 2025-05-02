@@ -74,6 +74,80 @@ h1 {
   }
 }
 
+/* Field Selection Styles */
+.fields-section {
+  margin-top: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 1rem;
+  background-color: #f9f9f9;
+}
+
+.fields-header {
+  margin-bottom: 1rem;
+  
+  .field-include-label {
+    display: flex;
+    align-items: center;
+    font-weight: 600;
+    
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+  }
+}
+
+.fields-selection {
+  margin-top: 1rem;
+}
+
+.fields-loading {
+  display: flex;
+  align-items: center;
+  
+  .spinner.small {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: #3498db;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 10px;
+  }
+}
+
+.no-fields-message {
+  color: #7f8c8d;
+  font-style: italic;
+}
+
+.fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 250px;
+  overflow-y: auto;
+  padding-right: 10px;
+  
+  .field-instruction {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+  
+  .field-item {
+    label {
+      display: flex;
+      align-items: center;
+      font-weight: normal;
+      
+      input[type="checkbox"] {
+        margin-right: 8px;
+      }
+    }
+  }
+}
+
 .error-message {
   color: #e74c3c;
   font-size: 0.875rem;

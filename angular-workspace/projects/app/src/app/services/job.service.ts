@@ -19,11 +19,12 @@ export class JobService {
   }
 
   // Submit a job
-  submitJob(fileUuid: string, promptUuid: string, modelName: string): Observable<any> {
+  submitJob(fileUuid: string, promptUuid: string, modelName: string, outputFieldUuids?: string[]): Observable<any> {
     const payload = {
       fileUuid,
       promptUuid,
-      modelName
+      modelName,
+      outputFieldUuids
     };
     return this.http.post(`${this.apiUrl}/submit`, payload);
   }

@@ -6,8 +6,11 @@ import java.io.FileOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -20,9 +23,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.batchprompt.files.client.FileClient;
 import com.batchprompt.files.model.dto.FileDto;
+import com.batchprompt.files.model.dto.FileFieldDto;
 import com.batchprompt.files.model.dto.FileRecordDto;
 import com.batchprompt.jobs.core.model.Job;
+import com.batchprompt.jobs.core.model.JobOutputField;
 import com.batchprompt.jobs.core.model.JobTask;
+import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.model.JobStatus;
@@ -45,6 +51,7 @@ public class JobOutputWorker {
 
     private final JobRepository jobRepository;
     private final JobTaskRepository jobTaskRepository;
+    private final JobOutputFieldRepository jobOutputFieldRepository;
     private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
@@ -79,7 +86,49 @@ public class JobOutputWorker {
                 failJob(job);
                 return;
             }
+
+            // Get selected output fields if any are specified
+            List<JobOutputField> outputFields = jobOutputFieldRepository.findByJobJobUuidOrderByFieldOrder(job.getJobUuid());
+
+            List<FileFieldDto> allFileFields = fileClient.getFileFields(job.getFileUuid(), null);
+            List<FileFieldDto> outputFileFields;
             
+            if (outputFields.isEmpty()) {
+                outputFileFields = allFileFields;
+            } else {
+                // Get the output fields from the job
+                outputFileFields = outputFields.stream()
+                        .map(field -> allFileFields.stream()
+                                .filter(f -> f.getFieldUuid().equals(field.getFieldUuid()))
+                                .findFirst()
+                                .orElse(null))
+                        .filter(field -> field != null)
+                        .collect(Collectors.toList());
+                log.info("Job {} has {} selected output fields", job.getJobUuid(), outputFields.size());
+            }            
+
+            /*
+             * If the job output method is STRUCTURED or BOTH, we need to get the field names from properties in the response
+             * JSON schema.
+             */
+
+            ArrayList<String> structuredFields = new ArrayList<>();
+            if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
+                String jsonSchema = prompt.getResponseJsonSchema();
+                if (jsonSchema == null) {
+                    log.error("No JSON schema found for job: {}", jobUuid);
+                    failJob(job);
+                    return;
+                }
+                JsonNode jsonSchemaNode = objectMapper.readTree(jsonSchema);
+                if (jsonSchemaNode == null || !jsonSchemaNode.has("properties")) {
+                    log.error("Invalid JSON schema for job: {}", jobUuid);
+                    failJob(job);
+                    return;
+                }
+                jsonSchemaNode.get("properties").fieldNames().forEachRemaining(structuredFields::add);
+            }
+
             // Update job status to GENERATING_OUTPUT
             job.setStatus(JobStatus.GENERATING_OUTPUT);
             job.setUpdatedAt(LocalDateTime.now());
@@ -94,7 +143,7 @@ public class JobOutputWorker {
             }
             
             // Generate Excel file
-            tempFile = generateExcelFile(job, prompt, tasks);
+            tempFile = generateExcelFile(job, prompt, tasks, outputFileFields, structuredFields);
             if (tempFile == null) {
                 log.error("Failed to generate Excel file for job: {}", jobUuid);
                 failJob(job);
@@ -189,7 +238,7 @@ public class JobOutputWorker {
      * @param tasks The job tasks
      * @return The temporary file containing the Excel data
      */
-    private File generateExcelFile(Job job, PromptDto prompt, List<JobTask> tasks) {
+    private File generateExcelFile(Job job, PromptDto prompt, List<JobTask> tasks, List<FileFieldDto> outputFileFields, List<String> structuredFields) {
         File tempFile = null;
         try {
             // Create a temporary file
@@ -202,7 +251,7 @@ public class JobOutputWorker {
                 
                 // Create header row
                 Row headerRow = sheet.createRow(0);
-                List<String> headers = getHeaders(job, prompt, tasks);
+                List<String> headers = getHeaders(job, prompt, outputFileFields, structuredFields);
                 int colIndex = 0;
                 
                 for (String header : headers) {
@@ -215,7 +264,7 @@ public class JobOutputWorker {
                 for (JobTask task : tasks) {
                     try {
                         Row row = sheet.createRow(rowIndex++);
-                        populateRow(row, prompt, task, headers);
+                        populateRow(row, prompt, task, outputFileFields, structuredFields);
                     } catch (Exception e) {
                         log.error("Error processing task {} for job {}: {}", 
                                   task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
@@ -255,29 +304,29 @@ public class JobOutputWorker {
      * Get the headers for the Excel file
      * 
      * @param job The job
+     * @param prompt The prompt
      * @param tasks The job tasks
      * @return List of header names
      */
-    private List<String> getHeaders(Job job, PromptDto prompt, List<JobTask> tasks) {
+    private List<String> getHeaders(Job job, PromptDto prompt, List<FileFieldDto> outputFileFields, List<String> structuredFields) {
         List<String> headers = new ArrayList<>();
         headers.add("record_number");
-        
-        // Check if any task has a response text with JSON schema
-        for (JobTask task : tasks) {
-            if (task.getResponseText() != null && task.getStatus() == TaskStatus.COMPLETED) {
-                try {
-                    String cleanResponseText = cleanResponseText(task.getResponseText());
-                    JsonNode jsonNode = objectMapper.readTree(cleanResponseText);
-                    
-                    // Add all properties from the first valid JSON response
-                    jsonNode.fieldNames().forEachRemaining(headers::add);
-                    break;
-                } catch (Exception e) {
-                    // This task doesn't have a valid JSON response, continue to next
-                }
+
+        /*
+         * Add a header for each output field
+         */
+
+        for (FileFieldDto field : outputFileFields) {
+            String header = field.getFieldName();
+            if (header == null || header.isEmpty()) {
+                header = "field_" + field.getFieldUuid();
             }
+            headers.add(header);
         }
         
+        // Find field names from the first valid JSON response
+        Set<String> allAvailableStructuredFields = new HashSet<>();
+
         // Add error and full response columns
         if (prompt.getOutputMethod() != PromptOutputMethod.STRUCTURED) {
             String responseTextHeader = prompt.getResponseTextColumnName();
@@ -286,7 +335,14 @@ public class JobOutputWorker {
             }
             headers.add(responseTextHeader);
         }
-
+        
+        if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
+            // Add structured fields to headers
+            for (String field : allAvailableStructuredFields) {
+                headers.add(field);
+            }
+        }
+        
         headers.add("error_message");
         
         return headers;
@@ -320,7 +376,7 @@ public class JobOutputWorker {
      * @param headers The Excel headers
      * @throws JsonProcessingException If there's an error parsing JSON
      */
-    private void populateRow(Row row, PromptDto prompt, JobTask task, List<String> headers) throws JsonProcessingException {
+    private void populateRow(Row row, PromptDto prompt, JobTask task, List<FileFieldDto> outputFileFields, List<String> structuredFields) throws JsonProcessingException {
         // Fetch the file record to get the record number
         FileRecordDto recordDto = null;
         try {
@@ -339,41 +395,58 @@ public class JobOutputWorker {
         } else {
             recordNumberCell.setCellValue(row.getRowNum());
         }
+
+
+        /*
+         * Handle output fields
+         */
         
-        // Initialize a JSON object to null
-        JsonNode jsonResponse = null;
-        String errorParsingJson = null;
-        
-        // Try to parse response as JSON if task completed successfully
-        if (task.getStatus() == TaskStatus.COMPLETED && task.getResponseText() != null) {
-            try {
-                String cleanedResponse = cleanResponseText(task.getResponseText());
-                jsonResponse = objectMapper.readTree(cleanedResponse);
-            } catch (Exception e) {
-                errorParsingJson = "error parsing model results";
-            }
-        }
-        
-        // Handle JSON schema properties
-        for (int i = 1; i < headers.size() - 2; i++) {  // Skip record_number, error_message, response_text
+         for (FileFieldDto field : outputFileFields) {
             Cell cell = row.createCell(colIndex++);
-            String header = headers.get(i);
+            String fieldName = field.getFieldName();
+            String value = null;
             
             // If we have valid JSON and it contains this property, use it
-            if (jsonResponse != null && jsonResponse.has(header)) {
-                JsonNode value = jsonResponse.get(header);
-                if (value.isTextual()) {
-                    cell.setCellValue(value.asText());
-                } else if (value.isNumber()) {
-                    cell.setCellValue(value.asDouble());
-                } else if (value.isBoolean()) {
-                    cell.setCellValue(value.asBoolean());
-                } else {
-                    cell.setCellValue(value.toString());
+            if (recordDto != null && recordDto.getRecord() != null && recordDto.getRecord().has(fieldName)) {
+                value = jsonNodeToCellValue(recordDto.getRecord().get(fieldName));
+            }
+            cell.setCellValue(value != null ? value : "");
+        }        
+        
+        /*
+         * Handle structured output fields
+         */
+        String errorMessage = null;
+
+        if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
+            ;
+            JsonNode jsonResponse = null;
+
+            if (task.getResponseText() == null || task.getResponseText().isEmpty()) {
+                errorMessage = "no response text";
+            } else {
+
+                try {
+                    String cleanedResponse = cleanResponseText(task.getResponseText());
+                    jsonResponse = objectMapper.readTree(cleanedResponse);
+                } catch (Exception e) {
+                    errorMessage = "error parsing model results";
                 }
             }
-        }
+
+            for (String field : structuredFields) {
+                Cell cell = row.createCell(colIndex++);
+                String value = null;
                 
+                // If we have valid JSON and it contains this property, use it
+                if (jsonResponse != null && jsonResponse.has(field)) {
+                    value = jsonNodeToCellValue(jsonResponse.get(field));
+                }
+                cell.setCellValue(value != null ? value : "");
+            }
+        }
+
+               
         // Add response text column
         if (prompt.getOutputMethod() != PromptOutputMethod.STRUCTURED) {
             Cell responseTextCell = row.createCell(colIndex++);
@@ -384,15 +457,36 @@ public class JobOutputWorker {
 
         // Add error message column
         Cell errorCell = row.createCell(colIndex++);
-        if (errorParsingJson != null) {
+        if (errorMessage != null) {
             // If we failed to parse JSON
-            errorCell.setCellValue(errorParsingJson);
+            errorCell.setCellValue(errorMessage);
         } else if (task.getStatus() == TaskStatus.FAILED && task.getErrorMessage() != null) {
             // If task failed with error
             errorCell.setCellValue(task.getErrorMessage());
         }
     }
-    
+
+    /**
+     * Convert JSON node to cell value
+     * 
+     * @param jsonNode The JSON node
+     * @return The cell value as a string
+     */
+
+    private String jsonNodeToCellValue(JsonNode jsonNode) {
+        String value = null;
+        if (jsonNode.isTextual()) {
+            value = jsonNode.asText();
+        } else if (jsonNode.isNumber()) {
+            value = jsonNode.asDouble() + "";
+        } else if (jsonNode.isBoolean()) {
+            value = jsonNode.asBoolean() + "";
+        } else {
+            value = jsonNode.toString();
+        }
+        return value;
+    }
+
     /**
      * Update job status to FAILED
      * 

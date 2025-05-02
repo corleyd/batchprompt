@@ -103,6 +103,7 @@ public class JobsController {
                 jobSubmissionDto.getFileUuid(),
                 jobSubmissionDto.getPromptUuid(),
                 jobSubmissionDto.getModelName(),
+                jobSubmissionDto.getOutputFieldUuids(),
                 userId,
                 "Bearer " + authToken
         );

@@ -30,6 +30,8 @@ import com.batchprompt.jobs.model.dto.JobOutputMessage;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
+import com.batchprompt.jobs.core.model.JobOutputField;
+import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +43,7 @@ public class JobService {
 
     private final JobRepository jobRepository;
     private final JobTaskRepository jobTaskRepository;
+    private final JobOutputFieldRepository jobOutputFieldRepository;
     private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ModelService modelService;
@@ -99,18 +102,19 @@ public class JobService {
     }
     
     /**
-     * Submit a new job for processing
+     * Submit a new job for processing with specific output fields
      * 
      * @param fileUuid The UUID of the file to process
      * @param promptUuid The UUID of the prompt to use
      * @param modelName The name of the model to use
+     * @param outputFieldUuids List of field UUIDs to include in the output (can be null for all fields)
      * @param userId The user ID submitting the job
      * @param authToken The authentication token for calling other services
      * @return The created job
      * @throws JobSubmissionException If there's an error during job submission
      */
     @Transactional
-    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelName, String userId, String authToken) {
+    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelName, List<UUID> outputFieldUuids, String userId, String authToken) {
         // Validate model
         if (!modelService.isModelSupported(modelName)) {
             throw new JobSubmissionException("Unsupported model: " + modelName);
@@ -167,6 +171,26 @@ public class JobService {
                 
         jobRepository.save(job);
         
+        // Log the outputFieldUuids parameter to check if it's null or empty
+        log.info("Job {} submitted with outputFieldUuids: {}", jobUuid, outputFieldUuids);
+        
+        // Save selected output fields if provided
+        if (outputFieldUuids != null && !outputFieldUuids.isEmpty()) {
+            int fieldOrder = 0;
+            for (UUID fieldUuid : outputFieldUuids) {
+                JobOutputField outputField = JobOutputField.builder()
+                        .jobOutputFieldUuid(UUID.randomUUID())
+                        .job(job)
+                        .fieldOrder(fieldOrder++)
+                        .fieldUuid(fieldUuid)
+                        .build();
+                jobOutputFieldRepository.save(outputField);
+            }
+            log.info("Saved {} output fields for job {}", outputFieldUuids.size(), jobUuid);
+        } else {
+            log.info("No output fields specified for job {}, will include all fields", jobUuid);
+        }
+        
         // Store messages to be sent after transaction commits
         final List<JobTaskMessage> messagesToSend = new ArrayList<>();
         
@@ -213,6 +237,22 @@ public class JobService {
         log.info("Job {} submitted for file {} and prompt {}", jobUuid, fileUuid, promptUuid);
         
         return job;
+    }
+    
+    /**
+     * Submit a new job for processing with all fields included
+     * 
+     * @param fileUuid The UUID of the file to process
+     * @param promptUuid The UUID of the prompt to use
+     * @param modelName The name of the model to use
+     * @param userId The user ID submitting the job
+     * @param authToken The authentication token for calling other services
+     * @return The created job
+     * @throws JobSubmissionException If there's an error during job submission
+     */
+    @Transactional
+    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelName, String userId, String authToken) {
+        return submitJob(fileUuid, promptUuid, modelName, null, userId, authToken);
     }
     
     /**
