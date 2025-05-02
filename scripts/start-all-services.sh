@@ -6,35 +6,43 @@ echo "Starting all Spring Boot services from $PROJECT_ROOT"
 # Create logs directory if it doesn't exist
 mkdir -p "$PROJECT_ROOT/logs"
 
-# Start the prompts service
-echo "Starting prompts service..."
-cd "$PROJECT_ROOT"
-nohup ./gradlew :services:prompts:bootRun > "$PROJECT_ROOT/logs/prompts.log" 2>&1 &
-PROMPTS_PID=$!
-echo "Prompts service started with PID: $PROMPTS_PID"
-echo $PROMPTS_PID > "$PROJECT_ROOT/logs/prompts.pid"
 
-# Start the jobs service
-echo "Starting jobs service..."
-cd "$PROJECT_ROOT"
-nohup ./gradlew :services:jobs:bootRun > "$PROJECT_ROOT/logs/jobs.log" 2>&1 &
-JOBS_PID=$!
-echo "Jobs service started with PID: $JOBS_PID"
-echo $JOBS_PID > "$PROJECT_ROOT/logs/jobs.pid"
+for service in prompts:prompts-api jobs:jobs-api files:files-api jobs:jobs-output-worker jobs:jobs-task-worker
+do
 
-# Start the files service
-echo "Starting files service..."
-cd "$PROJECT_ROOT"
-nohup ./gradlew :services:files:bootRun > "$PROJECT_ROOT/logs/files.log" 2>&1 &
-FILES_PID=$!
-echo "Files service started with PID: $FILES_PID"
-echo $FILES_PID > "$PROJECT_ROOT/logs/files.pid"
+  service_name=$(echo $service | cut -d':' -f2)
 
-echo "All services started successfully!"
-echo "To stop all services, run stop-all-services.sh"
+  # Check if the service is already running
+  if pgrep -f "$service:bootRun" > /dev/null; then
+    echo "$service service is already running. Skipping..."
+    continue
+  fi
 
-# List all running services
-echo "Running services:"
-echo "- Prompts service (PID: $PROMPTS_PID)"
-echo "- Jobs service (PID: $JOBS_PID)"
-echo "- Files service (PID: $FILES_PID)"
+  
+
+    # Check if the service's PID file exists and is a valid PID
+    PID_FILE="$PROJECT_ROOT/logs/$service_name.pid"
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if ps -p $PID > /dev/null; then
+            echo "$service service is already running with PID $PID. Skipping..."
+            continue
+        else
+            echo "Removing stale PID file for $service service."
+            rm "$PID_FILE"
+        fi
+    fi
+
+    # Start the service
+    echo "Starting $service service..."
+    cd "$PROJECT_ROOT"
+    nohup ./gradlew "$service:bootRun" > "$PROJECT_ROOT/logs/$service_name.log" 2>&1 &
+    SERVICE_PID=$!
+    echo "$service service started with PID: $SERVICE_PID"
+    echo $SERVICE_PID > "$PROJECT_ROOT/logs/$service_name.pid"
+    echo "Service $service started with PID: $SERVICE_PID"
+    echo "Logs for $service service can be found at $PROJECT_ROOT/logs/$service_name.log"
+    echo "PID for $service service can be found at $PROJECT_ROOT/logs/$service_name.pid"
+    echo "Service $service started successfully!"
+done
+

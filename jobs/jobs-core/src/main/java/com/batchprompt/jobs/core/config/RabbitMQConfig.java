@@ -62,10 +62,17 @@ public class RabbitMQConfig {
                 if (modelDef.getQueue() != null && !modelDef.getQueue().isEmpty()) {
                     var queueName = modelDef.getQueue();
                     var queue = new Queue(queueName, true);
+                    
+                    // Always add the queue to the returned list
                     queues.add(queue);
-                    Binding binding = BindingBuilder.bind(queue).to(exchange).with(queueName);
-                    rabbitAdmin.declareBinding(binding);
-                    rabbitAdmin.declareQueue(queue);
+                    
+                    // Check if queue already exists before creating it
+                    if (rabbitAdmin.getQueueInfo(queueName) == null) {
+                        // Declare queue first, then create the binding
+                        rabbitAdmin.declareQueue(queue);
+                        Binding binding = BindingBuilder.bind(queue).to(exchange).with(queueName);
+                        rabbitAdmin.declareBinding(binding);
+                    }
                 }
             }
         }
