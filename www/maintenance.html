@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BatchPrompt - Under Maintenance</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4a6cf7;
+            --primary-dark: #3a56c6;
+            --secondary-color: #f97316;
+            --text-color: #333;
+            --light-bg: #f5f7ff;
+            --white: #ffffff;
+            --dark-bg: #1d2144;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .maintenance-page {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, #2a307e 100%);
+            color: var(--white);
+            padding: 80px 0;
+            text-align: center;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            line-height: 1.2;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .maintenance-icon {
+            font-size: 5rem;
+            margin-bottom: 30px;
+            color: var(--secondary-color);
+        }
+        
+        .estimated-time {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+        
+        .footer-section {
+            background-color: var(--dark-bg);
+            color: var(--white);
+            padding: 20px 0;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-section {
+                padding: 60px 0;
+            }
+            
+            .maintenance-icon {
+                font-size: 4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="maintenance-page">
+        <div class="hero-section">
+            <div class="container">
+                <div class="hero-content">
+                    <i class="fas fa-tools maintenance-icon"></i>
+                    <h1>We're Making BatchPrompt Even Better</h1>
+                    <p class="hero-subtitle">Our platform is currently undergoing scheduled maintenance. We apologize for any inconvenience and appreciate your patience.</p>
+                    
+                    <div class="estimated-time">
+                        <p><i class="fas fa-clock"></i> Expected completion: <strong>3 hours</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="footer-section">
+            <div class="container">
+                <div class="footer-bottom">
+                    <p>&copy; 2025 BatchPrompt. All rights reserved.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
