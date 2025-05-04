@@ -1,0 +1,130 @@
+<div class="admin-jobs-container">
+  <div class="admin-section-header">
+    <h1>Jobs Management</h1>
+    <button class="refresh-btn" (click)="refreshJobs()">
+      <i class="material-icons">refresh</i> Refresh
+    </button>
+  </div>
+
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading jobs...</p>
+  </div>
+
+  <div class="error-message" *ngIf="error">
+    <p>Failed to load jobs. Please try again.</p>
+    <button (click)="refreshJobs()" class="secondary-btn">Retry</button>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && !error && jobs.length === 0">
+    <i class="material-icons">work_off</i>
+    <h3>No Jobs Found</h3>
+    <p>There are no processing jobs in the system.</p>
+  </div>
+
+  <div class="jobs-table-wrapper" *ngIf="!loading && !error && jobs.length > 0">
+    <table class="admin-table jobs-table">
+      <thead>
+        <tr>
+          <th (click)="updateSort('jobUuid')" class="sortable-header">
+            Job ID
+            <i class="material-icons">{{ getSortIcon('jobUuid') }}</i>
+          </th>
+          <th (click)="updateSort('userId')" class="sortable-header">
+            User ID
+            <i class="material-icons">{{ getSortIcon('userId') }}</i>
+          </th>
+          <th (click)="updateSort('fileName')" class="sortable-header">
+            File Name
+            <i class="material-icons">{{ getSortIcon('fileName') }}</i>
+          </th>
+          <th (click)="updateSort('modelName')" class="sortable-header">
+            Model
+            <i class="material-icons">{{ getSortIcon('modelName') }}</i>
+          </th>
+          <th (click)="updateSort('status')" class="sortable-header">
+            Status
+            <i class="material-icons">{{ getSortIcon('status') }}</i>
+          </th>
+          <th (click)="updateSort('taskCount')" class="sortable-header">
+            Tasks
+            <i class="material-icons">{{ getSortIcon('taskCount') }}</i>
+          </th>
+          <th (click)="updateSort('createdAt')" class="sortable-header">
+            Created
+            <i class="material-icons">{{ getSortIcon('createdAt') }}</i>
+          </th>
+          <th (click)="updateSort('updatedAt')" class="sortable-header">
+            Updated
+            <i class="material-icons">{{ getSortIcon('updatedAt') }}</i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let job of jobs">
+          <td><code>{{ job.jobUuid }}</code></td>
+          <td><code>{{ job.userId }}</code></td>
+          <td>{{ job.fileName }}</td>
+          <td>{{ job.modelName }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(job.status)">
+              {{ job.status }}
+              <ng-container *ngIf="job.status === 'PROCESSING'">
+                ({{ job.completedTaskCount }}/{{ job.taskCount }})
+              </ng-container>
+            </span>
+          </td>
+          <td>{{ job.completedTaskCount }}/{{ job.taskCount }}</td>
+          <td>{{ job.createdAt | date:'medium' }}</td>
+          <td>{{ job.updatedAt | date:'medium' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination-controls" *ngIf="!loading && !error && totalPages > 0">
+    <div class="page-info">
+      Showing {{ jobs.length ? (currentPage * pageSize) + 1 : 0 }} - {{ (currentPage * pageSize) + jobs.length }} of {{ totalItems }} jobs
+    </div>
+    
+    <div class="page-navigation">
+      <button 
+        class="page-button" 
+        [disabled]="currentPage === 0" 
+        (click)="previousPage()"
+      >
+        Previous
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of [].constructor(totalPages < 5 ? totalPages : 5); let i = index"
+          class="page-number" 
+          [class.active]="(currentPage < 2 ? i : currentPage - 2 + i) === currentPage"
+          (click)="goToPage(currentPage < 2 ? i : currentPage - 2 + i)"
+          [disabled]="(currentPage < 2 ? i : currentPage - 2 + i) >= totalPages"
+        >
+          {{ (currentPage < 2 ? i : currentPage - 2 + i) + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="page-button" 
+        [disabled]="currentPage >= totalPages - 1" 
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </div>
+    
+    <div class="page-size-selector">
+      <label for="pageSize">Items per page:</label>
+      <select id="pageSize" class="select-control" [(ngModel)]="pageSize" (change)="currentPage = 0; loadJobs()">
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+        <option [value]="50">50</option>
+        <option [value]="100">100</option>
+      </select>
+    </div>
+  </div>
+</div>

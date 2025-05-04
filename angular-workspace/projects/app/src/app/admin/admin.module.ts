@@ -8,6 +8,7 @@ import { AdminLayoutComponent } from './components/admin-layout/admin-layout.com
 import { UsersComponent } from './pages/users/users.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { ReportsComponent } from './pages/reports/reports.component';
+import { AdminJobsComponent } from './components/admin-jobs/admin-jobs.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { ReportsComponent } from './pages/reports/reports.component';
     AdminLayoutComponent,
     UsersComponent,
     SettingsComponent,
-    ReportsComponent
+    ReportsComponent,
+    AdminJobsComponent
   ],
   imports: [
     CommonModule,

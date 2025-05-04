@@ -75,9 +75,14 @@ public class UserController {
     public ResponseEntity<Page<UserDto>> searchUsersByName(
             @RequestParam String name,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir) {
         
-        Pageable pageable = PageRequest.of(page, size);
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+                Sort.Direction.DESC : Sort.Direction.ASC;
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<User> users = userService.searchUsersByName(name, pageable);
         
         return ResponseEntity.ok(userMapper.toDtoPage(users));

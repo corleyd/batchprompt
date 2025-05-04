@@ -6,19 +6,18 @@
 
   <div class="search-filter-bar">
     <div class="search-box">
-      <input type="text" placeholder="Search users..." class="search-input">
+      <input type="text" placeholder="Search users..." class="search-input" [(ngModel)]="searchTerm" (keyup.enter)="searchUsers()">
     </div>
     <div class="filters">
-      <select class="filter-select">
+      <select class="filter-select" [(ngModel)]="roleFilter" (change)="applyFilters()">
         <option value="">All Roles</option>
-        <option value="admin">Admin</option>
-        <option value="user">User</option>
-        <option value="editor">Editor</option>
+        <option value="USER">User</option>
+        <option value="ADMIN">Admin</option>
       </select>
-      <select class="filter-select">
+      <select class="filter-select" [(ngModel)]="statusFilter" (change)="applyFilters()">
         <option value="">All Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
+        <option value="true">Active</option>
+        <option value="false">Inactive</option>
       </select>
     </div>
   </div>
@@ -27,45 +26,116 @@
     <table class="users-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Role</th>
-          <th>Status</th>
+          <th (click)="onSortChange('userUuid')">
+            ID
+            <span class="sort-icon" *ngIf="sortBy === 'userUuid'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="onSortChange('name')">
+            Name
+            <span class="sort-icon" *ngIf="sortBy === 'name'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="onSortChange('email')">
+            Email
+            <span class="sort-icon" *ngIf="sortBy === 'email'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="onSortChange('role')">
+            Role
+            <span class="sort-icon" *ngIf="sortBy === 'role'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
+          <th (click)="onSortChange('enabled')">
+            Status
+            <span class="sort-icon" *ngIf="sortBy === 'enabled'">
+              {{ sortDirection === 'asc' ? '↑' : '↓' }}
+            </span>
+          </th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let user of users">
-          <td>{{ user.id }}</td>
+          <td>{{ user.userUuid }}</td>
           <td>{{ user.name }}</td>
           <td>{{ user.email }}</td>
           <td>
-            <span class="badge" [ngClass]="{'admin-badge': user.role === 'Admin', 'user-badge': user.role === 'User', 'editor-badge': user.role === 'Editor'}">
+            <span class="badge" [ngClass]="{'admin-badge': user.role === 'ADMIN', 'user-badge': user.role === 'USER'}">
               {{ user.role }}
             </span>
           </td>
           <td>
-            <span class="status-indicator" [ngClass]="{'active': user.status === 'Active', 'inactive': user.status === 'Inactive'}">
-              {{ user.status }}
+            <span class="status-indicator" [ngClass]="{'active': user.enabled, 'inactive': !user.enabled}">
+              {{ user.enabled ? 'Active' : 'Inactive' }}
             </span>
           </td>
           <td class="actions-cell">
             <button class="action-btn edit">Edit</button>
-            <button class="action-btn delete">Delete</button>
+            <button class="action-btn delete" (click)="deleteUser(user.userUuid)">Delete</button>
           </td>
+        </tr>
+        <tr *ngIf="loading">
+          <td colspan="6" class="loading-cell">Loading users...</td>
+        </tr>
+        <tr *ngIf="!loading && users.length === 0">
+          <td colspan="6" class="empty-cell">No users found</td>
         </tr>
       </tbody>
     </table>
   </div>
 
-  <div class="pagination">
-    <button class="pagination-btn" disabled>&laquo; Previous</button>
-    <div class="page-numbers">
-      <button class="page-number active">1</button>
-      <button class="page-number">2</button>
-      <button class="page-number">3</button>
+  <div class="pagination-controls" *ngIf="!loading && totalUsers > 0">
+    <div class="page-info">
+      Showing {{ users.length ? (page * size) + 1 : 0 }} - {{ (page * size) + users.length }} of {{ totalUsers }} users
     </div>
-    <button class="pagination-btn">Next &raquo;</button>
+    
+    <div class="page-navigation">
+      <button 
+        class="page-button" 
+        [disabled]="page === 0" 
+        (click)="onPageChange(page - 1)"
+      >
+        Previous
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let p of [].constructor(Math.ceil(totalUsers / size) < 5 ? Math.ceil(totalUsers / size) : 5); let i = index"
+          class="page-number" 
+          [class.active]="(page < 2 ? i : page - 2 + i) === page"
+          (click)="onPageChange(page < 2 ? i : page - 2 + i)"
+          [disabled]="(page < 2 ? i : page - 2 + i) >= Math.ceil(totalUsers / size)"
+        >
+          {{ (page < 2 ? i : page - 2 + i) + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="page-button" 
+        [disabled]="(page + 1) * size >= totalUsers" 
+        (click)="onPageChange(page + 1)"
+      >
+        Next
+      </button>
+    </div>
+    
+    <div class="page-size-selector">
+      <label for="pageSize">Items per page:</label>
+      <select id="pageSize" class="select-control" [(ngModel)]="size" (change)="onPageSizeChange()">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="20">20</option>
+        <option [value]="50">50</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="list-actions" *ngIf="!loading && users.length > 0">
+    <button (click)="loadUsers()" class="secondary-btn refresh-btn">Refresh Users</button>
   </div>
 </div>

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
@@ -87,5 +87,46 @@ export class UserService {
    */
   getUserByAuth0Id(userId: string): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/auth0/${userId}`);
+  }
+  
+  /**
+   * Get all users with pagination and sorting
+   */
+  getAllUsers(page: number = 0, size: number = 10, sortBy: string = 'name', sortDirection: string = 'asc'): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('sortDir', sortDirection);
+    
+    return this.http.get<any>(this.apiUrl, { params });
+  }
+  
+  /**
+   * Search users by name with pagination and sorting
+   */
+  searchUsersByName(name: string, page: number = 0, size: number = 10, sortBy: string = 'name', sortDirection: string = 'asc'): Observable<any> {
+    let params = new HttpParams()
+      .set('name', name)
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sortBy', sortBy)
+      .set('sortDir', sortDirection);
+    
+    return this.http.get<any>(`${this.apiUrl}/search`, { params });
+  }
+  
+  /**
+   * Update a user
+   */
+  updateUser(userUuid: string, userData: any): Observable<any> {
+    return this.http.put<any>(`${this.apiUrl}/${userUuid}`, userData);
+  }
+  
+  /**
+   * Delete a user
+   */
+  deleteUser(userUuid: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${userUuid}`);
   }
 }
