@@ -1,0 +1,55 @@
+package com.batchprompt.users.core.model;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import com.batchprompt.users.model.UserRole;
+
+@Data
+@Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "user")
+public class User {
+
+    @Id
+    @Column(name = "user_uuid")
+    private UUID userUuid;
+
+    @Column(name = "user_id", nullable = false, unique = true)
+    private String userId;
+
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "name", nullable = false)
+    private String name;
+
+    @Column(name = "picture")
+    private String picture;
+
+    @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private UserRole role;
+
+    @Column(name = "enabled", nullable = false)
+    private boolean enabled;
+
+    @Column(name = "create_timestamp", nullable = false)
+    private LocalDateTime createTimestamp;
+
+    @Column(name = "update_timestamp", nullable = false)
+    private LocalDateTime updateTimestamp;
+}

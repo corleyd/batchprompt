@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from '@auth0/auth0-angular';
 import { LandingPageComponent } from './landing-page/landing-page.component';
+import { AdminRoleGuard } from './core/guards/admin-role.guard';
+import { UserValidationGuard } from './core/guards/user-validation.guard';
 
 export const routes: Routes = [
   { 
@@ -11,7 +13,7 @@ export const routes: Routes = [
   { 
     path: 'dashboard', 
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [AuthGuard],
+    canActivate: [AuthGuard, UserValidationGuard],
     children: [ 
       { 
         path: 'home', 
@@ -50,9 +52,14 @@ export const routes: Routes = [
     ]
   },
   {
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),
+    canActivate: [AuthGuard, UserValidationGuard, AdminRoleGuard]
+  },
+  {
     path: 'profile', 
     loadComponent: () => import('./profile/profile.component').then(m => m.ProfileComponent),
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard, UserValidationGuard]
   },
   { 
     path: '**', 

@@ -1,13 +1,13 @@
-import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { ToolbarComponent } from './shared/components/toolbar/toolbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, ToolbarComponent ],
+  imports: [CommonModule, RouterOutlet, ToolbarComponent ],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })

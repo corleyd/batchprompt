@@ -11,7 +11,8 @@
             "prompts-api",
             "files-api",
             "jobs-task-worker",
-            "jobs-output-worker"
+            "jobs-output-worker",
+            "users-api"
           ]
         }
     ],    
@@ -50,6 +51,13 @@
             "request": "launch",
             "mainClass": "com.batchprompt.jobs.task.worker.JobsTaskWorkerApplication",
             "projectName": "jobs-task-worker"
+        },
+        {
+            "type": "java",
+            "name": "users-api",
+            "request": "launch",
+            "mainClass": "com.batchprompt.users.api.UsersApiApplication",
+            "projectName": "users-api"
         }
     ]
 }

@@ -28,8 +28,8 @@ export class LandingPageComponent implements OnInit {
       { property: 'og:title', content: 'BatchPrompt - AI Batch Processing Platform' },
       { property: 'og:description', content: 'Process datasets with AI models using custom prompts. BatchPrompt streamlines your data workflow with powerful batch processing capabilities.' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:url', content: 'https://batchprompt.com' },
-      { property: 'og:image', content: 'https://batchprompt.com/assets/images/batchprompt-banner.jpg' },
+      { property: 'og:url', content: 'https://batchprompt.ai' },
+      { property: 'og:image', content: 'https://batchprompt.ai/assets/images/batchprompt-banner.jpg' },
       { name: 'twitter:card', content: 'summary_large_image' }
     ]);
 

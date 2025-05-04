@@ -1,0 +1,86 @@
+<div class="admin-dashboard">
+  <div class="dashboard-header">
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">System overview and key metrics</p>
+  </div>
+
+  <div class="stats-cards">
+    <div class="stat-card" *ngFor="let stat of statsCards" [ngStyle]="{'border-top-color': stat.color}">
+      <div class="card-content">
+        <h3>{{ stat.title }}</h3>
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-trend">{{ stat.trend }}</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="dashboard-row">
+    <div class="dashboard-card recent-activity">
+      <h2>Recent Activity</h2>
+      <div class="activity-list">
+        <div class="activity-item">
+          <div class="activity-icon">🔑</div>
+          <div class="activity-content">
+            <div class="activity-title">New admin user added</div>
+            <div class="activity-time">2 hours ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon">🔄</div>
+          <div class="activity-content">
+            <div class="activity-title">System backup completed</div>
+            <div class="activity-time">6 hours ago</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon">⚠️</div>
+          <div class="activity-content">
+            <div class="activity-title">Storage threshold reached</div>
+            <div class="activity-time">Yesterday</div>
+          </div>
+        </div>
+        <div class="activity-item">
+          <div class="activity-icon">🚀</div>
+          <div class="activity-content">
+            <div class="activity-title">New version deployed</div>
+            <div class="activity-time">2 days ago</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-card system-health">
+      <h2>System Health</h2>
+      <div class="health-metrics">
+        <div class="health-metric">
+          <div class="metric-label">CPU Usage</div>
+          <div class="metric-bar">
+            <div class="metric-value" style="width: 45%"></div>
+          </div>
+          <div class="metric-reading">45%</div>
+        </div>
+        <div class="health-metric">
+          <div class="metric-label">Memory Usage</div>
+          <div class="metric-bar">
+            <div class="metric-value" style="width: 72%"></div>
+          </div>
+          <div class="metric-reading">72%</div>
+        </div>
+        <div class="health-metric">
+          <div class="metric-label">API Response Time</div>
+          <div class="metric-bar">
+            <div class="metric-value" style="width: 28%"></div>
+          </div>
+          <div class="metric-reading">125ms</div>
+        </div>
+        <div class="health-metric">
+          <div class="metric-label">Disk I/O</div>
+          <div class="metric-bar">
+            <div class="metric-value" style="width: 65%"></div>
+          </div>
+          <div class="metric-reading">65%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

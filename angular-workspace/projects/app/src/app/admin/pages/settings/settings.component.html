@@ -1,0 +1,64 @@
+<div class="settings-container">
+  <div class="page-header">
+    <h1>System Settings</h1>
+    <button class="btn-primary" (click)="saveSettings()">Save Changes</button>
+  </div>
+
+  <div class="settings-layout">
+    <div class="settings-sidebar">
+      <div class="category-list">
+        <div 
+          *ngFor="let category of settingsCategories" 
+          class="category-item" 
+          [class.active]="category === currentCategory"
+          (click)="selectCategory(category)">
+          <span class="category-name">{{ category.name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-content">
+      <div class="settings-panel">
+        <h2>{{ currentCategory.name }} Settings</h2>
+        
+        <div class="settings-form">
+          <div *ngFor="let setting of currentCategory.settings" class="setting-item">
+            <div class="setting-label">{{ setting.name }}</div>
+            
+            <div class="setting-input">
+              <!-- Text input -->
+              <input 
+                *ngIf="setting.type === 'text'" 
+                type="text" 
+                [(ngModel)]="setting.value"
+                class="text-input">
+              
+              <!-- Email input -->
+              <input 
+                *ngIf="setting.type === 'email'" 
+                type="email" 
+                [(ngModel)]="setting.value"
+                class="text-input">
+              
+              <!-- Number input -->
+              <input 
+                *ngIf="setting.type === 'number'" 
+                type="number" 
+                [(ngModel)]="setting.value"
+                class="number-input">
+              
+              <!-- Toggle switch -->
+              <div *ngIf="setting.type === 'toggle'" class="toggle-container">
+                <label class="switch">
+                  <input type="checkbox" [(ngModel)]="setting.value">
+                  <span class="slider round"></span>
+                </label>
+                <span class="toggle-state">{{ setting.value ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

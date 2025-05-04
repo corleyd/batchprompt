@@ -1,0 +1,127 @@
+<div class="reports-container">
+  <div class="page-header">
+    <h1>Reports</h1>
+    <div class="header-actions">
+      <div class="time-range-selector">
+        <select [(ngModel)]="selectedTimeRange" (change)="changeTimeRange(selectedTimeRange)">
+          <option *ngFor="let range of timeRanges" [value]="range">{{ range }}</option>
+        </select>
+      </div>
+      <div class="export-options">
+        <button class="btn-export" (click)="exportReport('pdf')">Export PDF</button>
+        <button class="btn-export" (click)="exportReport('csv')">Export CSV</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="reports-layout">
+    <div class="reports-sidebar">
+      <div class="report-types">
+        <div 
+          *ngFor="let report of reportTypes" 
+          class="report-type" 
+          [class.active]="report === selectedReportType"
+          (click)="selectReportType(report)">
+          <div class="report-type-name">{{ report.name }}</div>
+          <div class="report-type-desc">{{ report.description }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reports-content">
+      <div class="report-panel">
+        <h2>{{ selectedReportType.name }}</h2>
+
+        <!-- Report Dashboard - this would use a charting library in a real app -->
+        <div class="chart-container">
+          <div class="chart-placeholder">
+            <div class="chart-title">{{ selectedReportType.name }} - {{ selectedTimeRange }}</div>
+            <div class="placeholder-chart">
+              <!-- In a real app, this would be a chart rendered using a library like Chart.js or ngx-charts -->
+              <div class="chart-bars">
+                <div class="chart-bar" style="height: 65%;">
+                  <span class="bar-label">Jan</span>
+                </div>
+                <div class="chart-bar" style="height: 78%;">
+                  <span class="bar-label">Feb</span>
+                </div>
+                <div class="chart-bar" style="height: 92%;">
+                  <span class="bar-label">Mar</span>
+                </div>
+                <div class="chart-bar" style="height: 81%;">
+                  <span class="bar-label">Apr</span>
+                </div>
+                <div class="chart-bar" style="height: 86%;">
+                  <span class="bar-label">May</span>
+                </div>
+                <div class="chart-bar" style="height: 100%;">
+                  <span class="bar-label">Jun</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Data Table -->
+        <div class="report-table-container">
+          <h3>Detailed Data</h3>
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>API Requests</th>
+                <th>Jobs Processed</th>
+                <th>Success Rate</th>
+                <th>Avg. Processing Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>January</td>
+                <td>65,000</td>
+                <td>15,000</td>
+                <td>98.2%</td>
+                <td>1.2s</td>
+              </tr>
+              <tr>
+                <td>February</td>
+                <td>78,000</td>
+                <td>19,000</td>
+                <td>97.8%</td>
+                <td>1.3s</td>
+              </tr>
+              <tr>
+                <td>March</td>
+                <td>92,000</td>
+                <td>22,000</td>
+                <td>98.5%</td>
+                <td>1.1s</td>
+              </tr>
+              <tr>
+                <td>April</td>
+                <td>81,000</td>
+                <td>25,000</td>
+                <td>99.1%</td>
+                <td>1.0s</td>
+              </tr>
+              <tr>
+                <td>May</td>
+                <td>86,000</td>
+                <td>23,000</td>
+                <td>98.7%</td>
+                <td>1.1s</td>
+              </tr>
+              <tr>
+                <td>June</td>
+                <td>103,000</td>
+                <td>28,000</td>
+                <td>99.3%</td>
+                <td>0.9s</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

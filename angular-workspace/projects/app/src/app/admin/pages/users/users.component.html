@@ -1,0 +1,71 @@
+<div class="users-container">
+  <div class="page-header">
+    <h1>User Management</h1>
+    <button class="btn-primary">Add New User</button>
+  </div>
+
+  <div class="search-filter-bar">
+    <div class="search-box">
+      <input type="text" placeholder="Search users..." class="search-input">
+    </div>
+    <div class="filters">
+      <select class="filter-select">
+        <option value="">All Roles</option>
+        <option value="admin">Admin</option>
+        <option value="user">User</option>
+        <option value="editor">Editor</option>
+      </select>
+      <select class="filter-select">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="users-table-container">
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{ user.id }}</td>
+          <td>{{ user.name }}</td>
+          <td>{{ user.email }}</td>
+          <td>
+            <span class="badge" [ngClass]="{'admin-badge': user.role === 'Admin', 'user-badge': user.role === 'User', 'editor-badge': user.role === 'Editor'}">
+              {{ user.role }}
+            </span>
+          </td>
+          <td>
+            <span class="status-indicator" [ngClass]="{'active': user.status === 'Active', 'inactive': user.status === 'Inactive'}">
+              {{ user.status }}
+            </span>
+          </td>
+          <td class="actions-cell">
+            <button class="action-btn edit">Edit</button>
+            <button class="action-btn delete">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pagination">
+    <button class="pagination-btn" disabled>&laquo; Previous</button>
+    <div class="page-numbers">
+      <button class="page-number active">1</button>
+      <button class="page-number">2</button>
+      <button class="page-number">3</button>
+    </div>
+    <button class="pagination-btn">Next &raquo;</button>
+  </div>
+</div>

@@ -19,10 +19,15 @@
             <!-- User dropdown menu -->
             <div class="user-menu" *ngIf="showUserMenu">
               <ul>
-                <li [routerLink]="['/dashboard']">
+                <!-- Admin Dashboard Link - Only shown to users with admin role -->
+                <li *ngIf="isAdmin$ | async" [routerLink]="['/admin']">
+                  <i-feather name="shield" class="menu-icon"></i-feather>
+                  <span>Admin Dashboard</span>
+              </li>
+              <li [routerLink]="['/dashboard']">
                     <i-feather name="layout" class="menu-icon"></i-feather>
                     <span>My Dashboard</span>
-                  </li>                
+                </li>
                 <li [routerLink]="['/profile']">
                   <i-feather name="user" class="menu-icon"></i-feather>
                   <span>My Account</span>

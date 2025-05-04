@@ -1,0 +1,44 @@
+package com.batchprompt.users.client;
+
+import java.util.UUID;
+
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.data.domain.Page;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.batchprompt.users.model.dto.UserDto;
+
+@FeignClient(name = "users-api", path = "/api/users")
+public interface UserClient {
+
+    @GetMapping("/{userUuid}")
+    ResponseEntity<UserDto> getUserById(@PathVariable UUID userUuid);
+    
+    @GetMapping("/auth0/{userId}")
+    ResponseEntity<UserDto> getUserByuserId(@PathVariable String userId);
+    
+    @GetMapping("/search")
+    ResponseEntity<Page<UserDto>> searchUsersByName(
+            @RequestParam String name,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size);
+    
+    @GetMapping
+    ResponseEntity<Page<UserDto>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "name") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir);
+    
+    @PostMapping("/register")
+    ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto);
+    
+    @PutMapping("/{userUuid}")
+    ResponseEntity<UserDto> updateUser(@PathVariable UUID userUuid, @RequestBody UserDto userDto);
+}
