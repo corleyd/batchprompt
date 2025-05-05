@@ -1,0 +1,35 @@
+<div class="navigation-container" [ngClass]="[containerClass, isSidebarCollapsed ? 'sidebar-collapsed' : '']">
+  <!-- Mobile toggle button -->
+  <button *ngIf="isMobileView" class="sidebar-toggle mobile-toggle" (click)="toggleSidebar()">
+    <i-feather [name]="isSidebarCollapsed ? 'ChevronRight' : 'ChevronLeft'"></i-feather>
+  </button>
+
+  <!-- Sidebar Navigation for authenticated users -->
+  <div class="sidebar" *ngIf="auth.isAuthenticated$ | async" [ngClass]="{'collapsed': isSidebarCollapsed}">
+    <div class="nav-header" *ngIf="showTitle">
+      <h3>{{ title }}</h3>
+      <!-- Desktop toggle button -->
+      <button *ngIf="!isMobileView && collapsible" class="collapse-toggle" (click)="toggleSidebar()">
+        <i-feather [name]="isSidebarCollapsed ? 'ChevronRight' : 'ChevronLeft'"></i-feather>
+      </button>
+    </div>
+    <div class="nav-links">
+      <ng-container *ngFor="let link of links">
+        <a [routerLink]="link.path" 
+           routerLinkActive="active" 
+           [routerLinkActiveOptions]="{exact: link.exactMatch || false}"
+           [ngClass]="link.cssClass">
+          <i-feather *ngIf="link.icon" [name]="link.icon" class="nav-icon"></i-feather>
+          <span *ngIf="!isSidebarCollapsed || isMobileView">{{ link.label }}</span>
+        </a>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="main-content">
+    <div class="scrolling-content-wrapper">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

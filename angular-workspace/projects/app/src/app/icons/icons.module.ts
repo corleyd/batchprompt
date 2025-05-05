@@ -1,7 +1,27 @@
 import { NgModule } from '@angular/core';
 
 import { FeatherModule } from 'angular-feather';
-import { User, LogOut, ChevronDown, ChevronUp, Layout, Download, Trash2, MoreVertical, Upload, Shield } from 'angular-feather/icons';
+import { 
+  User, 
+  LogOut, 
+  ChevronDown, 
+  ChevronUp,
+  ChevronLeft,
+  ChevronRight, 
+  Layout, 
+  Download, 
+  Trash2, 
+  MoreVertical, 
+  Upload, 
+  Shield,
+  Home,
+  FileText,
+  Briefcase,
+  MessageSquare,
+  Settings,
+  BarChart2,
+  Users
+} from 'angular-feather/icons';
 
 // Select some icons (use an object, not an array)
 const icons = {
@@ -9,12 +29,21 @@ const icons = {
   LogOut,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Layout,
   Download,
   Trash2,
   MoreVertical,
   Upload,
-  Shield
+  Shield,
+  Home,
+  FileText,
+  Briefcase,
+  MessageSquare,
+  Settings,
+  BarChart2,
+  Users
 };
 
 @NgModule({

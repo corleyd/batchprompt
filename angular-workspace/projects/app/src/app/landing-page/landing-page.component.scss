@@ -44,8 +44,15 @@ body {
   padding: 0 20px;
 }
 
+.scrolling-container {
+  position: relative;
+  overflow-y: auto;
+  height: 100%;
+  width: 100%;
+}
+
 .landing-page {
-  min-height: 100vh;
+//  min-height: 100%;
   display: flex;
   flex-direction: column;
 }

@@ -1,19 +1,5 @@
-<div class="dashboard-container">
-  <!-- Sidebar Navigation for authenticated users -->
-  <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
-    <div class="nav-links">
-      <a routerLink="home" routerLinkActive="active">Home</a>
-      <a routerLink="files/upload" routerLinkActive="active">Upload New File</a>
-      <a routerLink="files" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">My Files</a>
-      <a routerLink="jobs" routerLinkActive="active">Jobs</a>
-      <a routerLink="prompts" routerLinkActive="active">Prompts</a>
-    </div>
-  </div>
-
-  <!-- Main Content Area -->
-  <div class="main-content">
-    <div class="scrolling-content-wrapper">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
-</div>
+<app-navigation-layout 
+  [links]="dashboardLinks"
+  [collapsible]="true"
+  (sidebarToggled)="onSidebarToggled($event)">
+</app-navigation-layout>

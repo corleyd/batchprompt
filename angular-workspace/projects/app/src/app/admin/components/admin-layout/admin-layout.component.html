@@ -1,22 +1,7 @@
-<div class="admin-dashboard-container">
-  <!-- Sidebar Navigation for authenticated admin users -->
-  <div class="sidebar" *ngIf="auth.isAuthenticated$ | async">
-    <div class="nav-header">
-      <h3>Admin Panel</h3>
-    </div>
-    <div class="nav-links">
-      <a routerLink="dashboard" routerLinkActive="active">Dashboard</a>
-      <a routerLink="users" routerLinkActive="active">Users</a>
-      <a routerLink="jobs" routerLinkActive="active">Jobs</a>
-      <a routerLink="settings" routerLinkActive="active">Settings</a>
-      <a routerLink="reports" routerLinkActive="active">Reports</a>
-    </div>
-  </div>
-
-  <!-- Main Content Area -->
-  <div class="main-content">
-    <div class="scrolling-content-wrapper">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
-</div>
+<app-navigation-layout 
+  [links]="adminLinks" 
+  [title]="'Admin Panel'" 
+  [showTitle]="true"
+  [collapsible]="true"
+  (sidebarToggled)="onSidebarToggled($event)">
+</app-navigation-layout>
