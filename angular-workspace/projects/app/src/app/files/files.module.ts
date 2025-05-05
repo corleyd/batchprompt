@@ -11,6 +11,7 @@ import { FileStatusComponent } from './file-status/file-status.component';
 import { DownloadButtonComponent } from '../shared/components';
 import { FileService } from './file.service';
 import { IconsModule } from '../icons/icons.module';
+import { GenericTableModule } from '../shared/components/generic-table/generic-table.module';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,8 @@ import { IconsModule } from '../icons/icons.module';
     MatButtonModule,
     MatProgressSpinnerModule,
     DownloadButtonComponent,
-    IconsModule
+    IconsModule,
+    GenericTableModule
   ],
   providers: [FileService]
 })

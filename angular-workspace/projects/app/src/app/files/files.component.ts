@@ -1,6 +1,7 @@
 import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FileService } from './file.service';
+import { TableConfig, TableSortEvent, TablePageEvent } from '../shared/components/generic-table/table-models';
 
 @Component({
   selector: 'app-files',
@@ -20,7 +21,7 @@ export class FilesComponent implements OnInit {
   
   // Sorting properties
   sortBy = 'createdAt';
-  sortDirection = 'desc';
+  sortDirection: 'asc' | 'desc' = 'desc';
   
   // Filter properties
   fileTypeFilter?: string = 'UPLOAD';
@@ -32,6 +33,27 @@ export class FilesComponent implements OnInit {
   
   // Context menu control
   activeContextMenuFile: string | null = null;
+  
+  // Table configuration
+  tableConfig: TableConfig<any> = {
+    columns: [
+      { key: 'fileName', header: 'File Name', sortable: true },
+      { key: 'type', header: 'Type', sortable: true },
+      { key: 'status', header: 'Status', sortable: true, cellTemplate: 'statusTemplate' },
+      { key: 'createdAt', header: 'Created', sortable: true, 
+        cellFormatter: (item) => new Date(item.createdAt).toLocaleString() },
+      { key: 'fileSize', header: 'Size', sortable: false, 
+        cellFormatter: (item) => `${item.fileSize.toLocaleString()} bytes` },
+      { key: 'actions', header: 'Actions', sortable: false, cellTemplate: 'actionsTemplate' }
+    ],
+    defaultSortField: 'createdAt',
+    defaultSortDirection: 'desc'
+  };
+  
+  paginationConfig = {
+    pageSize: 10,
+    pageSizeOptions: [5, 10, 20, 50]
+  };
   
   constructor(
     private fileService: FileService,
@@ -72,26 +94,18 @@ export class FilesComponent implements OnInit {
     this.loadFiles();
   }
   
-  changePage(page: number): void {
-    this.currentPage = page;
+  // Handle pagination events from the generic table
+  onPageChange(event: TablePageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
     this.loadFiles();
   }
   
-  changePageSize(size: number): void {
-    this.pageSize = size;
-    this.currentPage = 0; // Reset to first page when changing page size
-    this.loadFiles();
-  }
-  
-  sort(column: string): void {
-    if (this.sortBy === column) {
-      // Toggle direction if already sorting by this column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      this.sortBy = column;
-      this.sortDirection = 'asc'; // Default to ascending when switching columns
-    }
-    this.currentPage = 0; // Reset to first page when sorting
+  // Handle sort events from the generic table
+  onSortChange(event: TableSortEvent): void {
+    this.sortBy = event.field;
+    this.sortDirection = event.direction;
+    this.currentPage = 0; // Reset to first page
     this.loadFiles();
   }
   
@@ -107,11 +121,7 @@ export class FilesComponent implements OnInit {
     this.loadFiles();
   }
   
-  getPages(): number[] {
-    return Array(this.totalPages).fill(0).map((_, i) => i);
-  }
-
-  // New methods for the updated template
+  // File actions
   createJob(file: any): void {
     if (file && file.fileUuid) {
       this.router.navigate(['/dashboard/jobs/submit', file.fileUuid]);
@@ -175,5 +185,10 @@ export class FilesComponent implements OnInit {
         }
       });
     }
+  }
+  
+  // Handle row click event
+  onRowClick(file: any): void {
+    this.navigateToFileStatus(file);
   }
 }

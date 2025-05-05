@@ -1,0 +1,142 @@
+<div class="generic-table-container">
+  <!-- Loading State -->
+  <ng-container *ngIf="loading">
+    <ng-container *ngIf="loadingTemplate; else defaultLoadingTemplate">
+      <ng-container *ngTemplateOutlet="loadingTemplate"></ng-container>
+    </ng-container>
+    <ng-template #defaultLoadingTemplate>
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading data...</p>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- Error State -->
+  <ng-container *ngIf="error">
+    <ng-container *ngIf="errorTemplate; else defaultErrorTemplate">
+      <ng-container *ngTemplateOutlet="errorTemplate"></ng-container>
+    </ng-container>
+    <ng-template #defaultErrorTemplate>
+      <div class="error-message alert-box">
+        <p>Failed to load data. Please try again.</p>
+        <button (click)="refreshData()" class="secondary-btn refresh-btn">Retry</button>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- Empty State -->
+  <ng-container *ngIf="!loading && !error && data.length === 0">
+    <ng-container *ngIf="emptyStateTemplate; else defaultEmptyTemplate">
+      <ng-container *ngTemplateOutlet="emptyStateTemplate"></ng-container>
+    </ng-container>
+    <ng-template #defaultEmptyTemplate>
+      <div class="empty-state content-box">
+        <div class="empty-state-icon">
+          <i class="fa fa-info-circle" aria-hidden="true"></i>
+        </div>
+        <h3>No data available</h3>
+        <p>There are no items to display</p>
+      </div>
+    </ng-template>
+  </ng-container>
+
+  <!-- Data Table -->
+  <div class="table-container content-box" *ngIf="!loading && !error && data.length > 0">
+    <table class="generic-table">
+      <thead>
+        <tr>
+          <ng-container *ngFor="let column of config.columns">
+            <th 
+              [class.sortable-header]="column.sortable" 
+              [ngClass]="column.cssClass" 
+              (click)="column.sortable ? updateSort(column.key) : null"
+            >
+              {{ column.header }}
+              <span class="sort-icon" *ngIf="column.sortable && sortField === column.key">
+                {{ sortDirection === 'asc' ? '↑' : '↓' }}
+              </span>
+            </th>
+          </ng-container>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of data" (click)="onRowClick(item)">
+          <ng-container *ngFor="let column of config.columns">
+            <td [ngClass]="column.cssClass">
+              <!-- Custom template rendering -->
+              <ng-container *ngIf="hasCustomTemplate(column); else defaultCell">
+                <ng-container *ngIf="column.cellTemplate as cellTemplate">
+                  <ng-container 
+                    *ngTemplateOutlet="customCellTemplates[cellTemplate]; 
+                                        context: getTemplateContext(item)"
+                  ></ng-container>
+                </ng-container>
+              </ng-container>
+              
+              <!-- Default cell rendering -->
+              <ng-template #defaultCell>
+                {{ getCellValue(item, column) }}
+              </ng-template>
+            </td>
+          </ng-container>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Controls -->
+  <div class="pagination-controls" *ngIf="!loading && !error && totalPages > 0">
+    <div class="page-info">
+      Showing {{ data.length ? (currentPage * paginationConfig.pageSize) + 1 : 0 }} - 
+      {{ (currentPage * paginationConfig.pageSize) + data.length }} of {{ totalItems }} items
+    </div>
+    
+    <div class="page-navigation">
+      <button 
+        class="page-button" 
+        [disabled]="currentPage === 0" 
+        (click)="previousPage()"
+      >
+        Previous
+      </button>
+
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of [].constructor(totalPages < 5 ? totalPages : 5); let i = index"
+          class="page-number" 
+          [class.active]="(currentPage < 2 ? i : currentPage - 2 + i) === currentPage"
+          (click)="goToPage(currentPage < 2 ? i : currentPage - 2 + i)"
+          [disabled]="(currentPage < 2 ? i : currentPage - 2 + i) >= totalPages"
+        >
+          {{ (currentPage < 2 ? i : currentPage - 2 + i) + 1 }}
+        </button>
+      </div>
+
+      <button 
+        class="page-button" 
+        [disabled]="currentPage >= totalPages - 1" 
+        (click)="nextPage()"
+      >
+        Next
+      </button>
+    </div>
+    
+    <div class="page-size-selector">
+      <label for="pageSize">Items per page:</label>
+      <select 
+        id="pageSize" 
+        class="select-control" 
+        [ngModel]="paginationConfig.pageSize" 
+        (change)="onPageSizeChange($event)"
+      >
+        <option *ngFor="let size of paginationConfig.pageSizeOptions" [value]="size">{{ size }}</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Refresh Button -->
+  <div class="table-actions" *ngIf="!loading && !error && data.length > 0">
+    <button (click)="refreshData()" class="secondary-btn refresh-btn">Refresh Data</button>
+  </div>
+</div>

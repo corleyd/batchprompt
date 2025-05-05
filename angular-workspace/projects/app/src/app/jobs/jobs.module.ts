@@ -7,6 +7,7 @@ import { JobsRoutingModule } from './jobs-routing.module';
 import { JobSubmitComponent } from './job-submit/job-submit.component';
 import { JobListComponent } from './job-list/job-list.component';
 import { DownloadButtonComponent } from '../shared/components';
+import { GenericTableModule } from '../shared/components/generic-table/generic-table.module';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { DownloadButtonComponent } from '../shared/components';
     FormsModule,
     ReactiveFormsModule,
     JobsRoutingModule,
-    DownloadButtonComponent
+    DownloadButtonComponent,
+    GenericTableModule
   ],
   exports: [
     JobSubmitComponent,
