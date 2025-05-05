@@ -50,13 +50,6 @@ public class FileController {
     private static final Map<String, FileDownloadToken> downloadTokens = new ConcurrentHashMap<>();
     private static final long TOKEN_VALIDITY_MINUTES = 5;
 
-    @GetMapping("/{fileUuid}")
-    public ResponseEntity<FileDto> getFileById(@PathVariable UUID fileUuid) {
-        return fileService.getFileById(fileUuid)
-                .map(entity -> FileMapper.toDto(entity))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 
     @GetMapping("/user")
     public ResponseEntity<?> getFilesByUser(
@@ -67,9 +60,33 @@ public class FileController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
-        
         String userId = jwt.getSubject();
+        return getFilesByUserId(jwt, userId, fileType, status, page, size, sortBy, sortDirection);
+    }
+
+    
+    @GetMapping("/user/uploads")
+    public ResponseEntity<List<FileDto>> getUploadFilesByUser(@AuthenticationPrincipal Jwt jwt) {
+        String userId = jwt.getSubject();
+        List<FileEntity> files = fileService.getUploadedFilesByUserId(userId);
+        return ResponseEntity.ok(fileMapper.toDtoList(files));
+    }    
+    
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getFilesByUserId(
+            @AuthenticationPrincipal Jwt jwt,
+            @PathVariable String userId,
+            @RequestParam(required = false) String fileType,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
         
+        if (!serviceAuthenticationService.canAccessUserData(jwt, userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         // Convert string parameters to enum types if provided
         FileType fileTypeEnum = null;
         if (fileType != null && !fileType.isEmpty()) {
@@ -105,13 +122,15 @@ public class FileController {
         
         return ResponseEntity.ok(files);
     }
-    
-    @GetMapping("/user/uploads")
-    public ResponseEntity<List<FileDto>> getUploadFilesByUser(@AuthenticationPrincipal Jwt jwt) {
-        String userId = jwt.getSubject();
-        List<FileEntity> files = fileService.getUploadedFilesByUserId(userId);
-        return ResponseEntity.ok(fileMapper.toDtoList(files));
+
+    @GetMapping("/{fileUuid}")
+    public ResponseEntity<FileDto> getFileById(@PathVariable UUID fileUuid) {
+        return fileService.getFileById(fileUuid)
+                .map(entity -> FileMapper.toDto(entity))
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
+
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FileDto> uploadFile(
@@ -319,5 +338,58 @@ public class FileController {
         public boolean isExpired() {
             return LocalDateTime.now().isAfter(expiryTime);
         }
+    }
+
+    // Admin endpoints to get user files, jobs, and prompts
+    @GetMapping("/admin/{userId}")
+    public ResponseEntity<?> getFilesByUserIdForAdmin(
+            @PathVariable String userId,
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) String fileType,
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection) {
+        
+        // Verify that the requester is an admin
+        if (!serviceAuthenticationService.isAdminUser(jwt)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Convert string parameters to enum types if provided
+        FileType fileTypeEnum = null;
+        if (fileType != null && !fileType.isEmpty()) {
+            try {
+                fileTypeEnum = FileType.valueOf(fileType);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid file type: " + fileType);
+            }
+        }
+        
+        FileStatus statusEnum = null;
+        if (status != null && !status.isEmpty()) {
+            try {
+                statusEnum = FileStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body("Invalid status: " + status);
+            }
+        }
+        
+        // Create Pageable object with sort direction
+        org.springframework.data.domain.Sort.Direction direction = 
+            sortDirection.equalsIgnoreCase("asc") ? 
+            org.springframework.data.domain.Sort.Direction.ASC : 
+            org.springframework.data.domain.Sort.Direction.DESC;
+            
+        org.springframework.data.domain.Pageable pageable = 
+            org.springframework.data.domain.PageRequest.of(
+                page, size, 
+                org.springframework.data.domain.Sort.by(direction, sortBy)
+            );
+        
+        Page<FileDto> files = fileService.getFilesByUserIdPaginated(userId, fileTypeEnum, statusEnum, pageable);
+        
+        return ResponseEntity.ok(files);
     }
 }

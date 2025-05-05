@@ -1,0 +1,89 @@
+<div class="user-details-container">
+  <div class="header-section">
+    <button mat-icon-button class="back-button" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+    
+    <div class="user-info" *ngIf="!loadingUser">
+      <h1>{{ userName || 'User' }}</h1>
+      <p class="user-email">{{ userEmail }}</p>
+      <p class="user-id">ID: {{ userId }}</p>
+    </div>
+    
+    <div class="loading-indicator" *ngIf="loadingUser">
+      <div class="spinner"></div>
+      <p>Loading user details...</p>
+    </div>
+  </div>
+
+  <mat-tab-group (selectedTabChange)="onTabChange($event)" animationDuration="0ms">
+    <!-- Files Tab -->
+    <mat-tab label="Files">
+      <div class="tab-content">
+        <app-generic-table
+          [data]="userFiles"
+          [config]="filesTableConfig"
+          [loading]="loadingFiles"
+          [totalItems]="filesTotalItems"
+          [totalPages]="filesTotalPages"
+          [currentPage]="filesPage"
+          [sortField]="filesSortField"
+          [sortDirection]="filesSortDirection"
+          (pageChange)="onFilesPageChange($event)"
+          (sortChange)="onFilesSortChange($event)"
+          (refresh)="refreshFiles()">
+          <!-- Custom template for file actions -->
+          <ng-template #fileActions let-item>
+            <button class="action-btn" (click)="downloadFile(item.fileUuid, item.fileName)">Download</button>
+          </ng-template>
+        </app-generic-table>
+      </div>
+    </mat-tab>
+    
+    <!-- Jobs Tab -->
+    <mat-tab label="Jobs">
+      <div class="tab-content">
+        <app-generic-table
+          [data]="userJobs"
+          [config]="jobsTableConfig"
+          [loading]="loadingJobs"
+          [totalItems]="jobsTotalItems"
+          [totalPages]="jobsTotalPages"
+          [currentPage]="jobsPage"
+          [sortField]="jobsSortField"
+          [sortDirection]="jobsSortDirection"
+          (pageChange)="onJobsPageChange($event)"
+          (sortChange)="onJobsSortChange($event)"
+          (refresh)="refreshJobs()">
+          <!-- Custom template for job actions -->
+          <ng-template #jobActions let-item>
+            <button class="action-btn" (click)="viewJobDetails(item.jobUuid)">View</button>
+          </ng-template>
+        </app-generic-table>
+      </div>
+    </mat-tab>
+    
+    <!-- Prompts Tab -->
+    <mat-tab label="Prompts">
+      <div class="tab-content">
+        <app-generic-table
+          [data]="userPrompts"
+          [config]="promptsTableConfig"
+          [loading]="loadingPrompts"
+          [totalItems]="promptsTotalItems"
+          [totalPages]="promptsTotalPages"
+          [currentPage]="promptsPage"
+          [sortField]="promptsSortField"
+          [sortDirection]="promptsSortDirection"
+          (pageChange)="onPromptsPageChange($event)"
+          (sortChange)="onPromptsSortChange($event)"
+          (refresh)="refreshPrompts()">
+          <!-- Custom template for prompt actions -->
+          <ng-template #promptActions let-item>
+            <button class="action-btn" (click)="viewPromptDetails(item.promptUuid)">View</button>
+          </ng-template>
+        </app-generic-table>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

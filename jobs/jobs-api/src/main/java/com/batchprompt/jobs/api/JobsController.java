@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.batchprompt.common.services.ServiceAuthenticationService;
 import com.batchprompt.jobs.core.mapper.JobMapper;
 import com.batchprompt.jobs.core.model.Job;
 import com.batchprompt.jobs.core.model.JobTask;
@@ -40,6 +41,7 @@ public class JobsController {
     private final JobService jobService;
     private final ModelService modelService;
     private final JobMapper jobMapper;
+    private final ServiceAuthenticationService serviceAuthenticationService;
 
     @GetMapping
     public ResponseEntity<?> getAllJobs(
@@ -79,22 +81,44 @@ public class JobsController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "updatedAt") String sort,
-            @RequestParam(required = false, defaultValue = "desc") String direction) {
-        
+            @RequestParam(required = false, defaultValue = "desc") String direction) 
+    {
         String userId = jwt.getSubject();
-        
-        // Create pageable object with sorting
-        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
-        
-        // Get paginated and sorted jobs
-        Page<Job> jobPage = jobService.getJobsByUserIdPaginated(userId, pageable);
-        
-        // Convert to DTOs and preserve pagination metadata
-        Page<JobDto> jobDtoPage = jobPage.map(job -> jobService.convertToDto(job));
-        
-        return ResponseEntity.ok(jobDtoPage);
+        return getJobsByUserId(userId, jwt, page, size, sort, direction);
     }
+
+    /**
+     * Admin endpoint to get jobs for a specific user
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getJobsByUserId(
+            @PathVariable String userId,
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sort,
+            @RequestParam(defaultValue = "desc") String direction) {
+        
+        // Verify that the requester is an admin
+        if (serviceAuthenticationService.canAccessUserData(jwt, userId) == false) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        // Create Pageable object
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("asc") ? 
+            Sort.Direction.ASC : Sort.Direction.DESC;
+        
+        Pageable pageable = PageRequest.of(
+            page, size, Sort.by(sortDirection, sort)
+        );
+        
+        // Get jobs for the specified user
+        Page<Job> jobsPage = jobService.getJobsByUserIdPaginated(userId, pageable);
+        Page<JobDto> dtoPage = jobsPage.map(job -> jobService.convertToDto(job));
+        
+        return ResponseEntity.ok(dtoPage);
+    }    
+        
 
     @GetMapping("/{jobUuid}/tasks")
     public ResponseEntity<?> getJobTasks(

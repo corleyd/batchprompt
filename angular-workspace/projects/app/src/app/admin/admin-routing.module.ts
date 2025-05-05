@@ -7,6 +7,7 @@ import { SettingsComponent } from './pages/settings/settings.component';
 import { ReportsComponent } from './pages/reports/reports.component';
 import { AdminRoleGuard } from '../core/guards/admin-role.guard';
 import { AdminJobsComponent } from './components/admin-jobs/admin-jobs.component';
+import { UserDetailsComponent } from './pages/user-details/user-details.component';
 
 const routes: Routes = [
   {
@@ -26,6 +27,10 @@ const routes: Routes = [
       {
         path: 'users',
         component: UsersComponent
+      },
+      {
+        path: 'users/:userId',
+        component: UserDetailsComponent
       },
       {
         path: 'jobs',

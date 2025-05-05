@@ -54,9 +54,14 @@ export class FileService {
   }
 
   // Get user files with pagination, sorting and filtering
-  getUserFiles(page: number = 0, size: number = 10, sortBy: string = 'createdAt', 
+  getUserFiles(userId?: string, page: number = 0, size: number = 10, sortBy: string = 'createdAt', 
               sortDirection: string = 'desc', fileType?: string, status?: string): Observable<any> {
-    let url = `${this.apiUrl}/user?page=${page}&size=${size}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
+    let url = `${this.apiUrl}/user`;
+    
+    if (userId) {
+      url += `/${userId}`;
+    }
+    url += `?page=${page}&size=${size}&sortBy=${sortBy}&sortDirection=${sortDirection}`;
     
     // Add optional filters if provided
     if (fileType) {

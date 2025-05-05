@@ -4,6 +4,7 @@ import { AuthModule, AuthService } from '@auth0/auth0-angular';
 import { provideHttpClient, withInterceptors, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { from, Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 import { routes } from './app.routes';
 
@@ -46,6 +47,7 @@ export const appConfig: ApplicationConfig = {
           audience: 'https://api.batchprompt.ai'
         }
       })
-    )
+    ),
+    provideAnimations()
   ]
 };

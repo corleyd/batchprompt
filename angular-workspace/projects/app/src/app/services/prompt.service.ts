@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Prompt } from '../models/prompt.model';
 import { environment } from '../../environments/environment';
@@ -22,8 +22,20 @@ export class PromptService {
     return this.http.get<Prompt>(`${this.apiUrl}/${promptUuid}`);
   }
 
-  getUserPrompts(userId: string): Observable<Prompt[]> {
-    return this.http.get<Prompt[]>(`${this.apiUrl}/user/${userId}`);
+  getUserPrompts(
+    userId: string, 
+    page: number = 0, 
+    size: number = 10, 
+    sort: string = 'createTimestamp', 
+    direction: string = 'desc'
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString())
+      .set('sort', sort)
+      .set('direction', direction);
+    
+    return this.http.get<any>(`${this.apiUrl}/user/${userId}`, { params });
   }
 
   searchPromptsByName(name: string): Observable<Prompt[]> {

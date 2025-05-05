@@ -58,10 +58,14 @@
     </span>
   </ng-template>
 
-  <ng-template #actionsTemplate let-user>
-    <div class="actions-cell">
-      <button class="action-btn edit" (click)="editUser(user.userUuid, $event)">Edit</button>
-      <button class="action-btn delete" (click)="deleteUser(user.userUuid, $event)">Delete</button>
+  <ng-template #actionsTemplate let-row>
+    <div class="action-buttons">
+      <button class="action-btn edit-btn" (click)="editUser(row.userUuid, $event)" title="Edit User">
+        <i class="fa fa-edit"></i>
+      </button>
+      <button class="action-btn delete-btn" (click)="deleteUser(row.userUuid, $event)" title="Delete User">
+        <i class="fa fa-trash"></i>
+      </button>
     </div>
   </ng-template>
 </div>

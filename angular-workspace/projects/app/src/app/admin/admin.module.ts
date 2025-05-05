@@ -10,6 +10,12 @@ import { ReportsComponent } from './pages/reports/reports.component';
 import { AdminJobsComponent } from './components/admin-jobs/admin-jobs.component';
 import { GenericTableModule } from '../shared/components/generic-table/generic-table.module';
 
+// Import Angular Material modules
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { UserDetailsComponent } from './pages/user-details/user-details.component';
+
 @NgModule({
   declarations: [
     AdminDashboardComponent,
@@ -22,7 +28,13 @@ import { GenericTableModule } from '../shared/components/generic-table/generic-t
     CommonModule,
     FormsModule,
     AdminRoutingModule,
-    GenericTableModule
+    GenericTableModule,
+    // Add Angular Material modules
+    MatTabsModule,
+    MatIconModule,
+    MatButtonModule,
+    // Import standalone component
+    UserDetailsComponent
   ]
 })
 export class AdminModule { }

@@ -22,6 +22,32 @@
     </div>
   </div>
 
+  <!-- Sorting controls -->
+  <div class="sorting-controls" *ngIf="!loading && !error && prompts.length > 0">
+    <div class="sort-options">
+      <span>Sort by:</span>
+      <div class="sort-buttons">
+        <button 
+          *ngFor="let option of sortOptions" 
+          class="sort-button" 
+          [class.active]="sortField === option.value"
+          (click)="changeSorting(option.value)">
+          {{ option.label }} 
+          <i class="fas" [ngClass]="getSortIcon(option.value)"></i>
+        </button>
+      </div>
+    </div>
+    <div class="page-size-selector">
+      <label for="page-size">Items per page:</label>
+      <select id="page-size" [(ngModel)]="pageSize" (change)="changePageSize(pageSize)">
+        <option [value]="5">5</option>
+        <option [value]="10">10</option>
+        <option [value]="25">25</option>
+        <option [value]="50">50</option>
+      </select>
+    </div>
+  </div>
+
   <div class="prompt-grid" *ngIf="!loading && !error && prompts.length > 0">
     <div class="card" *ngFor="let prompt of prompts">
       <div class="prompt-header">
@@ -41,6 +67,40 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Pagination controls -->
+  <div class="pagination-controls" *ngIf="!loading && !error && totalPages > 1">
+    <button 
+      [disabled]="currentPage === 0" 
+      (click)="goToPage(0)" 
+      class="pagination-button">
+      <i class="fas fa-angle-double-left"></i>
+    </button>
+    <button 
+      [disabled]="currentPage === 0" 
+      (click)="goToPage(currentPage - 1)" 
+      class="pagination-button">
+      <i class="fas fa-angle-left"></i>
+    </button>
+    
+    <span class="pagination-info">
+      Page {{ currentPage + 1 }} of {{ totalPages }}
+      <span class="total-items">({{ totalItems }} total)</span>
+    </span>
+    
+    <button 
+      [disabled]="currentPage >= totalPages - 1" 
+      (click)="goToPage(currentPage + 1)" 
+      class="pagination-button">
+      <i class="fas fa-angle-right"></i>
+    </button>
+    <button 
+      [disabled]="currentPage >= totalPages - 1" 
+      (click)="goToPage(totalPages - 1)" 
+      class="pagination-button">
+      <i class="fas fa-angle-double-right"></i>
+    </button>
   </div>
 
   <div class="navigation">

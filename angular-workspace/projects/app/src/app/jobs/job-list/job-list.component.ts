@@ -56,7 +56,7 @@ export class JobListComponent implements OnInit {
     this.loading = true;
     this.error = false;
     
-    this.jobService.getUserJobs(this.currentPage, this.pageSize, this.sortField, this.sortDirection).subscribe({
+    this.jobService.getUserJobs(undefined, this.currentPage, this.pageSize, this.sortField, this.sortDirection).subscribe({
       next: (response) => {
         this.jobs = response.content;
         this.totalItems = response.totalElements;

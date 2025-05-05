@@ -32,7 +32,7 @@ export class HomeComponent implements OnInit {
 
   loadRecentFiles(): void {
     this.loading = true;
-    this.fileService.getUserFiles(0, 5, 'createdAt', 'desc')
+    this.fileService.getUserFiles(undefined, 0, 5, 'createdAt', 'desc')
       .pipe(
         catchError(err => {
           console.error('Error loading recent files:', err);
@@ -49,7 +49,7 @@ export class HomeComponent implements OnInit {
 
   loadRecentJobs(): void {
     this.loading = true;
-    this.jobService.getUserJobs(0, 5, 'createdAt', 'desc')
+    this.jobService.getUserJobs(undefined, 0, 5, 'createdAt', 'desc')
       .pipe(
         catchError(err => {
           console.error('Error loading recent jobs:', err);

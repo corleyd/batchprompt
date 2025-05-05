@@ -269,3 +269,119 @@ $header-bg: #f5f7fa;
   display: flex;
   justify-content: flex-start;
 }
+
+// New styles for sorting controls
+.sorting-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: $header-bg;
+  border-radius: $border-radius;
+  border: 1px solid $border-color;
+  
+  .sort-options {
+    display: flex;
+    align-items: center;
+    
+    span {
+      margin-right: 10px;
+      font-size: 14px;
+      color: $text-secondary;
+    }
+    
+    .sort-buttons {
+      display: flex;
+      gap: 10px;
+      
+      .sort-button {
+        background-color: white;
+        border: 1px solid $border-color;
+        border-radius: $border-radius;
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        
+        &:hover {
+          background-color: #f5f5f5;
+        }
+        
+        &.active {
+          background-color: $primary-blue;
+          color: white;
+          border-color: $primary-blue;
+        }
+        
+        i {
+          font-size: 12px;
+        }
+      }
+    }
+  }
+  
+  .page-size-selector {
+    display: flex;
+    align-items: center;
+    
+    label {
+      margin-right: 10px;
+      font-size: 14px;
+      color: $text-secondary;
+    }
+    
+    select {
+      padding: 6px;
+      border-radius: $border-radius;
+      border: 1px solid $border-color;
+      background-color: white;
+      font-size: 14px;
+    }
+  }
+}
+
+// New styles for pagination controls
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+  gap: 10px;
+  
+  .pagination-button {
+    background-color: white;
+    border: 1px solid $border-color;
+    border-radius: $border-radius;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    &:hover:not([disabled]) {
+      background-color: #f5f5f5;
+    }
+    
+    &[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    i {
+      font-size: 14px;
+    }
+  }
+  
+  .pagination-info {
+    font-size: 14px;
+    color: $text-secondary;
+    
+    .total-items {
+      margin-left: 5px;
+      font-size: 12px;
+    }
+  }
+}

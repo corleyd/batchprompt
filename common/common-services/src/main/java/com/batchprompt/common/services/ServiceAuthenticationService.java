@@ -94,6 +94,17 @@ public class ServiceAuthenticationService {
             iss != null && iss.contains(domain) &&
             audienceList != null && audienceList.contains(audience);
     }
+
+    public boolean isAdminUser(Jwt jwt) {
+        // Check if the user has the "admin" role
+        List<String> roles = jwt.getClaimAsStringList("roles");
+        return roles != null && roles.contains("admin");
+    }
+
+    public boolean canAccessUserData(Jwt jwt, String userId) {
+        // Check if the user has the "admin" role or if the userId matches the JWT subject
+        return isAdminUser(jwt) || jwt.getSubject().equals(userId);
+    }
     
     /**
      * Class representing token information including expiration

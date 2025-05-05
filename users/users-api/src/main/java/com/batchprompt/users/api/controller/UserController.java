@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.batchprompt.common.services.ServiceAuthenticationService;
 import com.batchprompt.users.api.service.Auth0ManagementService;
 import com.batchprompt.users.core.UserService;
 import com.batchprompt.users.core.mapper.UserMapper;
@@ -38,6 +39,7 @@ public class UserController {
     private final UserService userService;
     private final UserMapper userMapper;
     private final Auth0ManagementService auth0ManagementService;
+    private final ServiceAuthenticationService serviceAuthenticationService;
 
     @GetMapping
     public ResponseEntity<Page<UserDto>> getAllUsers(
@@ -55,9 +57,16 @@ public class UserController {
         return ResponseEntity.ok(userMapper.toDtoPage(users));
     }
 
-    @GetMapping("/{userUuid}")
-    public ResponseEntity<UserDto> getUserById(@PathVariable UUID userUuid) {
-        return userService.getUserById(userUuid)
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(
+        @PathVariable String userId,
+        @AuthenticationPrincipal Jwt jwt) {
+
+        if (serviceAuthenticationService.canAccessUserData(jwt, userId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        
+        return userService.getUserByUserId(userId)
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -65,7 +74,7 @@ public class UserController {
     
     @GetMapping("/auth0/{userId}")
     public ResponseEntity<UserDto> getUserByuserId(@PathVariable String userId) {
-        return userService.getUserByuserId(userId)
+        return userService.getUserByUserId(userId)
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

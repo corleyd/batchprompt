@@ -69,6 +69,7 @@ export class FilesComponent implements OnInit {
     this.error = false;
     
     this.fileService.getUserFiles(
+      undefined, // Assuming we want to load files for the current user
       this.currentPage,
       this.pageSize,
       this.sortBy,

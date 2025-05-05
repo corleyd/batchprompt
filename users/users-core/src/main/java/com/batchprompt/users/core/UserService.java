@@ -31,7 +31,7 @@ public class UserService {
         return userRepository.findById(userUuid);
     }
 
-    public Optional<User> getUserByuserId(String userId) {
+    public Optional<User> getUserByUserId(String userId) {
         return userRepository.findByuserId(userId);
     }
     

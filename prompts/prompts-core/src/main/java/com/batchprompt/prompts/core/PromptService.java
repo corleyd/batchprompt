@@ -4,6 +4,8 @@ import com.batchprompt.prompts.core.model.Prompt;
 import com.batchprompt.prompts.core.repository.PromptRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,5 +66,16 @@ public class PromptService {
                     return true;
                 })
                 .orElse(false);
+    }
+
+    /**
+     * Get prompts for a specific user with pagination and sorting
+     * 
+     * @param userId The user ID to retrieve prompts for
+     * @param pageable Pageable object containing pagination and sorting information
+     * @return Page of prompts for the user
+     */
+    public Page<Prompt> getPromptsByUserIdPaginated(String userId, Pageable pageable) {
+        return promptRepository.findByUserId(userId, pageable);
     }
 }

@@ -1,5 +1,9 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { UserService } from '../../../services/user.service';
+import { FileService } from '../../../files/file.service';
+import { JobService } from '../../../services/job.service';
+import { PromptService } from '../../../services/prompt.service';
+import { Router } from '@angular/router';
 import { TableConfig, TableColumn, TableSortEvent, TablePageEvent } from '../../../shared/components/generic-table/table-models';
 
 @Component({
@@ -34,7 +38,22 @@ export class UsersComponent implements OnInit {
   @ViewChild('roleTemplate', { static: true }) roleTemplate!: TemplateRef<any>;
   @ViewChild('actionsTemplate', { static: true }) actionsTemplate!: TemplateRef<any>;
 
-  constructor(private userService: UserService) {}
+  // User's files, jobs, and prompts tracking
+  selectedUserId: string | null = null;
+  userFiles: any[] = [];
+  userJobs: any[] = [];
+  userPrompts: any[] = [];
+  loadingUserResources = false;
+  showUserResources = false;
+  activeResourceTab = 'files'; // 'files', 'jobs', or 'prompts'
+
+  constructor(
+    private userService: UserService,
+    private fileService: FileService,
+    private jobService: JobService,
+    private promptService: PromptService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.initializeTableConfig();
@@ -134,8 +153,8 @@ export class UsersComponent implements OnInit {
   }
 
   onUserRowClick(user: any): void {
-    // Optional: handle row click event
-    console.log('User clicked:', user);
+    // Navigate to user details page when a row is clicked
+    this.router.navigate(['/admin/users', user.userId]);
   }
 
   deleteUser(userUuid: string, event: Event): void {
@@ -156,5 +175,121 @@ export class UsersComponent implements OnInit {
     event.stopPropagation(); // Prevent row click event
     // Implementation for editing a user
     console.log('Edit user:', userUuid);
+  }
+
+  viewUserFiles(userId: string, event: Event): void {
+    event.stopPropagation(); // Prevent row click event
+    this.selectedUserId = userId;
+    this.activeResourceTab = 'files';
+    this.showUserResources = true;
+    this.loadUserFiles(userId);
+  }
+
+  viewUserJobs(userId: string, event: Event): void {
+    event.stopPropagation(); // Prevent row click event
+    this.selectedUserId = userId;
+    this.activeResourceTab = 'jobs';
+    this.showUserResources = true;
+    this.loadUserJobs(userId);
+  }
+
+  viewUserPrompts(userId: string, event: Event): void {
+    event.stopPropagation(); // Prevent row click event
+    this.selectedUserId = userId;
+    this.activeResourceTab = 'prompts';
+    this.showUserResources = true;
+    this.loadUserPrompts(userId);
+  }
+
+  loadUserFiles(userId: string): void {
+    this.loadingUserResources = true;
+    this.userFiles = [];
+    
+    // Using the admin endpoint to get files for a specific user
+    // Note: This assumes your backend has an admin endpoint to get files by userId
+    this.fileService.getUserFiles(userId).subscribe({
+      next: (response) => {
+        this.userFiles = response.content || response;
+        this.loadingUserResources = false;
+      },
+      error: (error) => {
+        console.error('Error loading user files:', error);
+        this.loadingUserResources = false;
+      }
+    });
+  }
+
+  loadUserJobs(userId: string): void {
+    this.loadingUserResources = true;
+    this.userJobs = [];
+    
+    // Using the admin endpoint to get jobs for a specific user
+    this.jobService.getUserJobs(userId).subscribe({
+      next: (response) => {
+        this.userJobs = response.content || response;
+        this.loadingUserResources = false;
+      },
+      error: (error) => {
+        console.error('Error loading user jobs:', error);
+        this.loadingUserResources = false;
+      }
+    });
+  }
+
+  loadUserPrompts(userId: string): void {
+    this.loadingUserResources = true;
+    this.userPrompts = [];
+    
+    // Using the admin endpoint to get prompts for a specific user
+    this.promptService.getUserPrompts(userId).subscribe({
+      next: (prompts) => {
+        this.userPrompts = prompts;
+        this.loadingUserResources = false;
+      },
+      error: (error) => {
+        console.error('Error loading user prompts:', error);
+        this.loadingUserResources = false;
+      }
+    });
+  }
+
+  closeUserResources(): void {
+    this.showUserResources = false;
+    this.selectedUserId = null;
+  }
+
+  changeResourceTab(tab: string): void {
+    this.activeResourceTab = tab;
+    if (this.selectedUserId) {
+      if (tab === 'files') {
+        this.loadUserFiles(this.selectedUserId);
+      } else if (tab === 'jobs') {
+        this.loadUserJobs(this.selectedUserId);
+      } else if (tab === 'prompts') {
+        this.loadUserPrompts(this.selectedUserId);
+      }
+    }
+  }
+
+  downloadFile(fileUuid: string, fileName: string): void {
+    this.fileService.downloadFile(fileUuid, fileName).subscribe({
+      next: () => {
+        // Download is handled by the service
+      },
+      error: (error) => {
+        console.error('Error downloading file:', error);
+        alert('Failed to download file. Please try again.');
+      }
+    });
+  }
+
+  viewJobDetails(jobUuid: string): void {
+    // Navigate to job details page
+    this.router.navigate(['/dashboard/jobs', jobUuid]);
+  }
+
+  viewPromptDetails(promptUuid: string): void {
+    // Navigate to prompt details page
+    this.router.navigate(['/dashboard/prompts/edit', promptUuid]);
   }
 }

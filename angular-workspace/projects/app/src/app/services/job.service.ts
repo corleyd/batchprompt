@@ -31,6 +31,7 @@ export class JobService {
 
   // Get jobs for current user with pagination and sorting
   getUserJobs(
+    userId?: string,
     page: number = 0, 
     size: number = 20, 
     sort: string = 'updatedAt', 
@@ -41,8 +42,12 @@ export class JobService {
       .set('size', size.toString())
       .set('sort', sort)
       .set('direction', direction);
+    let url = `${this.apiUrl}/user`;
+    if (userId) {
+      url += `/${userId}`;
+    }
     
-    return this.http.get<any>(`${this.apiUrl}/user`, { params });
+    return this.http.get<any>(url, { params });
   }
 
   // Get job by ID
