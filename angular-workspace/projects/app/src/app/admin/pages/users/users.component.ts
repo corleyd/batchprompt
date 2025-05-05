@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { UserService } from '../../../services/user.service';
+import { TableConfig, TableColumn, TableSortEvent, TablePageEvent } from '../../../shared/components/generic-table/table-models';
 
 @Component({
   selector: 'app-users',
@@ -9,20 +10,65 @@ import { UserService } from '../../../services/user.service';
 export class UsersComponent implements OnInit {
   users: any[] = [];
   loading = false;
+  error = false;
+  
+  // Pagination
   page = 0;
   size = 10;
   totalUsers = 0;
+  
+  // Search & Filters
   searchTerm = '';
   roleFilter = '';
   statusFilter = '';
+  
+  // Table configuration
+  tableConfig!: TableConfig<any>;
   sortBy = 'name';
-  sortDirection = 'asc';
-  Math = Math; // Make Math available to the template
+  sortDirection: 'asc' | 'desc' = 'asc';
+  
+  // Make Math available to the template
+  Math = Math;
+  
+  @ViewChild('statusTemplate', { static: true }) statusTemplate!: TemplateRef<any>;
+  @ViewChild('roleTemplate', { static: true }) roleTemplate!: TemplateRef<any>;
+  @ViewChild('actionsTemplate', { static: true }) actionsTemplate!: TemplateRef<any>;
 
   constructor(private userService: UserService) {}
 
   ngOnInit(): void {
+    this.initializeTableConfig();
     this.loadUsers();
+  }
+
+  initializeTableConfig(): void {
+    this.tableConfig = {
+      columns: [
+        { key: 'userUuid', header: 'ID', sortable: true },
+        { key: 'name', header: 'Name', sortable: true },
+        { key: 'email', header: 'Email', sortable: true },
+        { 
+          key: 'role', 
+          header: 'Role', 
+          sortable: true,
+          cellTemplate: 'roleTemplate'
+        },
+        { 
+          key: 'enabled', 
+          header: 'Status', 
+          sortable: true,
+          cellTemplate: 'statusTemplate'
+        },
+        { 
+          key: 'actions', 
+          header: 'Actions',
+          sortable: false,
+          cellTemplate: 'actionsTemplate'
+        }
+      ],
+      defaultSortField: 'name',
+      defaultSortDirection: 'asc'
+    };
   }
 
   loadUsers(): void {
@@ -32,10 +78,12 @@ export class UsersComponent implements OnInit {
         this.users = response.content;
         this.totalUsers = response.totalElements;
         this.loading = false;
+        this.error = false;
       },
       error: (error) => {
         console.error('Error loading users:', error);
         this.loading = false;
+        this.error = true;
       }
     });
   }
@@ -48,10 +96,12 @@ export class UsersComponent implements OnInit {
           this.users = response.content;
           this.totalUsers = response.totalElements;
           this.loading = false;
+          this.error = false;
         },
         error: (error) => {
           console.error('Error searching users:', error);
           this.loading = false;
+          this.error = true;
         }
       });
     } else {
@@ -62,54 +112,34 @@ export class UsersComponent implements OnInit {
   applyFilters(): void {
     // In a real implementation, these filters would be passed to the backend
     // For now we'll just reload the users
+    this.page = 0; // Reset to first page when applying filters
     this.loadUsers();
   }
 
-  onPageChange(page: number): void {
-    this.page = page;
+  onPageChange(event: TablePageEvent): void {
+    this.page = event.pageIndex;
+    this.size = event.pageSize;
     this.loadUsers();
   }
 
-  onSortChange(column: string): void {
-    if (this.sortBy === column) {
-      // Toggle direction if clicking the same column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // Default to ascending when changing columns
-      this.sortBy = column;
-      this.sortDirection = 'asc';
-    }
-    
-    // Reset to first page when sorting changes
-    this.page = 0;
+  onSortChange(event: TableSortEvent): void {
+    this.sortBy = event.field;
+    this.sortDirection = event.direction;
+    this.page = 0; // Reset to first page when sorting changes
     this.loadUsers();
   }
 
-  onPageSizeChange(): void {
-    this.page = 0; // Reset to first page when changing page size
+  onRefresh(): void {
     this.loadUsers();
   }
 
-  getPageNumbers(): number[] {
-    const totalPages = Math.ceil(this.totalUsers / this.size);
-    if (totalPages <= 5) {
-      // If 5 or fewer pages, show all
-      return Array.from({ length: totalPages }, (_, i) => i);
-    } else {
-      // Show 5 pages centered around current page where possible
-      let startPage = Math.max(0, this.page - 2);
-      const endPage = Math.min(totalPages - 1, startPage + 4);
-      
-      // Adjust start page if we're near the end
-      if (endPage - startPage < 4) {
-        startPage = Math.max(0, endPage - 4);
-      }
-      
-      return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
-    }
+  onUserRowClick(user: any): void {
+    // Optional: handle row click event
+    console.log('User clicked:', user);
   }
 
-  deleteUser(userUuid: string): void {
+  deleteUser(userUuid: string, event: Event): void {
+    event.stopPropagation(); // Prevent row click event
     if (confirm('Are you sure you want to delete this user?')) {
       this.userService.deleteUser(userUuid).subscribe({
         next: () => {
@@ -120,5 +150,11 @@ export class UsersComponent implements OnInit {
         }
       });
     }
+  }
+
+  editUser(userUuid: string, event: Event): void {
+    event.stopPropagation(); // Prevent row click event
+    // Implementation for editing a user
+    console.log('Edit user:', userUuid);
   }
 }

@@ -22,120 +22,46 @@
     </div>
   </div>
 
-  <div class="users-table-container">
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th (click)="onSortChange('userUuid')">
-            ID
-            <span class="sort-icon" *ngIf="sortBy === 'userUuid'">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </th>
-          <th (click)="onSortChange('name')">
-            Name
-            <span class="sort-icon" *ngIf="sortBy === 'name'">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </th>
-          <th (click)="onSortChange('email')">
-            Email
-            <span class="sort-icon" *ngIf="sortBy === 'email'">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </th>
-          <th (click)="onSortChange('role')">
-            Role
-            <span class="sort-icon" *ngIf="sortBy === 'role'">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </th>
-          <th (click)="onSortChange('enabled')">
-            Status
-            <span class="sort-icon" *ngIf="sortBy === 'enabled'">
-              {{ sortDirection === 'asc' ? '↑' : '↓' }}
-            </span>
-          </th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let user of users">
-          <td>{{ user.userUuid }}</td>
-          <td>{{ user.name }}</td>
-          <td>{{ user.email }}</td>
-          <td>
-            <span class="badge" [ngClass]="{'admin-badge': user.role === 'ADMIN', 'user-badge': user.role === 'USER'}">
-              {{ user.role }}
-            </span>
-          </td>
-          <td>
-            <span class="status-indicator" [ngClass]="{'active': user.enabled, 'inactive': !user.enabled}">
-              {{ user.enabled ? 'Active' : 'Inactive' }}
-            </span>
-          </td>
-          <td class="actions-cell">
-            <button class="action-btn edit">Edit</button>
-            <button class="action-btn delete" (click)="deleteUser(user.userUuid)">Delete</button>
-          </td>
-        </tr>
-        <tr *ngIf="loading">
-          <td colspan="6" class="loading-cell">Loading users...</td>
-        </tr>
-        <tr *ngIf="!loading && users.length === 0">
-          <td colspan="6" class="empty-cell">No users found</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- Generic Table Component -->
+  <app-generic-table
+    [data]="users"
+    [config]="tableConfig"
+    [loading]="loading"
+    [error]="error"
+    [totalItems]="totalUsers"
+    [totalPages]="Math.ceil(totalUsers / size)"
+    [currentPage]="page"
+    [paginationConfig]="{ pageSize: size, pageSizeOptions: [5, 10, 20, 50] }"
+    [sortField]="sortBy"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (refresh)="onRefresh()"
+    (rowClick)="onUserRowClick($event)"
+    [customCellTemplates]="{
+      'roleTemplate': roleTemplate,
+      'statusTemplate': statusTemplate,
+      'actionsTemplate': actionsTemplate
+    }"
+  ></app-generic-table>
 
-  <div class="pagination-controls" *ngIf="!loading && totalUsers > 0">
-    <div class="page-info">
-      Showing {{ users.length ? (page * size) + 1 : 0 }} - {{ (page * size) + users.length }} of {{ totalUsers }} users
+  <!-- Custom Templates for Table Cells -->
+  <ng-template #roleTemplate let-user>
+    <span class="badge" [ngClass]="{'admin-badge': user.role === 'ADMIN', 'user-badge': user.role === 'USER'}">
+      {{ user.role }}
+    </span>
+  </ng-template>
+
+  <ng-template #statusTemplate let-user>
+    <span class="status-indicator" [ngClass]="{'active': user.enabled, 'inactive': !user.enabled}">
+      {{ user.enabled ? 'Active' : 'Inactive' }}
+    </span>
+  </ng-template>
+
+  <ng-template #actionsTemplate let-user>
+    <div class="actions-cell">
+      <button class="action-btn edit" (click)="editUser(user.userUuid, $event)">Edit</button>
+      <button class="action-btn delete" (click)="deleteUser(user.userUuid, $event)">Delete</button>
     </div>
-    
-    <div class="page-navigation">
-      <button 
-        class="page-button" 
-        [disabled]="page === 0" 
-        (click)="onPageChange(page - 1)"
-      >
-        Previous
-      </button>
-
-      <div class="page-numbers">
-        <button 
-          *ngFor="let p of [].constructor(Math.ceil(totalUsers / size) < 5 ? Math.ceil(totalUsers / size) : 5); let i = index"
-          class="page-number" 
-          [class.active]="(page < 2 ? i : page - 2 + i) === page"
-          (click)="onPageChange(page < 2 ? i : page - 2 + i)"
-          [disabled]="(page < 2 ? i : page - 2 + i) >= Math.ceil(totalUsers / size)"
-        >
-          {{ (page < 2 ? i : page - 2 + i) + 1 }}
-        </button>
-      </div>
-
-      <button 
-        class="page-button" 
-        [disabled]="(page + 1) * size >= totalUsers" 
-        (click)="onPageChange(page + 1)"
-      >
-        Next
-      </button>
-    </div>
-    
-    <div class="page-size-selector">
-      <label for="pageSize">Items per page:</label>
-      <select id="pageSize" class="select-control" [(ngModel)]="size" (change)="onPageSizeChange()">
-        <option [value]="5">5</option>
-        <option [value]="10">10</option>
-        <option [value]="20">20</option>
-        <option [value]="50">50</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="list-actions" *ngIf="!loading && users.length > 0">
-    <button (click)="loadUsers()" class="secondary-btn refresh-btn">Refresh Users</button>
-  </div>
+  </ng-template>
 </div>

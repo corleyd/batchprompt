@@ -3,6 +3,7 @@ import { JobService } from '../../../services/job.service';
 import { HttpParams } from '@angular/common/http';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { TableConfig, TableSortEvent, TablePageEvent } from '../../../shared/components/generic-table/table-models';
 
 @Component({
   selector: 'app-admin-jobs',
@@ -22,9 +23,33 @@ export class AdminJobsComponent implements OnInit {
 
   // Sorting
   sortField = 'updatedAt';
-  sortDirection = 'desc';
+  sortDirection: ('asc' | 'desc') = 'desc';
   
   private apiUrl: string;
+
+  // Table configuration
+  tableConfig: TableConfig<any> = {
+    columns: [
+      { key: 'jobUuid', header: 'Job ID', sortable: true },
+      { key: 'userId', header: 'User ID', sortable: true },
+      { key: 'fileName', header: 'File Name', sortable: true },
+      { key: 'modelName', header: 'Model', sortable: true },
+      { key: 'status', header: 'Status', sortable: true, cellTemplate: 'statusTemplate' },
+      { key: 'taskCount', header: 'Tasks', sortable: true, 
+        cellFormatter: (item) => `${item.completedTaskCount}/${item.taskCount}` },
+      { key: 'createdAt', header: 'Created', sortable: true, 
+        cellFormatter: (item) => new Date(item.createdAt).toLocaleString() },
+      { key: 'updatedAt', header: 'Updated', sortable: true, 
+        cellFormatter: (item) => new Date(item.updatedAt).toLocaleString() }
+    ],
+    defaultSortField: 'updatedAt',
+    defaultSortDirection: 'desc'
+  };
+  
+  paginationConfig = {
+    pageSize: 10,
+    pageSizeOptions: [10, 20, 50, 100]
+  };
 
   constructor(
     private jobService: JobService,
@@ -100,48 +125,23 @@ export class AdminJobsComponent implements OnInit {
     }
   }
 
-  // Pagination methods
-  goToPage(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.loadJobs();
-    }
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 0) {
-      this.currentPage--;
-      this.loadJobs();
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
-      this.loadJobs();
-    }
-  }
-
-  // Sorting methods
-  updateSort(field: string): void {
-    if (this.sortField === field) {
-      // Toggle direction if clicking the same column
-      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
-    } else {
-      // Default to descending when changing columns
-      this.sortField = field;
-      this.sortDirection = 'desc';
-    }
-    
-    // Reset to first page when sorting changes
-    this.currentPage = 0;
+  // Event handlers for generic table
+  onPageChange(event: TablePageEvent): void {
+    this.currentPage = event.pageIndex;
+    this.pageSize = event.pageSize;
     this.loadJobs();
   }
 
-  getSortIcon(field: string): string {
-    if (this.sortField !== field) {
-      return 'sort';
-    }
-    return this.sortDirection === 'asc' ? 'arrow_upward' : 'arrow_downward';
+  onSortChange(event: TableSortEvent): void {
+    this.sortField = event.field;
+    this.sortDirection = event.direction;
+    this.currentPage = 0; // Reset to first page when sorting changes
+    this.loadJobs();
+  }
+
+  // Handle row click event if needed
+  onRowClick(job: any): void {
+    // Add any action when a row is clicked
+    console.log('Job clicked', job);
   }
 }

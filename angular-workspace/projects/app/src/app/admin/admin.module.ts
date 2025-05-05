@@ -8,6 +8,7 @@ import { UsersComponent } from './pages/users/users.component';
 import { SettingsComponent } from './pages/settings/settings.component';
 import { ReportsComponent } from './pages/reports/reports.component';
 import { AdminJobsComponent } from './components/admin-jobs/admin-jobs.component';
+import { GenericTableModule } from '../shared/components/generic-table/generic-table.module';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { AdminJobsComponent } from './components/admin-jobs/admin-jobs.component
   imports: [
     CommonModule,
     FormsModule,
-    AdminRoutingModule
+    AdminRoutingModule,
+    GenericTableModule
   ]
 })
 export class AdminModule { }
