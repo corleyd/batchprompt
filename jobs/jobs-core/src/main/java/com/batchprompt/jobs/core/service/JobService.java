@@ -26,6 +26,7 @@ import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
+import com.batchprompt.jobs.core.specification.JobSpecification;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobDto;
@@ -90,6 +91,19 @@ public class JobService {
      */
     public Page<Job> getJobsByUserIdPaginated(String userId, Pageable pageable) {
         return jobRepository.findByUserId(userId, pageable);
+    }
+    
+    /**
+     * Get paginated jobs with optional filtering by userId, modelName, and status
+     * 
+     * @param userId Optional user ID to filter by
+     * @param modelName Optional model name to filter by
+     * @param status Optional job status to filter by
+     * @param pageable Pageable object containing pagination and sorting information
+     * @return Page of filtered jobs
+     */
+    public Page<Job> getJobsPaginated(String userId, String modelName, JobStatus status, Pageable pageable) {
+        return jobRepository.findAll(JobSpecification.withFilters(userId, modelName, status), pageable);
     }
     
     /**

@@ -24,6 +24,7 @@ import com.batchprompt.jobs.core.model.Job;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
+import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobSubmissionDto;
 import com.batchprompt.jobs.model.dto.JobTaskDto;
@@ -41,10 +42,26 @@ public class JobsController {
     private final JobMapper jobMapper;
 
     @GetMapping
-    public ResponseEntity<List<JobDto>> getAllJobs() {
-        return ResponseEntity.ok(jobService.getAllJobs().stream()
-            .map(job -> jobService.convertToDto(job))
-            .toList());
+    public ResponseEntity<?> getAllJobs(
+            @RequestParam(required = false) String userId,
+            @RequestParam(required = false) String modelName,
+            @RequestParam(required = false) JobStatus status,
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "20") int size,
+            @RequestParam(required = false, defaultValue = "updatedAt") String sort,
+            @RequestParam(required = false, defaultValue = "desc") String direction) {
+        
+        // Create pageable object with sorting
+        Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
+        
+        // Get paginated and filtered jobs
+        Page<Job> jobPage = jobService.getJobsPaginated(userId, modelName, status, pageable);
+        
+        // Convert to DTOs and preserve pagination metadata
+        Page<JobDto> jobDtoPage = jobPage.map(job -> jobService.convertToDto(job));
+        
+        return ResponseEntity.ok(jobDtoPage);
     }
 
     @GetMapping("/{jobUuid}")
