@@ -398,8 +398,8 @@ public class JobOutputWorker {
         
         // First column is record number
         Cell recordNumberCell = row.createCell(colIndex++);
-        if (recordDto != null && recordDto.getRecord() != null && recordDto.getRecord().has("record_number")) {
-            recordNumberCell.setCellValue(recordDto.getRecord().get("record_number").asText(""));
+        if (recordDto != null) {
+            recordNumberCell.setCellValue(recordDto.getRecordNumber());
         } else {
             recordNumberCell.setCellValue(row.getRowNum());
         }
