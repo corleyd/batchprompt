@@ -25,7 +25,8 @@ public class ModelService {
      */
     public ModelService(
             ModelConfig modelConfig,
-            @Value("${openai.api-key}") String openaiApiKey) {
+            @Value("${openai.api-key}") String openaiApiKey,
+            @Value("${google.api-key:#{null}}") String googleApiKey) {
         
         // Initialize models from configuration
         for (ModelDefinition modelDef : modelConfig.getSupported()) {
@@ -41,6 +42,10 @@ public class ModelService {
                     if (arn != null) {
                         model = new AwsConverseChatModel(modelDef.getName(), arn);
                     }
+                    break;
+                    
+                case GOOGLE:
+                    model = new GeminiChatModel(modelDef.getName(), googleApiKey);
                     break;
                     
                 default:
@@ -96,6 +101,10 @@ public class ModelService {
         
         if (model instanceof AwsConverseChatModel) {
             return ModelProvider.AWS;
+        }
+        
+        if (model instanceof GeminiChatModel) {
+            return ModelProvider.GOOGLE;
         }
         
         return null; // Default case if the model type is unknown

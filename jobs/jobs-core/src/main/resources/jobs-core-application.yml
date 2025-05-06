@@ -45,6 +45,10 @@ rabbitmq:
 openai:
   api-key: ${OPENAI_API_KEY:your-openai-api-key}
 
+# Google configuration
+google:
+  api-key: ${GOOGLE_API_KEY:your-google-api-key}
+
 # AWS configuration
 aws:
   access-key: ${AWS_ACCESS_KEY:your-aws-access-key}
@@ -68,6 +72,24 @@ models:
       queue: deepseek-queue
       properties:
         arn: arn:aws:bedrock:us-east-1:187419035811:inference-profile/us.deepseek.r1-v1:0
+    - name: gemini-2.0-flash
+      provider: GOOGLE
+      queue: gemini-flash-queue
+    - name: gemini-2.0-flash-lite
+      provider: GOOGLE
+      queue: gemini-flash-lite-queue
+    - name: gemini-2.5-pro
+      provider: GOOGLE
+      queue: gemini-pro-queue
+    - name: gemini-2.5-flash
+      provider: GOOGLE
+      queue: gemini-flash-2-5-queue
+    - name: gemini-1.5-flash
+      provider: GOOGLE
+      queue: gemini-flash-1-5-queue
+    - name: gemini-1.5-pro
+      provider: GOOGLE
+      queue: gemini-pro-1-5-queue
 
 # Worker configuration
 workers:
@@ -82,5 +104,23 @@ workers:
       concurrentRequests: 10
       rateLimit: 60  # Requests per minute
     - queue: deepseek-queue
+      concurrentRequests: 5
+      rateLimit: 30  # Requests per minute
+    - queue: gemini-flash-queue
+      concurrentRequests: 8
+      rateLimit: 50  # Requests per minute
+    - queue: gemini-flash-lite-queue
+      concurrentRequests: 10
+      rateLimit: 60  # Requests per minute
+    - queue: gemini-pro-queue
+      concurrentRequests: 5
+      rateLimit: 30  # Requests per minute
+    - queue: gemini-flash-2-5-queue
+      concurrentRequests: 8
+      rateLimit: 50  # Requests per minute
+    - queue: gemini-flash-1-5-queue
+      concurrentRequests: 8
+      rateLimit: 50  # Requests per minute
+    - queue: gemini-pro-1-5-queue
       concurrentRequests: 5
       rateLimit: 30  # Requests per minute
