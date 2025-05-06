@@ -3,6 +3,17 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+export interface JobSubmissionDto {
+  fileUuid: string;
+  promptUuid: string;
+  modelName: string;
+  outputFieldUuids?: string[];
+  maxTokens?: number;
+  temperature?: number;
+  maxRecords?: number;
+  startRecordNumber?: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -18,15 +29,19 @@ export class JobService {
     return this.http.get<string[]>(`${this.apiUrl}/models`);
   }
 
-  // Submit a job
-  submitJob(fileUuid: string, promptUuid: string, modelName: string, outputFieldUuids?: string[]): Observable<any> {
-    const payload = {
+  // Submit a job with all parameters
+  submitJob(submission: JobSubmissionDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/submit`, submission);
+  }
+
+  // Legacy method for backwards compatibility
+  submitJobLegacy(fileUuid: string, promptUuid: string, modelName: string, outputFieldUuids?: string[]): Observable<any> {
+    return this.submitJob({
       fileUuid,
       promptUuid,
       modelName,
       outputFieldUuids
-    };
-    return this.http.post(`${this.apiUrl}/submit`, payload);
+    });
   }
 
   // Get jobs for current user with pagination and sorting

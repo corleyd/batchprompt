@@ -52,6 +52,40 @@
         </div>
       </div>
 
+      <!-- Additional Options Section -->
+      <div class="form-group additional-options">
+        <div class="options-header" (click)="toggleAdditionalOptions()">
+          <span>Additional Options</span>
+          <span class="toggle-icon">{{ showAdditionalOptions ? '▼' : '▶' }}</span>
+        </div>
+        
+        <div class="options-content" *ngIf="showAdditionalOptions">
+          <div class="form-group">
+            <label for="maxRecords">Maximum Records to Process:</label>
+            <input type="number" id="maxRecords" formControlName="maxRecords" min="1">
+            <div class="help-text">Leave blank to process all records</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="startRecordNumber">Start from Record Number:</label>
+            <input type="number" id="startRecordNumber" formControlName="startRecordNumber" min="1">
+            <div class="help-text">Leave blank to start from the first record</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="temperature">Temperature:</label>
+            <input type="number" id="temperature" formControlName="temperature" min="0" max="1" step="0.1">
+            <div class="help-text">Controls randomness (0.0-1.0). Leave blank for default</div>
+          </div>
+          
+          <div class="form-group">
+            <label for="maxTokens">Maximum Tokens:</label>
+            <input type="number" id="maxTokens" formControlName="maxTokens" min="1">
+            <div class="help-text">Maximum tokens for each completion. Leave blank for default</div>
+          </div>
+        </div>
+      </div>
+
       <!-- Field Selection Section -->
       <div class="form-group fields-section" *ngIf="jobForm.get('fileUuid')?.value">
         <div class="fields-header">

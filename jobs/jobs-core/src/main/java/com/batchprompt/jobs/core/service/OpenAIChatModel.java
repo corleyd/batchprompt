@@ -1,5 +1,6 @@
 package com.batchprompt.jobs.core.service;
 
+import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -21,6 +22,8 @@ import org.springframework.web.client.RestTemplate;
 public class OpenAIChatModel implements ChatModel {
 
     private static final String OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+    private static final Double DEFAULT_TEMPERATURE = 0.7;
+    private static final Integer DEFAULT_MAX_TOKENS = 2000;
     
     private final String apiKey;
     private final String modelName;
@@ -43,12 +46,13 @@ public class OpenAIChatModel implements ChatModel {
     }
     
     @Override
-    public String generateResponse(String prompt, String model, @Nullable JsonNode outputSchema) {
+    public ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema,
+                                                 @Nullable Integer maxTokens, @Nullable Double temperature) {
         try {
             // Check if API key is available
             if (apiKey == null || apiKey.isEmpty()) {
                 log.error("OpenAI API key not found in configuration");
-                return "Error: OpenAI API key not found";
+                return ChatModelResponse.of("Error: OpenAI API key not found");
             }
             
             // Create headers
@@ -84,9 +88,9 @@ public class OpenAIChatModel implements ChatModel {
             userMessage.put("content", contentBuilder.toString());
             messages.add(userMessage);
             
-            // Set additional parameters
-            requestBody.put("temperature", 0.7);
-            requestBody.put("max_tokens", 2000);
+            // Set parameters with defaults if not provided
+            requestBody.put("temperature", temperature != null ? temperature : DEFAULT_TEMPERATURE);
+            requestBody.put("max_tokens", maxTokens != null ? maxTokens : DEFAULT_MAX_TOKENS);
             
             // Create request entity
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
@@ -102,19 +106,38 @@ public class OpenAIChatModel implements ChatModel {
             // Process response
             JsonNode responseJson = objectMapper.readTree(response.getBody());
             JsonNode choices = responseJson.get("choices");
+            String responseText = "Error: Could not extract response content";
             
             if (choices != null && choices.isArray() && choices.size() > 0) {
                 JsonNode firstChoice = choices.get(0);
                 if (firstChoice.has("message") && firstChoice.get("message").has("content")) {
-                    return firstChoice.get("message").get("content").asText();
+                    responseText = firstChoice.get("message").get("content").asText();
                 }
             }
             
-            return "Error: Could not extract response content";
+            // Extract token usage information
+            Integer promptTokens = null;
+            Integer completionTokens = null;
+            Integer totalTokens = null;
+            
+            if (responseJson.has("usage")) {
+                JsonNode usage = responseJson.get("usage");
+                if (usage.has("prompt_tokens")) {
+                    promptTokens = usage.get("prompt_tokens").asInt();
+                }
+                if (usage.has("completion_tokens")) {
+                    completionTokens = usage.get("completion_tokens").asInt();
+                }
+                if (usage.has("total_tokens")) {
+                    totalTokens = usage.get("total_tokens").asInt();
+                }
+            }
+            
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, totalTokens);
             
         } catch (Exception e) {
             log.error("Error generating response from OpenAI", e);
-            return "Error: " + e.getMessage();
+            return ChatModelResponse.of("Error: " + e.getMessage());
         }
     }
 }

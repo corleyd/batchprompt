@@ -57,6 +57,18 @@ public class Job {
     @Column(name = "result_file_uuid")
     private UUID resultFileUuid;
     
+    @Column(name = "max_tokens")
+    private Integer maxTokens;
+    
+    @Column(name = "temperature")
+    private Double temperature;
+    
+    @Column(name = "max_records")
+    private Integer maxRecords;
+    
+    @Column(name = "start_record_number")
+    private Integer startRecordNumber;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     

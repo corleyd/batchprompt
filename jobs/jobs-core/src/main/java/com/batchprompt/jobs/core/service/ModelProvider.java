@@ -7,7 +7,8 @@ public enum ModelProvider {
     OPENAI("OpenAI"),
     ANTHROPIC("Anthropic"),
     GOOGLE("Google"),
-    AWS("Amazon Web Services");
+    AWS("Amazon Web Services"),
+    DEFAULT("Default");
 
     private final String displayName;
 

@@ -28,4 +28,10 @@ public class JobDto {
     private Integer completedTaskCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Added optional job processing parameters
+    private Integer maxTokens;
+    private Double temperature;
+    private Integer maxRecords;
+    private Integer startRecordNumber;
 }

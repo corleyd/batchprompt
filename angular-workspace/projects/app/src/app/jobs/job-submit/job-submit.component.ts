@@ -24,6 +24,7 @@ export class JobSubmitComponent implements OnInit {
   submitSuccess = false;
   errorMessage = '';
   includeAllFields = true;
+  showAdditionalOptions = false;
   
   constructor(
     private fb: FormBuilder,
@@ -38,7 +39,12 @@ export class JobSubmitComponent implements OnInit {
       promptUuid: ['', Validators.required],
       modelName: ['', Validators.required],
       includeAllFields: [true],
-      outputFieldUuids: this.fb.array([])
+      outputFieldUuids: this.fb.array([]),
+      // New optional fields for advanced options
+      maxRecords: [null],
+      startRecordNumber: [null],
+      temperature: [null],
+      maxTokens: [null]
     });
 
     // React to file selection changes
@@ -58,6 +64,11 @@ export class JobSubmitComponent implements OnInit {
         this.resetOutputFieldUuids();
       }
     });
+  }
+
+  // Toggle the visibility of additional options section
+  toggleAdditionalOptions(): void {
+    this.showAdditionalOptions = !this.showAdditionalOptions;
   }
 
   ngOnInit(): void {
@@ -180,12 +191,23 @@ export class JobSubmitComponent implements OnInit {
     }
     
     this.submitting = true;
-    const { fileUuid, promptUuid, modelName, includeAllFields, outputFieldUuids } = this.jobForm.value;
+    const formValue = this.jobForm.value;
     
-    // Only send selected fields if not including all fields
-    const fieldsToSubmit = includeAllFields ? undefined : outputFieldUuids;
+    // Create a job submission object
+    const jobSubmission = {
+      fileUuid: formValue.fileUuid,
+      promptUuid: formValue.promptUuid,
+      modelName: formValue.modelName,
+      // Only include output fields if not including all fields
+      outputFieldUuids: formValue.includeAllFields ? undefined : formValue.outputFieldUuids,
+      // Include optional parameters only if they have values
+      maxRecords: formValue.maxRecords || undefined,
+      startRecordNumber: formValue.startRecordNumber || undefined,
+      temperature: formValue.temperature || undefined,
+      maxTokens: formValue.maxTokens || undefined
+    };
     
-    this.jobService.submitJob(fileUuid, promptUuid, modelName, fieldsToSubmit).subscribe({
+    this.jobService.submitJob(jobSubmission).subscribe({
       next: (response) => {
         this.submitting = false;
         this.submitSuccess = true;

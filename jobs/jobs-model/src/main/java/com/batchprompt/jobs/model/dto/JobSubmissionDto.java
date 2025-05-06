@@ -24,4 +24,10 @@ public class JobSubmissionDto {
     private String modelName;
     
     private List<UUID> outputFieldUuids;
+    
+    // Optional parameters for job processing
+    private Integer maxTokens;
+    private Double temperature;
+    private Integer maxRecords;
+    private Integer startRecordNumber;
 }

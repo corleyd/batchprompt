@@ -11,11 +11,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.batchprompt.files.client.FileClient;
 import com.batchprompt.files.model.dto.FileRecordDto;
+import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.service.ChatModel;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
+import com.batchprompt.jobs.core.service.TokenEstimator;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
@@ -89,14 +91,21 @@ public class JobTaskWorker {
 
             String promptText = replacePlaceholders(promptDto.getPromptText(), recordData);
             
-            String responseText = chatModel.generateResponse(
+            // Estimate token count before sending to model
+            int estimatedPromptTokens = TokenEstimator.estimateTokenCount(promptText, message.getModelName(), modelService);
+            updateEstimatedTokens(jobTaskUuid, estimatedPromptTokens);
+            
+            // Use the new chat model response method to get response with token counts
+            ChatModelResponse chatResponse = chatModel.generateChatResponse(
                     promptText,
                     message.getModelName(),
-                    outputSchema
+                    outputSchema,
+                    message.getMaxTokens(),
+                    message.getTemperature()
             );
             
             // Step 4: If successful, update status to Completed in a separate transaction
-            completeTask(jobTaskUuid, responseText);
+            completeTaskWithTokens(jobTaskUuid, chatResponse);
             
             log.info("Job task {} completed successfully", jobTaskUuid);
         } catch (Exception e) {
@@ -132,7 +141,50 @@ public class JobTaskWorker {
     }
     
     @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateEstimatedTokens(UUID jobTaskUuid, int estimatedPromptTokens) {
+        JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
+        if (jobTask == null) {
+            log.error("Job task not found: {}", jobTaskUuid);
+            return;
+        }
+        
+        jobTask.setEstimatedPromptTokens(estimatedPromptTokens);
+        jobTaskRepository.save(jobTask);
+        
+        log.debug("Job task {} estimated prompt tokens: {}", jobTaskUuid, estimatedPromptTokens);
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void completeTaskWithTokens(UUID jobTaskUuid, ChatModelResponse chatResponse) {
+        JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
+        if (jobTask == null) {
+            log.error("Job task not found: {}", jobTaskUuid);
+            return;
+        }
+        
+        jobTask.setStatus(TaskStatus.COMPLETED);
+        jobTask.setResponseText(chatResponse.getResponseText());
+        jobTask.setEndTimestamp(LocalDateTime.now());
+        
+        // Set token usage information
+        jobTask.setPromptTokens(chatResponse.getPromptTokens());
+        jobTask.setCompletionTokens(chatResponse.getCompletionTokens());
+        jobTask.setTotalTokens(chatResponse.getTotalTokens());
+        
+        jobTaskRepository.save(jobTask);
+        
+        if (chatResponse.getTotalTokens() != null) {
+            log.info("Job task {} completed with {} tokens (prompt: {}, completion: {})", 
+                jobTaskUuid, 
+                chatResponse.getTotalTokens(),
+                chatResponse.getPromptTokens(),
+                chatResponse.getCompletionTokens());
+        }
+    }
+    
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void completeTask(UUID jobTaskUuid, String responseText) {
+        // This method is deprecated, use completeTaskWithTokens instead
         JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
         if (jobTask == null) {
             log.error("Job task not found: {}", jobTaskUuid);

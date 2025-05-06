@@ -30,10 +30,6 @@ dependencies {
     implementation 'org.apache.poi:poi:5.4.1'
     implementation 'org.apache.poi:poi-ooxml:5.4.1'
 
-    // AWS SDK for Bedrock
-    implementation 'software.amazon.awssdk:bedrockruntime:2.23.0'
-    implementation 'software.amazon.awssdk:bedrock:2.23.0'
-
     // MinIO dependencies
     implementation 'io.minio:minio:8.5.7'
 

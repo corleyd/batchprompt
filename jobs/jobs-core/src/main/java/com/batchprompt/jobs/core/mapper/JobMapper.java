@@ -27,6 +27,11 @@ public class JobMapper {
                 .completedTaskCount(job.getCompletedTaskCount())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
+                // Map the new optional fields
+                .maxTokens(job.getMaxTokens())
+                .temperature(job.getTemperature())
+                .maxRecords(job.getMaxRecords())
+                .startRecordNumber(job.getStartRecordNumber())
                 .build();
     }
     
@@ -38,9 +43,14 @@ public class JobMapper {
                 .recordNumber(jobTask.getRecordNumber())
                 .modelName(jobTask.getModelName())
                 .status(jobTask.getStatus())
+                .responseText(jobTask.getResponseText())
                 .errorMessage(jobTask.getErrorMessage())
                 .beginTimestamp(jobTask.getBeginTimestamp())
                 .endTimestamp(jobTask.getEndTimestamp())
+                .estimatedPromptTokens(jobTask.getEstimatedPromptTokens())
+                .promptTokens(jobTask.getPromptTokens())
+                .completionTokens(jobTask.getCompletionTokens())
+                .totalTokens(jobTask.getTotalTokens())
                 .build();
     }
     

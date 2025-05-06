@@ -56,4 +56,16 @@ public class JobTask {
     
     @Column(name = "end_timestamp")
     private LocalDateTime endTimestamp;
+    
+    @Column(name = "estimated_prompt_tokens")
+    private Integer estimatedPromptTokens;
+    
+    @Column(name = "prompt_tokens")
+    private Integer promptTokens;
+    
+    @Column(name = "completion_tokens")
+    private Integer completionTokens;
+    
+    @Column(name = "total_tokens")
+    private Integer totalTokens;
 }

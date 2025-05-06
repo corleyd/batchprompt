@@ -35,11 +35,8 @@ dependencies {
     implementation 'org.apache.poi:poi-ooxml:5.4.1'
 
     // AWS SDK for Bedrock
-    implementation 'software.amazon.awssdk:bedrockruntime:2.23.0'
-    implementation 'software.amazon.awssdk:bedrock:2.23.0'
-
-    // MinIO dependencies
-    implementation 'io.minio:minio:8.5.7'
+    implementation 'software.amazon.awssdk:bedrockruntime:2.28.21'
+    implementation 'software.amazon.awssdk:bedrock:2.28.21'
 
     // Apache POI for Excel processing
     implementation 'org.apache.poi:poi:5.2.5'

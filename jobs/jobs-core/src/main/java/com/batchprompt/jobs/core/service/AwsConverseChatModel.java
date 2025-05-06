@@ -1,17 +1,16 @@
 package com.batchprompt.jobs.core.service;
 
+import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-
 import software.amazon.awssdk.services.bedrockruntime.BedrockRuntimeClient;
-import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelRequest;
-import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
+import software.amazon.awssdk.services.bedrockruntime.model.ContentBlock;
+import software.amazon.awssdk.services.bedrockruntime.model.ConverseRequest;
+import software.amazon.awssdk.services.bedrockruntime.model.ConverseResponse;
+import software.amazon.awssdk.services.bedrockruntime.model.InferenceConfiguration;
+import software.amazon.awssdk.services.bedrockruntime.model.Message;
 
 /**
  * Implementation of ChatModel for AWS Bedrock Converse models
@@ -20,10 +19,12 @@ import software.amazon.awssdk.services.bedrockruntime.model.InvokeModelResponse;
 @Slf4j
 public class AwsConverseChatModel implements ChatModel {
     
+    private static final Float DEFAULT_TEMPERATURE = 0.7f;
+    private static final Integer DEFAULT_MAX_TOKENS = 2000;
+    
     private final String modelName;
     private final String modelId;
     private final BedrockRuntimeClient bedrockClient;
-    private final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
      * Constructor 
@@ -44,110 +45,88 @@ public class AwsConverseChatModel implements ChatModel {
     public String getName() {
         return modelName;
     }
-    
-    @Override
-    public String generateResponse(String prompt, String model, @Nullable JsonNode outputSchema) {
-        try {
-            // Prepare request payload according to the Bedrock model being used
-            // This assumes an Anthropic Claude model by default
-            ObjectNode requestBody = createModelRequestPayload(prompt, outputSchema);
-            
-            log.trace("AWS Bedrock request payload: {}", requestBody);
-            
-            // Convert request to JSON bytes
-            SdkBytes payloadBytes = SdkBytes.fromUtf8String(objectMapper.writeValueAsString(requestBody));
-            
-            // Create and execute the model invoke request
-            InvokeModelRequest invokeRequest = InvokeModelRequest.builder()
-                .modelId(modelId)
-                .contentType("application/json")
-                .accept("application/json")
-                .body(payloadBytes)
-                .build();
-                
-            // Invoke the model
-            InvokeModelResponse response = bedrockClient.invokeModel(invokeRequest);
-            
-            // Process the response
-            String responseBody = response.body().asUtf8String();
-            log.trace("AWS Bedrock response: {}", responseBody);
-            
-            // Parse the response and extract the generated text
-            JsonNode responseJson = objectMapper.readTree(responseBody);
-            return extractTextFromResponse(responseJson);
-            
-        } catch (Exception e) {
-            log.error("Error generating response from AWS Bedrock", e);
-            return "Error: " + e.getMessage();
-        }
-    }
-    
-    /**
-     * Create the request payload for the specific model
-     * 
-     * @param prompt The input prompt
-     * @param outputSchema Optional JSON schema for structured output
-     * @return Request payload as JsonNode
-     */
-    private ObjectNode createModelRequestPayload(String prompt, @Nullable JsonNode outputSchema) {
-        ObjectNode requestBody = objectMapper.createObjectNode();
-        
-        // Set the model ID        
-        // Add messages
-        ArrayNode messagesArray = requestBody.putArray("messages");
-        ObjectNode userMessage = messagesArray.addObject();
-        userMessage.put("role", "user");
-        
-        StringBuilder messageContent = new StringBuilder(prompt);
-        
-        if (outputSchema != null) {
-            messageContent.append("\n\nOutput should follow this JSON schema: ")
-                         .append(outputSchema.toString());
-        }
-        
-        userMessage.put("content", messageContent.toString());
-        
-        // Set model parameters
-        requestBody.put("max_tokens", 2000);
-        requestBody.put("temperature", 0.7);
-        
-        return requestBody;
-    }
 
-    /**
-     * Extract the generated text from the model response
-     * 
-     * @param responseJson Response as JsonNode
-     * @return Extracted text
-     */
-    private String extractTextFromResponse(JsonNode responseJson) {
-        
-        // Generic fallback extraction - try common response patterns
-        if (responseJson.has("choices") && responseJson.get("choices").isArray()) {
-            ArrayNode choices = (ArrayNode) responseJson.get("choices");
-            if (choices.size() > 0) {
-                JsonNode firstChoice = choices.get(0);
-                if (firstChoice.has("message") && firstChoice.get("message").has("content")) {
-                    return firstChoice.get("message").get("content").asText();
-                } else if (firstChoice.has("text")) {
-                    return firstChoice.get("text").asText();
+    @Override
+    public ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema,
+                                                 @Nullable Integer maxTokens, @Nullable Double temperature) {
+        try {
+            log.trace("Generating chat response using AWS Bedrock Converse API for prompt: {}", prompt);
+            
+            // Build the user message content
+            String messageContent = prompt;
+            
+            // Append schema if provided
+            if (outputSchema != null) {
+                messageContent = messageContent + "\n\nOutput should follow this JSON schema: " + outputSchema.toString();
+            }
+            
+            // Create a ContentBlock using the fromText factory method
+            ContentBlock textBlock = ContentBlock.fromText(messageContent);
+            
+            // Create the message using the Message builder with the ContentBlock
+            Message userMessage = Message.builder()
+                .role("user")
+                .content(textBlock)
+                .build();
+            
+            // Create inference configuration with temperature and max tokens
+            // Convert Double to Float if provided, otherwise use default
+            Float tempValue = temperature != null ? temperature.floatValue() : DEFAULT_TEMPERATURE;
+            
+            InferenceConfiguration inferenceConfig = InferenceConfiguration.builder()
+                .temperature(tempValue)
+                .maxTokens(maxTokens != null ? maxTokens : DEFAULT_MAX_TOKENS)
+                .build();
+            
+            // Create the converse request using the builder pattern
+            ConverseRequest converseRequest = ConverseRequest.builder()
+                .modelId(modelId)
+                .messages(userMessage)
+                .inferenceConfig(inferenceConfig)
+                .build();
+            
+            log.debug("AWS Bedrock Converse request: {}", converseRequest);
+            
+            // Call the Converse API
+            ConverseResponse response = bedrockClient.converse(converseRequest);
+            log.debug("AWS Bedrock Converse response: {}", response);
+            
+            // Extract the response text from the message content
+            String responseText = null;
+            if (response.output() != null && response.output().message() != null) {
+                // For SDK 2.28.21, we need to extract the text from the content blocks
+                if (response.output().message().content() != null && !response.output().message().content().isEmpty()) {
+                    // The content is a list of ContentBlock, so we need to find the text block
+                    for (ContentBlock block : response.output().message().content()) {
+                        if (block.text() != null) {
+                            responseText = block.text();
+                            break;
+                        }
+                    }
                 }
             }
+            
+            if (responseText == null) {
+                log.warn("Could not extract text from Converse API response");
+                responseText = "Error: Unable to extract text from model response";
+            }
+            
+            // Extract token usage information - advantage of using the Converse API
+            Integer promptTokens = null;
+            Integer completionTokens = null;
+            Integer totalTokens = null;
+            
+            if (response.usage() != null) {
+                promptTokens = response.usage().inputTokens();
+                completionTokens = response.usage().outputTokens();
+                totalTokens = response.usage().totalTokens();
+            }
+            
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, totalTokens);
+            
+        } catch (Exception e) {
+            log.error("Error generating response from AWS Bedrock Converse API", e);
+            return ChatModelResponse.of("Error: " + e.getMessage());
         }
-        if (responseJson.has("output") && responseJson.get("output").has("text")) {
-            return responseJson.get("output").get("text").asText();
-        } else if (responseJson.has("generation")) {
-            return responseJson.get("generation").asText();
-        } else if (responseJson.has("completion")) {
-            return responseJson.get("completion").asText();
-        } else if (responseJson.has("response")) {
-            return responseJson.get("response").asText();
-        } else if (responseJson.has("text")) {
-            return responseJson.get("text").asText();
-        }
-        
-        // If we can't extract specifically, return the whole response as a string
-        log.warn("Could not extract specific output from response, returning full response");
-        return responseJson.toString();
     }
 }

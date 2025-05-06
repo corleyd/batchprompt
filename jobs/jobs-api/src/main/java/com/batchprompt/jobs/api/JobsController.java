@@ -160,10 +160,7 @@ public class JobsController {
         String authToken = jwt.getTokenValue();
         
         Job job = jobService.submitJob(
-                jobSubmissionDto.getFileUuid(),
-                jobSubmissionDto.getPromptUuid(),
-                jobSubmissionDto.getModelName(),
-                jobSubmissionDto.getOutputFieldUuids(),
+                jobSubmissionDto,
                 userId,
                 "Bearer " + authToken
         );

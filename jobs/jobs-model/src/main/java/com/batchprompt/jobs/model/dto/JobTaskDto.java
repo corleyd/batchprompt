@@ -25,4 +25,8 @@ public class JobTaskDto {
     private String errorMessage;
     private LocalDateTime beginTimestamp;
     private LocalDateTime endTimestamp;
+    private Integer estimatedPromptTokens;
+    private Integer promptTokens;
+    private Integer completionTokens;
+    private Integer totalTokens;
 }

@@ -29,19 +29,6 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.9'
-    implementation 'org.apache.poi:poi:5.4.1'
-    implementation 'org.apache.poi:poi-ooxml:5.4.1'
-
-    // AWS SDK for Bedrock
-    implementation 'software.amazon.awssdk:bedrockruntime:2.23.0'
-    implementation 'software.amazon.awssdk:bedrock:2.23.0'
-
-    // MinIO dependencies
-    implementation 'io.minio:minio:8.5.7'
-
-    // Apache POI for Excel processing
-    implementation 'org.apache.poi:poi:5.2.5'
-    implementation 'org.apache.poi:poi-ooxml:5.2.5'
 
     // Lombok dependency for boilerplate code reduction
     compileOnly 'org.projectlombok:lombok'
