@@ -8,6 +8,7 @@ public enum ModelProvider {
     ANTHROPIC("Anthropic"),
     GOOGLE("Google"),
     AWS("Amazon Web Services"),
+    XAI("Xai"),
     DEFAULT("Default");
 
     private final String displayName;

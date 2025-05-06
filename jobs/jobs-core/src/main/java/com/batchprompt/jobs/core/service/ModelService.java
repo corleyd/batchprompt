@@ -26,7 +26,8 @@ public class ModelService {
     public ModelService(
             ModelConfig modelConfig,
             @Value("${openai.api-key}") String openaiApiKey,
-            @Value("${google.api-key:#{null}}") String googleApiKey) {
+            @Value("${google.api-key:#{null}}") String googleApiKey,
+            @Value("${xai.api-key:#{null}}") String xaiApiKey) {
         
         // Initialize models from configuration
         for (ModelDefinition modelDef : modelConfig.getSupported()) {
@@ -46,6 +47,10 @@ public class ModelService {
                     
                 case GOOGLE:
                     model = new GeminiChatModel(modelDef.getName(), googleApiKey);
+                    break;
+                    
+                case XAI:
+                    model = new XaiChatModel(modelDef.getName(), xaiApiKey);
                     break;
                     
                 default:
@@ -105,6 +110,10 @@ public class ModelService {
         
         if (model instanceof GeminiChatModel) {
             return ModelProvider.GOOGLE;
+        }
+        
+        if (model instanceof XaiChatModel) {
+            return ModelProvider.XAI;
         }
         
         return null; // Default case if the model type is unknown

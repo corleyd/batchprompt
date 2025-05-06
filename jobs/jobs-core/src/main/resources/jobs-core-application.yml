@@ -55,6 +55,10 @@ aws:
   secret-key: ${AWS_SECRET_KEY:your-aws-secret-key}
   region: ${AWS_REGION:us-east-1}
 
+# Xai configuration (for Grok models)
+xai:
+  api-key: ${XAI_API_KEY:your-xai-api-key}
+
 # Models configuration
 models:
   supported:
@@ -90,6 +94,19 @@ models:
     - name: gemini-1.5-pro
       provider: GOOGLE
       queue: gemini-pro-1-5-queue
+    # New Grok models
+    - name: grok-3
+      provider: XAI
+      queue: grok-queue
+    - name: grok-3-fast
+      provider: XAI
+      queue: grok-fast-queue
+    - name: grok-3-mini
+      provider: XAI
+      queue: grok-mini-queue
+    - name: grok-3-mini-fast
+      provider: XAI
+      queue: grok-mini-fast-queue
 
 # Worker configuration
 workers:
@@ -124,3 +141,16 @@ workers:
     - queue: gemini-pro-1-5-queue
       concurrentRequests: 5
       rateLimit: 30  # Requests per minute
+    # New queue configurations for Grok models
+    - queue: grok-queue
+      concurrentRequests: 5
+      rateLimit: 30  # Requests per minute
+    - queue: grok-fast-queue
+      concurrentRequests: 8
+      rateLimit: 50  # Requests per minute
+    - queue: grok-mini-queue
+      concurrentRequests: 5
+      rateLimit: 30  # Requests per minute
+    - queue: grok-mini-fast-queue
+      concurrentRequests: 8
+      rateLimit: 50  # Requests per minute
