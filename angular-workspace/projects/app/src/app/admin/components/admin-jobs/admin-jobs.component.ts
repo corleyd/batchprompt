@@ -33,7 +33,7 @@ export class AdminJobsComponent implements OnInit {
       { key: 'jobUuid', header: 'Job ID', sortable: true },
       { key: 'userId', header: 'User ID', sortable: true },
       { key: 'fileName', header: 'File Name', sortable: true },
-      { key: 'modelName', header: 'Model', sortable: true },
+      { key: 'modelId', header: 'Model', sortable: true },
       { key: 'status', header: 'Status', sortable: true, cellTemplate: 'statusTemplate' },
       { key: 'taskCount', header: 'Tasks', sortable: true, 
         cellFormatter: (item) => `${item.completedTaskCount}/${item.taskCount}` },

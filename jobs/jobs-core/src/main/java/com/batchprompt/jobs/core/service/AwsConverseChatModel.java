@@ -17,13 +17,11 @@ import software.amazon.awssdk.services.bedrockruntime.model.Message;
  * Uses AWS SDK for Java Bedrock client and default credential providers
  */
 @Slf4j
-public class AwsConverseChatModel implements ChatModel {
+public class AwsConverseChatModel extends AbstractChatModel {
     
     private static final Float DEFAULT_TEMPERATURE = 0.7f;
     private static final Integer DEFAULT_MAX_TOKENS = 2000;
     
-    private final String modelName;
-    private final String modelId;
     private final BedrockRuntimeClient bedrockClient;
     
     /**
@@ -32,22 +30,16 @@ public class AwsConverseChatModel implements ChatModel {
      * @param modelName The name of the AWS model
      * @param modelId The AWS model ID (e.g., "anthropic.claude-3-sonnet-20240229-v1:0")
      */
-    public AwsConverseChatModel(String modelName, String modelId) {
-        this.modelName = modelName;
-        this.modelId = modelId;
+    public AwsConverseChatModel(String modelId, String providerModelId) {
+        super(modelId, providerModelId);
         
         // Create Bedrock client using default credential providers and region from environment
         this.bedrockClient = BedrockRuntimeClient.create();
-        log.info("Created AWS Bedrock client for model {} ({})", modelName, modelId);
-    }
-    
-    @Override
-    public String getName() {
-        return modelName;
+        log.info("Created AWS Bedrock client for model {} ({})", getProviderModelId(), modelId);
     }
 
     @Override
-    public ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema,
+    public ChatModelResponse generateChatResponse(String prompt, @Nullable JsonNode outputSchema,
                                                  @Nullable Integer maxTokens, @Nullable Double temperature) {
         try {
             log.trace("Generating chat response using AWS Bedrock Converse API for prompt: {}", prompt);
@@ -80,7 +72,7 @@ public class AwsConverseChatModel implements ChatModel {
             
             // Create the converse request using the builder pattern
             ConverseRequest converseRequest = ConverseRequest.builder()
-                .modelId(modelId)
+                .modelId(getProviderModelId())
                 .messages(userMessage)
                 .inferenceConfig(inferenceConfig)
                 .build();
@@ -122,7 +114,7 @@ public class AwsConverseChatModel implements ChatModel {
                 totalTokens = response.usage().totalTokens();
             }
             
-            return ChatModelResponse.of(responseText, promptTokens, completionTokens, totalTokens);
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens);
             
         } catch (Exception e) {
             log.error("Error generating response from AWS Bedrock Converse API", e);

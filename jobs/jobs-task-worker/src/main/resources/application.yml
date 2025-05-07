@@ -26,4 +26,54 @@ logging:
       max-file-size: 10MB
       total-size-cap: 1GB        
 
-
+# Worker configuration
+workers:
+  configurations:
+    - queue: job-task-openai-o3
+      concurrentRequests: 3
+      rateLimit: 60  # Requests per minute
+    - queue: job-task-openai-o4-mini
+      concurrentRequests: 3
+      rateLimit: 60
+    - queue: job-task-openai-gpt-4o
+      concurrentRequests: 3
+      rateLimit: 60
+    - queue: job-task-openai-gpt-4
+      concurrentRequests: 2
+      rateLimit: 30
+    - queue: job-task-openai-gpt-3-5-turbo
+      concurrentRequests: 3
+      rateLimit: 60
+    - queue: job-task-aws-deepseek-r1
+      concurrentRequests: 2
+      rateLimit: 20
+    - queue: job-task-google-gemini-2-0-flash
+      concurrentRequests: 5
+      rateLimit: 60
+    - queue: job-task-google-gemini-2-0-flash-lite
+      concurrentRequests: 5
+      rateLimit: 60
+    - queue: job-task-google-gemini-2-5-pro
+      concurrentRequests: 2
+      rateLimit: 5
+    - queue: job-task-google-gemini-2-5-flash
+      concurrentRequests: 4
+      rateLimit: 30
+    - queue: job-task-google-gemini-1-5-flash
+      concurrentRequests: 4
+      rateLimit: 30
+    - queue: job-task-google-gemini-1-5-pro
+      concurrentRequests: 2
+      rateLimit: 15
+    - queue: job-task-xai-grok-3
+      concurrentRequests: 1
+      rateLimit: 60
+    - queue: job-task-xai-grok-3-fast
+      concurrentRequests: 1
+      rateLimit: 60
+    - queue: job-task-xai-grok-3-mini
+      concurrentRequests: 1
+      rateLimit: 60
+    - queue: job-task-xai-grok-3-mini-fast
+      concurrentRequests: 1
+      rateLimit: 60

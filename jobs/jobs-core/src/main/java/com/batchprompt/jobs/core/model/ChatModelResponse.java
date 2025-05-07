@@ -17,6 +17,7 @@ public class ChatModelResponse {
     private String responseText;
     private Integer promptTokens;
     private Integer completionTokens;
+    private Integer thinkingTokens;
     private Integer totalTokens;
     
     public static ChatModelResponse of(String responseText) {
@@ -26,11 +27,12 @@ public class ChatModelResponse {
     }
     
     public static ChatModelResponse of(String responseText, Integer promptTokens, 
-                                       Integer completionTokens, Integer totalTokens) {
+                                       Integer completionTokens, Integer thinkingTokens, Integer totalTokens) {
         return ChatModelResponse.builder()
                 .responseText(responseText)
                 .promptTokens(promptTokens)
                 .completionTokens(completionTokens)
+                .thinkingTokens(thinkingTokens)
                 .totalTokens(totalTokens)
                 .build();
     }

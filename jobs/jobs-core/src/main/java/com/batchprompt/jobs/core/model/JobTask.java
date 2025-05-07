@@ -38,8 +38,8 @@ public class JobTask {
     @Column(name = "record_number", nullable = false)
     private Integer recordNumber;
     
-    @Column(name = "model_name", nullable = false)
-    private String modelName;
+    @Column(name = "model_id", nullable = false)
+    private String modelId;
     
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -65,7 +65,13 @@ public class JobTask {
     
     @Column(name = "completion_tokens")
     private Integer completionTokens;
+
+    @Column(name = "thinking_tokens")
+    private Integer thinkingTokens;    
     
     @Column(name = "total_tokens")
     private Integer totalTokens;
+    
+    @Column(name = "calculated_cost_usd")
+    private Double calculatedCostUsd;
 }

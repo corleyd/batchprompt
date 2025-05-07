@@ -13,11 +13,12 @@ public class XaiChatModel extends AbstractOpenAICompatibleChatModel {
     /**
      * Constructor
      * 
-     * @param modelName The name of the Xai model
+     * @param modelId The name of the Xai model
+     * @param providerModelId The provider model ID
      * @param apiKey The Xai API key
      */
-    public XaiChatModel(String modelName, String apiKey) {
-        super(modelName, apiKey);
+    public XaiChatModel(String modelId, String providerModelId, String apiKey) {
+        super(modelId, providerModelId, apiKey);
     }
     
     @Override

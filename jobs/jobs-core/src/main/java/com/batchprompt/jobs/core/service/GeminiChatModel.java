@@ -19,34 +19,28 @@ import org.springframework.web.client.RestTemplate;
  * Implementation of ChatModel for Google Gemini models
  */
 @Slf4j
-public class GeminiChatModel implements ChatModel {
+public class GeminiChatModel extends AbstractChatModel {
 
     private static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent";
     private static final Double DEFAULT_TEMPERATURE = 0.7;
     private static final Integer DEFAULT_MAX_TOKENS = 2000;
     
     private final String apiKey;
-    private final String modelName;
     private final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
      * Constructor
      * 
-     * @param modelName The name of the Gemini model
+     * @param providerModelId The name of the Gemini model
      * @param apiKey The Google API key
      */
-    public GeminiChatModel(String modelName, String apiKey) {
-        this.modelName = modelName;
+    public GeminiChatModel(String modelId, String providerModelId, String apiKey) {
+        super(modelId, providerModelId);
         this.apiKey = apiKey;
     }
     
     @Override
-    public String getName() {
-        return modelName;
-    }
-    
-    @Override
-    public ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema,
+    public ChatModelResponse generateChatResponse(String prompt, @Nullable JsonNode outputSchema,
                                                  @Nullable Integer maxTokens, @Nullable Double temperature) {
         try {
             // Check if API key is available
@@ -96,7 +90,7 @@ public class GeminiChatModel implements ChatModel {
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
             
             // The model name is used to construct the URL
-            String apiUrl = String.format(GEMINI_API_URL, model) + "?key=" + apiKey;
+            String apiUrl = String.format(GEMINI_API_URL, getProviderModelId()) + "?key=" + apiKey;
             
             // Send request to Google API
             RestTemplate restTemplate = new RestTemplate();
@@ -113,6 +107,7 @@ public class GeminiChatModel implements ChatModel {
             // Extract token usage if available
             Integer promptTokens = null;
             Integer completionTokens = null;
+            Integer thinkingTokens = null;
             Integer totalTokens = null;
             
             if (responseJson.has("usageMetadata")) {
@@ -123,12 +118,21 @@ public class GeminiChatModel implements ChatModel {
                 if (usageMetadata.has("candidatesTokenCount")) {
                     completionTokens = usageMetadata.get("candidatesTokenCount").asInt();
                 }
-                if (promptTokens != null && completionTokens != null) {
-                    totalTokens = promptTokens + completionTokens;
+                if (usageMetadata.has("thoughtsTokenCount")) {
+                    thinkingTokens = usageMetadata.get("thoughtsTokenCount").asInt();
+                }
+                if (promptTokens != null) {
+                    totalTokens = promptTokens;
+                }
+                if (completionTokens != null) {
+                    totalTokens = (totalTokens != null ? totalTokens : 0) + completionTokens;
+                }
+                if (thinkingTokens != null) {
+                    totalTokens = (totalTokens != null ? totalTokens : 0) + thinkingTokens;
                 }
             }
             
-            return ChatModelResponse.of(responseText, promptTokens, completionTokens, totalTokens);
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, thinkingTokens, totalTokens);
             
         } catch (Exception e) {
             log.error("Error generating response from Gemini", e);

@@ -86,7 +86,7 @@ export class UserDetailsComponent implements OnInit {
     columns: [
       { key: 'jobUuid', header: 'ID', sortable: true },
       { key: 'fileName', header: 'File Name', sortable: true },
-      { key: 'modelName', header: 'Model', sortable: true },
+      { key: 'modelId', header: 'Model', sortable: true },
       { key: 'status', header: 'Status', sortable: true,
         cellFormatter: (item) => item.status,
         cssClass: 'status-cell' },

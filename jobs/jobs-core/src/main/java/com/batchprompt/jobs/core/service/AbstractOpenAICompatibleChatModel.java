@@ -20,13 +20,12 @@ import org.springframework.web.client.RestTemplate;
  * Implements common functionality for models with OpenAI-compatible APIs
  */
 @Slf4j
-public abstract class AbstractOpenAICompatibleChatModel implements ChatModel {
+public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatModel {
 
     protected static final Double DEFAULT_TEMPERATURE = 0.7;
     protected static final Integer DEFAULT_MAX_TOKENS = 2000;
     
     protected final String apiKey;
-    protected final String modelName;
     protected final ObjectMapper objectMapper = new ObjectMapper();
     
     /**
@@ -42,18 +41,13 @@ public abstract class AbstractOpenAICompatibleChatModel implements ChatModel {
      * @param modelName The name of the model
      * @param apiKey The API key
      */
-    public AbstractOpenAICompatibleChatModel(String modelName, String apiKey) {
-        this.modelName = modelName;
+    public AbstractOpenAICompatibleChatModel(String modelId, String providerModelId, String apiKey) {
+        super(modelId, providerModelId);
         this.apiKey = apiKey;
     }
     
     @Override
-    public String getName() {
-        return modelName;
-    }
-    
-    @Override
-    public ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema,
+    public ChatModelResponse generateChatResponse(String prompt, @Nullable JsonNode outputSchema,
                                                  @Nullable Integer maxTokens, @Nullable Double temperature) {
         try {
             // Check if API key is available
@@ -69,7 +63,7 @@ public abstract class AbstractOpenAICompatibleChatModel implements ChatModel {
             
             // Create request body
             ObjectNode requestBody = objectMapper.createObjectNode();
-            requestBody.put("model", modelName);
+            requestBody.put("model", getProviderModelId());
             
             // Create messages array
             ArrayNode messages = requestBody.putArray("messages");
@@ -140,7 +134,7 @@ public abstract class AbstractOpenAICompatibleChatModel implements ChatModel {
                 }
             }
             
-            return ChatModelResponse.of(responseText, promptTokens, completionTokens, totalTokens);
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens);
             
         } catch (Exception e) {
             log.error("Error generating response from API", e);

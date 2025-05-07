@@ -15,6 +15,7 @@ import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.service.ChatModel;
+import com.batchprompt.jobs.core.service.JobPricingService;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
 import com.batchprompt.jobs.core.service.TokenEstimator;
@@ -39,13 +40,14 @@ public class JobTaskWorker {
     private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
+    private final JobPricingService jobPricingService;
 
     // This method will be called by the listener configurations created in JobTaskListenerConfig
     public void processJobTask(JobTaskMessage message) {
         UUID jobTaskUuid = message.getJobTaskUuid();
         UUID jobUuid = message.getJobUuid();
         
-        log.info("Processing job task: {} for model: {}", jobTaskUuid, message.getModelName());
+        log.info("Processing job task: {} for model: {}", jobTaskUuid, message.getModelId());
         
         JobTask jobTask = null;
         
@@ -56,10 +58,10 @@ public class JobTaskWorker {
                 return; // Already logged in the updateTaskToProcessing method
             }
             
-            // Step 2: Get the ChatModel for the model name. If job status is Submitted, update it to Processing
-            ChatModel chatModel = modelService.getModel(message.getModelName());
+            // Step 2: Get the ChatModel for the model id. If job status is Submitted, update it to Processing
+            ChatModel chatModel = modelService.getChatModel(message.getModelId());
             if (chatModel == null) {
-                throw new Exception("Model not found: " + message.getModelName());
+                throw new Exception("Model not found: " + message.getModelId());
             }
             
             // Update job status if needed
@@ -92,13 +94,12 @@ public class JobTaskWorker {
             String promptText = replacePlaceholders(promptDto.getPromptText(), recordData);
             
             // Estimate token count before sending to model
-            int estimatedPromptTokens = TokenEstimator.estimateTokenCount(promptText, message.getModelName(), modelService);
+            int estimatedPromptTokens = TokenEstimator.estimateTokenCount(promptText, message.getModelId(), modelService);
             updateEstimatedTokens(jobTaskUuid, estimatedPromptTokens);
             
             // Use the new chat model response method to get response with token counts
             ChatModelResponse chatResponse = chatModel.generateChatResponse(
                     promptText,
-                    message.getModelName(),
                     outputSchema,
                     message.getMaxTokens(),
                     message.getTemperature()
@@ -170,6 +171,15 @@ public class JobTaskWorker {
         jobTask.setPromptTokens(chatResponse.getPromptTokens());
         jobTask.setCompletionTokens(chatResponse.getCompletionTokens());
         jobTask.setTotalTokens(chatResponse.getTotalTokens());
+        
+        // Calculate cost using the pricing service
+        Double calculatedCost = jobPricingService.calculateCost(jobTask);
+        if (calculatedCost != null) {
+            jobTask.setCalculatedCostUsd(calculatedCost);
+            log.info("Job task {} cost calculated: ${}", jobTaskUuid, calculatedCost);
+        } else {
+            log.warn("Could not calculate cost for job task {}", jobTaskUuid);
+        }
         
         jobTaskRepository.save(jobTask);
         

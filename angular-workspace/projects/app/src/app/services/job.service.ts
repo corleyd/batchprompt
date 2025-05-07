@@ -6,12 +6,21 @@ import { environment } from '../../environments/environment';
 export interface JobSubmissionDto {
   fileUuid: string;
   promptUuid: string;
-  modelName: string;
+  modelId: string;
   outputFieldUuids?: string[];
   maxTokens?: number;
   temperature?: number;
   maxRecords?: number;
   startRecordNumber?: number;
+}
+
+export interface ModelDto {
+  modelId: string;
+  name: string;
+  provider: string;
+  providerDisplayName: string;
+  queue: string;
+  properties: {[key: string]: any};
 }
 
 @Injectable({
@@ -25,23 +34,13 @@ export class JobService {
   }
 
   // Get all supported models
-  getSupportedModels(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.apiUrl}/models`);
+  getSupportedModels(): Observable<ModelDto[]> {
+    return this.http.get<ModelDto[]>(`${this.apiUrl}/models`);
   }
 
   // Submit a job with all parameters
   submitJob(submission: JobSubmissionDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/submit`, submission);
-  }
-
-  // Legacy method for backwards compatibility
-  submitJobLegacy(fileUuid: string, promptUuid: string, modelName: string, outputFieldUuids?: string[]): Observable<any> {
-    return this.submitJob({
-      fileUuid,
-      promptUuid,
-      modelName,
-      outputFieldUuids
-    });
   }
 
   // Get jobs for current user with pagination and sorting

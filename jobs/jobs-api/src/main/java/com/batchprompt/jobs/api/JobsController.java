@@ -29,6 +29,7 @@ import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobSubmissionDto;
 import com.batchprompt.jobs.model.dto.JobTaskDto;
+import com.batchprompt.jobs.model.dto.ModelDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class JobsController {
     @GetMapping
     public ResponseEntity<?> getAllJobs(
             @RequestParam(required = false) String userId,
-            @RequestParam(required = false) String modelName,
+            @RequestParam(required = false) String modelId,
             @RequestParam(required = false) JobStatus status,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size,
@@ -58,7 +59,7 @@ public class JobsController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         
         // Get paginated and filtered jobs
-        Page<Job> jobPage = jobService.getJobsPaginated(userId, modelName, status, pageable);
+        Page<Job> jobPage = jobService.getJobsPaginated(userId, modelId, status, pageable);
         
         // Convert to DTOs and preserve pagination metadata
         Page<JobDto> jobDtoPage = jobPage.map(job -> jobService.convertToDto(job));
@@ -147,8 +148,8 @@ public class JobsController {
     }
 
     @GetMapping("/models")
-    public ResponseEntity<List<String>> getSupportedModels() {
-        return ResponseEntity.ok(modelService.getSupportedModels());
+    public ResponseEntity<List<ModelDto>> getSupportedModels() {
+        return ResponseEntity.ok(modelService.getSupportedModelDetails());
     }
 
     @PostMapping("/submit")

@@ -41,13 +41,13 @@
 
       <div class="form-group">
         <label for="model">Select Model:</label>
-        <select id="model" formControlName="modelName">
+        <select id="model" formControlName="modelId">
           <option value="">-- Select a Model --</option>
-          <option *ngFor="let model of models" [value]="model">
-            {{ model }}
+          <option *ngFor="let model of models" [value]="model.modelId">
+            {{ model.modelId }}
           </option>
         </select>
-        <div *ngIf="jobForm.get('modelName')?.invalid && jobForm.get('modelName')?.touched" class="error-message">
+        <div *ngIf="jobForm.get('modelId')?.invalid && jobForm.get('modelId')?.touched" class="error-message">
           Please select a model
         </div>
       </div>

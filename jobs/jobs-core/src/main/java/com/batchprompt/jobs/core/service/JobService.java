@@ -95,16 +95,16 @@ public class JobService {
     }
     
     /**
-     * Get paginated jobs with optional filtering by userId, modelName, and status
+     * Get paginated jobs with optional filtering by userId, modelId, and status
      * 
      * @param userId Optional user ID to filter by
-     * @param modelName Optional model name to filter by
+     * @param modelId Optional model id to filter by
      * @param status Optional job status to filter by
      * @param pageable Pageable object containing pagination and sorting information
      * @return Page of filtered jobs
      */
-    public Page<Job> getJobsPaginated(String userId, String modelName, JobStatus status, Pageable pageable) {
-        return jobRepository.findAll(JobSpecification.withFilters(userId, modelName, status), pageable);
+    public Page<Job> getJobsPaginated(String userId, String modelId, JobStatus status, Pageable pageable) {
+        return jobRepository.findAll(JobSpecification.withFilters(userId, modelId, status), pageable);
     }
     
     /**
@@ -140,8 +140,8 @@ public class JobService {
     @Transactional
     public Job submitJob(JobSubmissionDto jobSubmissionDto, String userId, String authToken) {
         // Validate model
-        if (!modelService.isModelSupported(jobSubmissionDto.getModelName())) {
-            throw new JobSubmissionException("Unsupported model: " + jobSubmissionDto.getModelName());
+        if (!modelService.isModelSupported(jobSubmissionDto.getModelId())) {
+            throw new JobSubmissionException("Unsupported model: " + jobSubmissionDto.getModelId());
         }
         
         // Validate file exists and belongs to the user
@@ -213,7 +213,7 @@ public class JobService {
                 .fileUuid(jobSubmissionDto.getFileUuid())
                 .fileName(file.getFileName())
                 .promptUuid(jobSubmissionDto.getPromptUuid())
-                .modelName(jobSubmissionDto.getModelName())
+                .modelId(jobSubmissionDto.getModelId())
                 .status(JobStatus.SUBMITTED)
                 .taskCount((int)recordsToProcess)
                 .completedTaskCount(0)
@@ -264,7 +264,7 @@ public class JobService {
                     .jobUuid(jobUuid)
                     .fileRecordUuid(record.getFileRecordUuid())
                     .recordNumber(record.getRecordNumber())
-                    .modelName(jobSubmissionDto.getModelName())
+                    .modelId(jobSubmissionDto.getModelId())
                     .status(TaskStatus.SUBMITTED)
                     .build();
                     
@@ -275,7 +275,7 @@ public class JobService {
                     .jobTaskUuid(jobTaskUuid)
                     .jobUuid(jobUuid)
                     .fileRecordUuid(record.getFileRecordUuid())
-                    .modelName(jobSubmissionDto.getModelName())
+                    .modelId(jobSubmissionDto.getModelId())
                     .promptUuid(jobSubmissionDto.getPromptUuid())
                     .userId(userId)
                     .authToken(authToken)
@@ -362,7 +362,7 @@ public class JobService {
                         .jobUuid(job.getJobUuid())
                         .fileRecordUuid(record.getFileRecordUuid())
                         .recordNumber(record.getRecordNumber())
-                        .modelName(job.getModelName())
+                        .modelId(job.getModelId())
                         .status(TaskStatus.SUBMITTED)
                         .build();
                         
@@ -373,7 +373,7 @@ public class JobService {
                         .jobTaskUuid(jobTaskUuid)
                         .jobUuid(job.getJobUuid())
                         .fileRecordUuid(record.getFileRecordUuid())
-                        .modelName(job.getModelName())
+                        .modelId(job.getModelId())
                         .promptUuid(job.getPromptUuid())
                         .userId(userId)
                         .authToken(authToken)
@@ -418,7 +418,7 @@ public class JobService {
      * 
      * @param fileUuid The UUID of the file to process
      * @param promptUuid The UUID of the prompt to use
-     * @param modelName The name of the model to use
+     * @param modelId The ID of the model to use
      * @param outputFieldUuids List of field UUIDs to include in the output (can be null for all fields)
      * @param userId The user ID submitting the job
      * @param authToken The authentication token for calling other services
@@ -426,11 +426,11 @@ public class JobService {
      * @throws JobSubmissionException If there's an error during job submission
      */
     @Transactional
-    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelName, List<UUID> outputFieldUuids, String userId, String authToken) {
+    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelId, List<UUID> outputFieldUuids, String userId, String authToken) {
         JobSubmissionDto jobSubmissionDto = JobSubmissionDto.builder()
                 .fileUuid(fileUuid)
                 .promptUuid(promptUuid)
-                .modelName(modelName)
+                .modelId(modelId)
                 .outputFieldUuids(outputFieldUuids)
                 .build();
         
@@ -442,18 +442,18 @@ public class JobService {
      * 
      * @param fileUuid The UUID of the file to process
      * @param promptUuid The UUID of the prompt to use
-     * @param modelName The name of the model to use
+     * @param modelId The ID of the model to use
      * @param userId The user ID submitting the job
      * @param authToken The authentication token for calling other services
      * @return The created job
      * @throws JobSubmissionException If there's an error during job submission
      */
     @Transactional
-    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelName, String userId, String authToken) {
+    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelId, String userId, String authToken) {
         JobSubmissionDto jobSubmissionDto = JobSubmissionDto.builder()
                 .fileUuid(fileUuid)
                 .promptUuid(promptUuid)
-                .modelName(modelName)
+                .modelId(modelId)
                 .build();
         
         return submitJob(jobSubmissionDto, userId, authToken);
@@ -595,7 +595,7 @@ public class JobService {
                 .fileName(job.getFileName())
                 .resultFileUuid(job.getResultFileUuid())
                 .promptUuid(job.getPromptUuid())
-                .modelName(job.getModelName())
+                .modelId(job.getModelId())
                 .status(job.getStatus())
                 .taskCount(job.getTaskCount())
                 .completedTaskCount(job.getCompletedTaskCount())

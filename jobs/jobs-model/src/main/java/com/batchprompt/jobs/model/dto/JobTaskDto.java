@@ -19,7 +19,7 @@ public class JobTaskDto {
     private UUID jobUuid;
     private UUID fileRecordUuid;
     private int recordNumber;
-    private String modelName;
+    private String modelId;
     private TaskStatus status;
     private String responseText;
     private String errorMessage;
@@ -28,5 +28,7 @@ public class JobTaskDto {
     private Integer estimatedPromptTokens;
     private Integer promptTokens;
     private Integer completionTokens;
+    private Integer thinkingTokens;
     private Integer totalTokens;
+    private Double calculatedCostUsd;
 }

@@ -2,6 +2,8 @@ package com.batchprompt.jobs.task.worker;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
@@ -49,6 +51,9 @@ public class JobTaskListenerConfig implements RabbitListenerConfigurer {
     // Map to store all created listener containers
     private final Map<String, SimpleMessageListenerContainer> listenerContainers = new HashMap<>();
     
+    // Map to store rate limiting semaphores (one per minute) for each queue
+    private final Map<String, RateLimitingSemaphore> rateLimiters = new HashMap<>();
+    
     @PostConstruct
     public void initializeListeners() {
         if (workerConfig.getConfigurations() == null) {
@@ -71,6 +76,7 @@ public class JobTaskListenerConfig implements RabbitListenerConfigurer {
     private void createListenerForQueue(WorkerConfiguration workerConfig) {
         String queueName = workerConfig.getQueue();
         int concurrentRequests = workerConfig.getConcurrentRequests();
+        int rateLimit = workerConfig.getRateLimit();
         
         if (queueName == null || queueName.isEmpty()) {
             log.warn("Queue name is empty for worker configuration");
@@ -79,10 +85,17 @@ public class JobTaskListenerConfig implements RabbitListenerConfigurer {
         
         if (concurrentRequests <= 0) {
             log.warn("Invalid concurrent requests for queue {}: {}", queueName, concurrentRequests);
-            concurrentRequests = 1; // Default to 1
+            return;
         }
         
-        log.info("Creating listener for queue {} with concurrency {}", queueName, concurrentRequests);
+        log.info("Creating listener for queue {} with concurrency {} and rate limit {}/minute", 
+                queueName, concurrentRequests, rateLimit);
+
+        // Initialize rate limiter if rate limit is specified
+        if (rateLimit > 0) {
+            rateLimiters.put(queueName, new RateLimitingSemaphore(rateLimit));
+            log.info("Rate limiter created for queue {} with limit {}/minute", queueName, rateLimit);
+        }
 
         /*
          * NOTE: the queue will already exist because it is created in the RabbitMQConfig class
@@ -100,7 +113,36 @@ public class JobTaskListenerConfig implements RabbitListenerConfigurer {
             try {
                 Object convertedMessage = jsonMessageConverter.fromMessage(message);
                 if (convertedMessage instanceof com.batchprompt.jobs.model.dto.JobTaskMessage) {
-                    jobTaskWorker.processJobTask((com.batchprompt.jobs.model.dto.JobTaskMessage) convertedMessage);
+                    // Apply rate limiting if configured
+                    RateLimitingSemaphore rateLimiter = rateLimiters.get(queueName);
+                    if (rateLimiter != null) {
+                        boolean acquired = false;
+                        try {
+                            // Try to acquire a permit with a timeout
+                            acquired = rateLimiter.tryAcquire(30, TimeUnit.SECONDS);
+                            if (!acquired) {
+                                log.warn("Rate limit exceeded for queue {}. Message processing delayed.", queueName);
+                                // Try again with longer timeout - this will block the consumer thread
+                                acquired = rateLimiter.tryAcquire(5, TimeUnit.MINUTES);
+                                if (!acquired) {
+                                    log.error("Failed to acquire rate limiting permit after extended wait for queue {}", queueName);
+                                    // Let the message be requeued by not acknowledging it
+                                    return;
+                                }
+                            }
+                            
+                            // Process the message with the acquired rate limit permit
+                            jobTaskWorker.processJobTask((com.batchprompt.jobs.model.dto.JobTaskMessage) convertedMessage);
+                        } finally {
+                            // Release the permit when done
+                            if (acquired) {
+                                rateLimiter.release();
+                            }
+                        }
+                    } else {
+                        // No rate limiting required, process message directly
+                        jobTaskWorker.processJobTask((com.batchprompt.jobs.model.dto.JobTaskMessage) convertedMessage);
+                    }
                 } else {
                     log.error("Received message of unexpected type: {}", convertedMessage.getClass().getName());
                 }
@@ -136,5 +178,49 @@ public class JobTaskListenerConfig implements RabbitListenerConfigurer {
     @Override
     public void configureRabbitListeners(RabbitListenerEndpointRegistrar registrar) {
         registrar.setMessageHandlerMethodFactory(messageHandlerMethodFactory());
+    }
+    
+    /**
+     * A rate limiting semaphore that resets permits periodically based on a time window
+     */
+    private static class RateLimitingSemaphore {
+        private final Semaphore semaphore;
+        private final int maxPermits;
+        private long lastResetTime;
+        
+        public RateLimitingSemaphore(int permits) {
+            this.maxPermits = permits;
+            this.semaphore = new Semaphore(permits);
+            this.lastResetTime = System.currentTimeMillis();
+        }
+        
+        public boolean tryAcquire(long timeout, TimeUnit unit) throws InterruptedException {
+            checkAndResetPermits();
+            return semaphore.tryAcquire(timeout, unit);
+        }
+        
+        public void release() {
+            semaphore.release();
+        }
+        
+        /**
+         * Check if a minute has passed since the last reset and reset permits if needed
+         */
+        private synchronized void checkAndResetPermits() {
+            long now = System.currentTimeMillis();
+            long elapsedTimeMs = now - lastResetTime;
+            
+            // Reset permits every minute (60,000 ms)
+            if (elapsedTimeMs >= 60_000) {
+                int currentPermits = semaphore.availablePermits();
+                int permitsToAdd = maxPermits - currentPermits;
+                
+                if (permitsToAdd > 0) {
+                    semaphore.release(permitsToAdd);
+                }
+                
+                lastResetTime = now;
+            }
+        }
     }
 }

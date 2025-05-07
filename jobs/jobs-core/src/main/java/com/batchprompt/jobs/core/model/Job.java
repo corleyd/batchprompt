@@ -41,8 +41,8 @@ public class Job {
     @Column(name = "prompt_uuid", nullable = false)
     private UUID promptUuid;
     
-    @Column(name = "model_name", nullable = false)
-    private String modelName;
+    @Column(name = "model_id", nullable = false)
+    private String modelId;
     
     @Column(name = "status", nullable = false)
     @Enumerated(EnumType.STRING)

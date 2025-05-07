@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin, Observable } from 'rxjs';
 
-import { JobService } from '../../services/job.service';
+import { JobService, ModelDto } from '../../services/job.service';
 import { FileService } from '../../files/file.service';
 import { PromptService } from '../../services/prompt.service';
 
@@ -16,7 +16,7 @@ export class JobSubmitComponent implements OnInit {
   jobForm: FormGroup;
   files: any[] = [];
   prompts: any[] = [];
-  models: string[] = [];
+  models: ModelDto[] = [];
   fileFields: any[] = [];
   loading = false;
   fieldsLoading = false;
@@ -37,7 +37,7 @@ export class JobSubmitComponent implements OnInit {
     this.jobForm = this.fb.group({
       fileUuid: ['', Validators.required],
       promptUuid: ['', Validators.required],
-      modelName: ['', Validators.required],
+      modelId: ['', Validators.required],
       includeAllFields: [true],
       outputFieldUuids: this.fb.array([]),
       // New optional fields for advanced options
@@ -197,7 +197,7 @@ export class JobSubmitComponent implements OnInit {
     const jobSubmission = {
       fileUuid: formValue.fileUuid,
       promptUuid: formValue.promptUuid,
-      modelName: formValue.modelName,
+      modelId: formValue.modelId,
       // Only include output fields if not including all fields
       outputFieldUuids: formValue.includeAllFields ? undefined : formValue.outputFieldUuids,
       // Include optional parameters only if they have values

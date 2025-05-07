@@ -6,7 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.annotation.Nullable;
 
 public interface ChatModel {
-    String getName();
+    String getModelId();
+    public String getProviderModelId();
 
     /**
      * Generates a response from the chat model including token usage information
@@ -18,7 +19,7 @@ public interface ChatModel {
      * @param temperature Optional temperature setting for response randomness
      * @return ChatModelResponse containing response text and token usage information
      */
-    ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema, 
+    ChatModelResponse generateChatResponse(String prompt, @Nullable JsonNode outputSchema, 
                                            @Nullable Integer maxTokens, @Nullable Double temperature);
     
     /**
@@ -29,7 +30,7 @@ public interface ChatModel {
      * @param outputSchema Optional schema for structured output
      * @return ChatModelResponse containing response text and token usage information
      */
-    default ChatModelResponse generateChatResponse(String prompt, String model, @Nullable JsonNode outputSchema) {
-        return generateChatResponse(prompt, model, outputSchema, null, null);
+    default ChatModelResponse generateChatResponse(String prompt, @Nullable JsonNode outputSchema) {
+        return generateChatResponse(prompt, outputSchema, null, null);
     }
 }

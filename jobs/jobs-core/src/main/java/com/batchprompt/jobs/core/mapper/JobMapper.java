@@ -21,7 +21,7 @@ public class JobMapper {
                 .fileName(job.getFileName())
                 .resultFileUuid(job.getResultFileUuid())
                 .promptUuid(job.getPromptUuid())
-                .modelName(job.getModelName())
+                .modelId(job.getModelId())
                 .status(job.getStatus())
                 .taskCount(job.getTaskCount())
                 .completedTaskCount(job.getCompletedTaskCount())
@@ -41,7 +41,7 @@ public class JobMapper {
                 .jobUuid(jobTask.getJobUuid())
                 .fileRecordUuid(jobTask.getFileRecordUuid())
                 .recordNumber(jobTask.getRecordNumber())
-                .modelName(jobTask.getModelName())
+                .modelId(jobTask.getModelId())
                 .status(jobTask.getStatus())
                 .responseText(jobTask.getResponseText())
                 .errorMessage(jobTask.getErrorMessage())
@@ -51,6 +51,7 @@ public class JobMapper {
                 .promptTokens(jobTask.getPromptTokens())
                 .completionTokens(jobTask.getCompletionTokens())
                 .totalTokens(jobTask.getTotalTokens())
+                .calculatedCostUsd(jobTask.getCalculatedCostUsd())
                 .build();
     }
     

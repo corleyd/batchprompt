@@ -28,7 +28,7 @@ export class JobListComponent implements OnInit {
     columns: [
       { key: 'fileName', header: 'File Name', sortable: true, cssClass: 'file-name-cell' },
       { key: 'promptName', header: 'Prompt', sortable: true },
-      { key: 'modelName', header: 'Model', sortable: true },
+      { key: 'modelId', header: 'Model', sortable: true },
       { key: 'status', header: 'Status', sortable: true, cellTemplate: 'statusTemplate' },
       { key: 'createdAt', header: 'Created', sortable: true, 
         cellFormatter: (item) => this.formatDate(item.createdAt) },

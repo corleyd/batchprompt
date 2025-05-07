@@ -16,8 +16,8 @@ public class OpenAIChatModel extends AbstractOpenAICompatibleChatModel {
      * @param modelName The name of the OpenAI model
      * @param apiKey The OpenAI API key
      */
-    public OpenAIChatModel(String modelName, String apiKey) {
-        super(modelName, apiKey);
+    public OpenAIChatModel(String modelId, String providerModelId, String apiKey) {
+        super(modelId, providerModelId, apiKey);
     }
     
     @Override

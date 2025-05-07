@@ -15,7 +15,7 @@ public class JobTaskMessage {
     private UUID jobTaskUuid;
     private UUID jobUuid;
     private UUID fileRecordUuid;
-    private String modelName;
+    private String modelId;
     private UUID promptUuid;
     private String userId;
     private String authToken;

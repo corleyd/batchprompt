@@ -21,7 +21,7 @@ public class JobSubmissionDto {
     private UUID promptUuid;
     
     @NotNull
-    private String modelName;
+    private String modelId;
     
     private List<UUID> outputFieldUuids;
     
