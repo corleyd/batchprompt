@@ -15,6 +15,7 @@ import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.service.ChatModel;
+import com.batchprompt.jobs.core.service.JobCreditService;
 import com.batchprompt.jobs.core.service.JobPricingService;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
@@ -41,6 +42,7 @@ public class JobTaskWorker {
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
     private final JobPricingService jobPricingService;
+    private final JobCreditService jobCreditService;
 
     // This method will be called by the listener configurations created in JobTaskListenerConfig
     public void processJobTask(JobTaskMessage message) {
@@ -177,11 +179,26 @@ public class JobTaskWorker {
         if (calculatedCost != null) {
             jobTask.setCalculatedCostUsd(calculatedCost);
             log.info("Job task {} cost calculated: ${}", jobTaskUuid, calculatedCost);
+            
+            // Credit usage is calculated automatically within the job pricing service
+            if (jobTask.getCreditUsage() != null) {
+                log.info("Job task {} credit usage calculated: {} credits", 
+                        jobTaskUuid, jobTask.getCreditUsage());
+            }
         } else {
             log.warn("Could not calculate cost for job task {}", jobTaskUuid);
         }
         
+        // Save the task with calculated cost and credit usage
         jobTaskRepository.save(jobTask);
+        
+        // Update job-level credit usage by summing all completed tasks
+        try {
+            jobCreditService.updateJobCreditUsage(jobTask.getJobUuid());
+        } catch (Exception e) {
+            log.error("Error updating job credit usage for job {}: {}", 
+                    jobTask.getJobUuid(), e.getMessage(), e);
+        }
         
         if (chatResponse.getTotalTokens() != null) {
             log.info("Job task {} completed with {} tokens (prompt: {}, completion: {})", 

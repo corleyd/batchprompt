@@ -74,4 +74,7 @@ public class JobTask {
     
     @Column(name = "calculated_cost_usd")
     private Double calculatedCostUsd;
+    
+    @Column(name = "credit_usage")
+    private Double creditUsage;
 }

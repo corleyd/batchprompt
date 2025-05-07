@@ -31,4 +31,5 @@ public class JobTaskDto {
     private Integer thinkingTokens;
     private Integer totalTokens;
     private Double calculatedCostUsd;
+    private Double creditUsage;
 }

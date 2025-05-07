@@ -1,5 +1,6 @@
 package com.batchprompt.jobs.core.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JobPricingService {
 
     private final ModelCostRepository modelCostRepository;
+    private final CreditCalculationService creditCalculationService;
 
     /**
      * Calculate the cost of a job task based on its token usage and model pricing
@@ -84,7 +86,41 @@ public class JobPricingService {
                 jobTask.getThinkingTokens(), applicableModelCost.getThinkingToken1mCostUsd(), thinkingCost,
                 totalCost);
 
+        // Calculate and set credit usage for this task
+        calculateAndSetCreditUsage(jobTask, totalCost);
+
         return totalCost;
+    }
+
+    /**
+     * Calculate the credit usage for a job task and set it on the task
+     * 
+     * @param jobTask The job task to calculate credit usage for
+     * @param costUsd The cost in USD that needs to be converted to credits
+     */
+    public void calculateAndSetCreditUsage(JobTask jobTask, Double costUsd) {
+        if (jobTask == null || costUsd == null) {
+            return;
+        }
+
+        // Use the job begin timestamp or current time if not available
+        LocalDateTime timestamp = jobTask.getBeginTimestamp();
+        if (timestamp == null) {
+            timestamp = LocalDateTime.now();
+        }
+
+        // Calculate credit usage based on the USD cost and applicable rate
+        Double creditUsage = creditCalculationService.calculateCreditUsage(
+                jobTask.getModelId(), costUsd, timestamp);
+        
+        if (creditUsage != null) {
+            jobTask.setCreditUsage(creditUsage);
+            log.debug("Calculated credit usage for job task {}: {} credits (from ${} USD)", 
+                    jobTask.getJobTaskUuid(), creditUsage, costUsd);
+        } else {
+            log.warn("Could not calculate credit usage for job task {} (model: {})", 
+                    jobTask.getJobTaskUuid(), jobTask.getModelId());
+        }
     }
 
     /**

@@ -69,6 +69,9 @@ public class Job {
     @Column(name = "start_record_number")
     private Integer startRecordNumber;
     
+    @Column(name = "credit_usage")
+    private Double creditUsage;
+    
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     

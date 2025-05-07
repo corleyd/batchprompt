@@ -27,11 +27,13 @@ public class JobMapper {
                 .completedTaskCount(job.getCompletedTaskCount())
                 .createdAt(job.getCreatedAt())
                 .updatedAt(job.getUpdatedAt())
-                // Map the new optional fields
+                // Map the optional fields
                 .maxTokens(job.getMaxTokens())
                 .temperature(job.getTemperature())
                 .maxRecords(job.getMaxRecords())
                 .startRecordNumber(job.getStartRecordNumber())
+                // Map the credit usage field
+                .creditUsage(job.getCreditUsage())
                 .build();
     }
     
@@ -52,6 +54,8 @@ public class JobMapper {
                 .completionTokens(jobTask.getCompletionTokens())
                 .totalTokens(jobTask.getTotalTokens())
                 .calculatedCostUsd(jobTask.getCalculatedCostUsd())
+                // Map the credit usage field
+                .creditUsage(jobTask.getCreditUsage())
                 .build();
     }
     

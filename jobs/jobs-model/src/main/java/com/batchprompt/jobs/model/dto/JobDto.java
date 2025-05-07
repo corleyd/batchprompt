@@ -34,4 +34,7 @@ public class JobDto {
     private Double temperature;
     private Integer maxRecords;
     private Integer startRecordNumber;
+    
+    // Added credit usage tracking
+    private Double creditUsage;
 }
