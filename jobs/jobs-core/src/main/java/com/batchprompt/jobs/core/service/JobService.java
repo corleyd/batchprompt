@@ -522,25 +522,32 @@ public class JobService {
         
         int completedCount = 0;
         int failedCount = 0;
+        int insufficientCreditsCount = 0;
         
         for (JobTask task : tasks) {
             if (task.getStatus() == TaskStatus.COMPLETED) {
                 completedCount++;
             } else if (task.getStatus() == TaskStatus.FAILED) {
                 failedCount++;
+            } else if (task.getStatus() == TaskStatus.INSUFFICIENT_CREDITS) {
+                insufficientCreditsCount++;
             }
         }
             
         // We only update the count if it has changed
-        boolean countsChanged = job.getCompletedTaskCount() != (completedCount + failedCount); 
+        boolean countsChanged = job.getCompletedTaskCount() != (completedCount + failedCount + insufficientCreditsCount); 
         if (countsChanged) {
-            job.setCompletedTaskCount(completedCount + failedCount);
+            job.setCompletedTaskCount(completedCount + failedCount + insufficientCreditsCount);
         }
         
         JobStatus newStatus = null;
         
-        // Update job status based on task status
-        if (completedCount + failedCount == tasks.size()) {
+        // Check for insufficient credits first - if any task has insufficient credits, mark the whole job
+        if (insufficientCreditsCount > 0) {
+            newStatus = JobStatus.INSUFFICIENT_CREDITS;
+        }
+        // If no insufficient credits but all tasks are done, mark as pending output
+        else if (completedCount + failedCount + insufficientCreditsCount == tasks.size()) {
             // All tasks are completed or failed, update to PENDING_OUTPUT
             newStatus = JobStatus.PENDING_OUTPUT;
         } else if (job.getStatus() == JobStatus.SUBMITTED) {
@@ -556,7 +563,7 @@ public class JobService {
             job.setUpdatedAt(LocalDateTime.now());
             jobRepository.save(job);
             
-            // If all tasks completed, and we're changing status to PENDING_OUTPUT
+            // If all tasks completed and we're not in INSUFFICIENT_CREDITS, queue for output processing
             if (newStatus == JobStatus.PENDING_OUTPUT) {
                 log.info("All tasks completed for job {}. Setting status to {} and queueing for output processing", 
                             jobUuid, newStatus);
@@ -580,6 +587,9 @@ public class JobService {
                         log.info("Sent job output message for job {} after transaction commit", finalJobUuid);
                     }
                 });
+            } else if (newStatus == JobStatus.INSUFFICIENT_CREDITS) {
+                log.warn("Job {} marked as INSUFFICIENT_CREDITS ({} tasks with insufficient credits)", 
+                        jobUuid, insufficientCreditsCount);
             } else if (countsChanged || newStatus != null) {
                 log.info("Updated job {} status to {}, completed tasks: {}/{}", 
                     jobUuid, job.getStatus(), job.getCompletedTaskCount(), tasks.size());

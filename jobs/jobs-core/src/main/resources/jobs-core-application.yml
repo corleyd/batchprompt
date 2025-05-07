@@ -41,6 +41,11 @@ rabbitmq:
       name: job-output-queue
       routing-key: job-output-queue
 
+users-api:
+  url: ${USERS_API_URL:http://localhost:8085}
+users-account-api:
+  url: ${USERS_API_URL:http://localhost:8085}
+  
 # Model configuration
 openai:
   api-key: ${OPENAI_API_KEY:your-openai-api-key}

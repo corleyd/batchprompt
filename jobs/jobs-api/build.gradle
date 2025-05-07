@@ -8,6 +8,16 @@ group = 'com.batchprompt'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '21'
 
+ext {
+    set('springCloudVersion', "2024.0.0")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
 tasks.withType(JavaCompile) {
     options.compilerArgs.add('-parameters')
 }

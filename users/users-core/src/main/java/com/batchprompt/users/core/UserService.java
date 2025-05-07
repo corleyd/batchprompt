@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AccountService accountService;
 
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -120,7 +121,19 @@ public class UserService {
         // By default, users are enabled
         user.setEnabled(true);
         
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        
+        // Create a default account for the new user using their email as the account name
+        try {
+            String accountName = user.getEmail().split("@")[0] + "-account";
+            accountService.createAccount(accountName, savedUser);
+            log.info("Created default account '{}' for user: {}", accountName, user.getUserId());
+        } catch (Exception e) {
+            log.error("Failed to create default account for user: {}", user.getUserId(), e);
+            // We don't want to fail the user registration if account creation fails
+        }
+        
+        return savedUser;
     }
 
     @Transactional

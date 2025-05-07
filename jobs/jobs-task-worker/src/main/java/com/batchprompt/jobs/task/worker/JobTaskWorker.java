@@ -60,6 +60,15 @@ public class JobTaskWorker {
                 return; // Already logged in the updateTaskToProcessing method
             }
             
+            // Check if the user has sufficient credits before proceeding
+            if (!jobCreditService.checkUserHasSufficientCredits(message.getUserId())) {
+                // Mark the task as insufficient credits and update the job status
+                updateTaskToInsufficientCredits(jobTaskUuid);
+                jobService.updateJobStatus(jobUuid);
+                log.warn("Task {} marked as INSUFFICIENT_CREDITS for user: {}", jobTaskUuid, message.getUserId());
+                return;
+            }
+            
             // Step 2: Get the ChatModel for the model id. If job status is Submitted, update it to Processing
             ChatModel chatModel = modelService.getChatModel(message.getModelId());
             if (chatModel == null) {
@@ -238,6 +247,22 @@ public class JobTaskWorker {
         jobTask.setEndTimestamp(LocalDateTime.now());
         
         jobTaskRepository.save(jobTask);
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void updateTaskToInsufficientCredits(UUID jobTaskUuid) {
+        JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
+        if (jobTask == null) {
+            log.error("Job task not found: {}", jobTaskUuid);
+            return;
+        }
+        
+        jobTask.setStatus(TaskStatus.INSUFFICIENT_CREDITS);
+        jobTask.setErrorMessage("Insufficient credits available to process this task");
+        jobTask.setEndTimestamp(LocalDateTime.now());
+        
+        jobTaskRepository.save(jobTask);
+        log.info("Job task {} marked as INSUFFICIENT_CREDITS", jobTaskUuid);
     }
 
     private String replacePlaceholders(String promptText, JsonNode recordData) {
