@@ -25,6 +25,46 @@
       margin-right: 0.75rem;
     }
 }
+
+/* Account information styling */
+.account-info {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 2rem;
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border-left: 3px solid #4285f4;
+}
+
+.account-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.account-name {
+    font-weight: 500;
+    color: #505050;
+    margin-bottom: 0.2rem;
+}
+
+.account-balance {
+    color: #4285f4;
+    font-weight: 600;
+    
+    &.low-credits {
+        color: #f44336;
+    }
+}
+
+.account-loading {
+    color: #757575;
+    font-style: italic;
+    font-size: 0.85rem;
+}
   
 .nav-actions {
     display: flex;

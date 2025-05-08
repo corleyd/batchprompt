@@ -5,11 +5,17 @@ import { UserService } from '../../../services/user.service';
 import { FileService } from '../../../files/file.service';
 import { JobService } from '../../../services/job.service';
 import { PromptService } from '../../../services/prompt.service';
+import { AccountService } from '../../../services/account.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { GenericTableModule } from '../../../shared/components/generic-table/generic-table.module';
 import { TableConfig, TableSortEvent, TablePageEvent } from '../../../shared/components/generic-table/table-models';
+import { CreditDialogComponent } from './credit-dialog/credit-dialog.component';
 
 @Component({
   selector: 'app-user-details',
@@ -20,6 +26,11 @@ import { TableConfig, TableSortEvent, TablePageEvent } from '../../../shared/com
     MatTabsModule,
     MatButtonModule,
     MatIconModule,
+    MatDialogModule,
+    FormsModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
     GenericTableModule
   ],
   templateUrl: './user-details.component.html',
@@ -32,6 +43,12 @@ export class UserDetailsComponent implements OnInit {
   userFiles: any[] = [];
   userJobs: any[] = [];
   userPrompts: any[] = [];
+  
+  // Account info
+  userAccount: any = null;
+  accountName: string = '';
+  accountBalance: number = 0;
+  loadingAccount = true;
   
   loadingUser = true;
   loadingFiles = true;
@@ -117,7 +134,9 @@ export class UserDetailsComponent implements OnInit {
     private userService: UserService,
     private fileService: FileService,
     private jobService: JobService,
-    private promptService: PromptService
+    private promptService: PromptService,
+    private accountService: AccountService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -125,6 +144,7 @@ export class UserDetailsComponent implements OnInit {
       this.userId = params.get('userId');
       if (this.userId) {
         this.loadUserDetails();
+        this.loadUserAccount();
         this.loadUserFiles();
         this.loadUserJobs();
         this.loadUserPrompts();
@@ -147,6 +167,75 @@ export class UserDetailsComponent implements OnInit {
       error: (error) => {
         console.error('Error loading user details:', error);
         this.loadingUser = false;
+      }
+    });
+  }
+
+  loadUserAccount(): void {
+    if (!this.userId) return;
+    
+    this.loadingAccount = true;
+    // First try to get user accounts using admin endpoint
+    this.accountService.getUserAccounts(this.userId).subscribe({
+      next: (accounts) => {
+        if (accounts && accounts.length > 0) {
+          this.userAccount = accounts[0]; // Use the first account
+          this.accountName = this.userAccount.name;
+          this.loadAccountBalance(this.userAccount.accountUuid);
+        } else {
+          console.log('No accounts found for user');
+          this.loadingAccount = false;
+        }
+      },
+      error: (error) => {
+        console.error('Error loading user accounts:', error);
+        this.loadingAccount = false;
+      }
+    });
+  }
+
+  loadAccountBalance(accountUuid: string): void {
+    this.accountService.getAccountBalance(accountUuid).subscribe({
+      next: (balance) => {
+        this.accountBalance = balance;
+        this.loadingAccount = false;
+      },
+      error: (error) => {
+        console.error('Error loading account balance:', error);
+        this.loadingAccount = false;
+      }
+    });
+  }
+
+  openAddCreditsDialog(): void {
+    if (!this.userAccount) return;
+    
+    const dialogRef = this.dialog.open(CreditDialogComponent, {
+      width: '400px',
+      data: {
+        accountUuid: this.userAccount.accountUuid,
+        accountName: this.accountName,
+        userName: this.userName
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.addCredits(this.userAccount.accountUuid, result.amount, result.reason);
+      }
+    });
+  }
+
+  addCredits(accountUuid: string, amount: number, reason: string): void {
+    this.accountService.addCredits(accountUuid, amount, reason).subscribe({
+      next: (transaction) => {
+        console.log('Credits added successfully:', transaction);
+        // Reload the account balance
+        this.loadAccountBalance(accountUuid);
+      },
+      error: (error) => {
+        console.error('Error adding credits:', error);
+        alert('Failed to add credits. Please try again.');
       }
     });
   }

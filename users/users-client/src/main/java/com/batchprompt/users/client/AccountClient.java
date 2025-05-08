@@ -11,13 +11,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.batchprompt.users.client.config.FeignClientConfig;
 import com.batchprompt.users.model.dto.AccountCreditTransactionDto;
 import com.batchprompt.users.model.dto.AccountDto;
 
-@FeignClient(name = "users-account-api", path = "/api/accounts")
+@FeignClient(
+    name = "users-account-api", 
+    url = "${users-account-api.url}", 
+    path = "/api/accounts",
+    configuration = FeignClientConfig.class
+)
 public interface AccountClient {
 
-    @GetMapping
+    @GetMapping("/user")
     ResponseEntity<List<AccountDto>> getAccountsForCurrentUser();
     
     @GetMapping("/{accountUuid}")

@@ -12,9 +12,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.batchprompt.users.client.config.FeignClientConfig;
 import com.batchprompt.users.model.dto.UserDto;
 
-@FeignClient(name = "users-api", path = "/api/users")
+@FeignClient(
+    name = "users-api", 
+    url = "${users-api.url}", 
+    path = "/api/users",
+    configuration = FeignClientConfig.class
+)
 public interface UserClient {
 
     @GetMapping("/{userUuid}")

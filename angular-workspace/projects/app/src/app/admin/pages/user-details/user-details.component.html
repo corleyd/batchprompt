@@ -5,9 +5,41 @@
     </button>
     
     <div class="user-info" *ngIf="!loadingUser">
-      <h1>{{ userName || 'User' }}</h1>
-      <p class="user-email">{{ userEmail }}</p>
-      <p class="user-id">ID: {{ userId }}</p>
+      <div class="user-avatar">
+        <div class="avatar-circle">{{ getUserInitials() }}</div>
+      </div>
+      <div class="user-details">
+        <h1>{{ userName || 'User' }}</h1>
+        <p class="user-email">{{ userEmail }}</p>
+        <p class="user-id">ID: {{ userId }}</p>
+      </div>
+      
+      <!-- Account information in header -->
+      <div class="account-section" *ngIf="!loadingAccount && userAccount">
+        <div class="account-header">
+          <h2 class="account-name">{{ accountName }}</h2>
+          <div class="account-balance-container">
+            <span class="balance-label">Balance:</span>
+            <span class="balance-amount" [ngClass]="accountBalance <= 0 ? 'low-credits' : ''">
+              {{ accountBalance }} credits
+            </span>
+          </div>
+          <button mat-raised-button color="primary" class="add-credits-btn" (click)="openAddCreditsDialog()">
+            Add Credits
+          </button>
+        </div>
+      </div>
+      
+      <!-- Loading account information -->
+      <div class="account-info-loading" *ngIf="loadingAccount">
+        <div class="spinner small-spinner"></div>
+        <p>Loading account information...</p>
+      </div>
+      
+      <!-- No account found -->
+      <div class="account-info-not-found" *ngIf="!loadingAccount && !userAccount">
+        <p>No account found for this user</p>
+      </div>
     </div>
     
     <div class="loading-indicator" *ngIf="loadingUser">

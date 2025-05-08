@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { IconsModule } from '../../../icons/icons.module';
@@ -14,7 +14,7 @@ import { UserService } from '../../../services/user.service';
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss']
 })
-export class ToolbarComponent {
+export class ToolbarComponent implements OnInit {
   title = 'BatchPrompt';
   showUserMenu = false;
   isAdmin$: Observable<boolean>;
@@ -33,6 +33,10 @@ export class ToolbarComponent {
         return roles.includes('admin');
       })
     );
+  }
+
+  ngOnInit(): void {
+    // No need to load account information here anymore
   }
 
   @HostListener('document:click', ['$event'])

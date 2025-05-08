@@ -6,7 +6,6 @@
 
 .header-section {
   display: flex;
-  align-items: center;
   margin-bottom: 24px;
   position: relative;
   padding: 10px 0 20px;
@@ -15,27 +14,37 @@
 
 .back-button {
   margin-right: 16px;
+  align-self: flex-start;
 }
 
-// Add user avatar styling
+.user-info {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
 .user-avatar {
   margin-right: 16px;
   
   .avatar-circle {
-    width: 45px;
-    height: 45px;
+    width: 60px;
+    height: 60px;
     background-color: #3f51b5;
     border-radius: 50%;
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 500;
   }
 }
 
-.user-info {
+.user-details {
+  flex: 1;
+  min-width: 200px;
+  margin-right: 20px;
+  
   h1 {
     margin: 0 0 8px 0;
     font-size: 24px;
@@ -56,6 +65,85 @@
   }
 }
 
+/* Account section styling */
+.account-section {
+  flex: 1;
+  min-width: 250px;
+  margin-left: auto;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid #3f51b5;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.account-header {
+  h2.account-name {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    color: #3f51b5;
+    font-weight: 500;
+  }
+  
+  .account-balance-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+
+  .balance-label {
+    font-size: 16px;
+    color: #666;
+    margin-right: 8px;
+  }
+
+  .balance-amount {
+    font-size: 20px;
+    font-weight: 600;
+    color: #388e3c;
+    
+    &.low-credits {
+      color: #f44336;
+    }
+  }
+
+  .add-credits-btn {
+    margin-top: 5px;
+  }
+}
+
+.account-info-loading, 
+.account-info-not-found {
+  flex: 1;
+  min-width: 250px;
+  margin-left: auto;
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  
+  p {
+    margin: 0;
+    color: #777;
+    font-style: italic;
+  }
+}
+
+.account-info-loading {
+  border-left: 4px solid #3f51b5;
+  
+  .small-spinner {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
+}
+
+.account-info-not-found {
+  border-left: 4px solid #f44336;
+}
+
 .loading-indicator,
 .loading-spinner {
   display: flex;
@@ -73,6 +161,13 @@
   height: 30px;
   animation: spin 1s linear infinite;
   margin-bottom: 15px;
+}
+
+.small-spinner {
+  border-width: 2px;
+  width: 20px;
+  height: 20px;
+  margin-bottom: 0;
 }
 
 @keyframes spin {
@@ -154,17 +249,18 @@
 
 // Action button styling
 .action-btn {
-  background-color: transparent;
-  border: none;
-  cursor: pointer;
+  background-color: #e8eaf6;
   color: #3f51b5;
-  padding: 4px 8px;
-  font-size: 14px;
+  border: none;
   border-radius: 4px;
-  
-  &:hover {
-    background-color: rgba(63, 81, 181, 0.08);
-  }
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: #c5cae9;
 }
 
 .action-container {
@@ -181,5 +277,27 @@
 
   &:hover {
     text-decoration: underline;
+  }
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+  .header-section {
+    flex-direction: column;
+  }
+  
+  .user-avatar {
+    margin-bottom: 15px;
+  }
+  
+  .account-section {
+    margin-top: 20px;
+    margin-left: 0;
+  }
+  
+  .account-info-loading, 
+  .account-info-not-found {
+    margin-top: 20px;
+    margin-left: 0;
   }
 }
