@@ -14,9 +14,7 @@ import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.users.client.AccountClient;
-import com.batchprompt.users.client.UserClient;
 import com.batchprompt.users.model.dto.AccountDto;
-import com.batchprompt.users.model.dto.UserDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +31,6 @@ public class JobCreditService {
     private final JobTaskRepository jobTaskRepository;
     private final CreditCalculationService creditCalculationService;
     private final AccountClient accountClient;
-    private final UserClient userClient;
     
     /**
      * Check if a user has sufficient credits for a task
@@ -41,24 +38,17 @@ public class JobCreditService {
      * @param userId The ID of the user to check
      * @return true if the user has sufficient credits, false otherwise
      */
-    public boolean checkUserHasSufficientCredits(String userId) {
-        if (userId == null) {
-            log.error("User ID is null when checking for sufficient credits");
+    public boolean checkUserHasSufficientCredits(UUID userUuid) {
+        if (userUuid == null) {
+            log.error("User UUID is null when checking for sufficient credits");
             return false;
         }
         
         try {
-            // First, get the user information to find their accounts
-            ResponseEntity<UserDto> userResponse = userClient.getUserByuserId(userId);
-            if (!userResponse.getStatusCode().is2xxSuccessful() || userResponse.getBody() == null) {
-                log.error("Could not retrieve user information for user ID: {}", userId);
-                return false;
-            }
-            
             // Get all accounts for the user
-            ResponseEntity<List<AccountDto>> accountsResponse = accountClient.getAccountsForCurrentUser();
+            ResponseEntity<List<AccountDto>> accountsResponse = accountClient.getUserAccountsByUserId(userUuid);
             if (!accountsResponse.getStatusCode().is2xxSuccessful() || accountsResponse.getBody() == null || accountsResponse.getBody().isEmpty()) {
-                log.error("No accounts found for user ID: {}", userId);
+                log.error("No accounts found for user UUID: {}", userUuid);
                 return false;
             }
             
@@ -77,12 +67,12 @@ public class JobCreditService {
             }
             
             if (!hasSufficientCredits) {
-                log.warn("User {} has insufficient credits available on all accounts", userId);
+                log.warn("User {} has insufficient credits available on all accounts", userUuid);
             }
             
             return hasSufficientCredits;
         } catch (Exception e) {
-            log.error("Error checking available credits for user {}: {}", userId, e.getMessage(), e);
+            log.error("Error checking available credits for user {}: {}", userUuid, e.getMessage(), e);
             return false;
         }
     }
@@ -178,6 +168,32 @@ public class JobCreditService {
         } catch (Exception e) {
             log.error("Error calculating credit usage for job {}: {}", jobUuid, e.getMessage(), e);
             return false;
+        }
+    }
+
+    /**
+     * Get user accounts by UUID
+     * 
+     * @param userId The id of the user
+     * @return List of account DTOs if found, empty list otherwise
+     */
+    public List<AccountDto> getUserAccounts(UUID userUuid) {
+        if (userUuid == null) {
+            log.error("User UUID is null when retrieving user accounts");
+            return List.of();
+        }
+        
+        try {
+            ResponseEntity<List<AccountDto>> response = accountClient.getUserAccountsByUserId(userUuid);
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return response.getBody();
+            } else {
+                log.error("Could not retrieve accounts for user: {}", userUuid);
+                return List.of();
+            }
+        } catch (Exception e) {
+            log.error("Error retrieving accounts for user {}: {}", userUuid, e.getMessage(), e);
+            return List.of();
         }
     }
 }

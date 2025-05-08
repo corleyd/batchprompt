@@ -14,13 +14,6 @@ export class AccountService {
   }
 
   /**
-   * Get accounts for the current authenticated user
-   */
-  getAccountsForCurrentUser(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/user`);
-  }
-
-  /**
    * Get account by UUID
    */
   getAccountById(accountUuid: string): Observable<any> {

@@ -22,9 +22,9 @@ import com.batchprompt.users.model.dto.AccountDto;
     configuration = FeignClientConfig.class
 )
 public interface AccountClient {
-
-    @GetMapping("/user")
-    ResponseEntity<List<AccountDto>> getAccountsForCurrentUser();
+ 
+    @GetMapping("/user/{userUuid}")
+    ResponseEntity<List<AccountDto>> getUserAccountsByUserId(@PathVariable UUID userUuid);
     
     @GetMapping("/{accountUuid}")
     ResponseEntity<AccountDto> getAccountById(@PathVariable UUID accountUuid);

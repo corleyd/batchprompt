@@ -73,7 +73,7 @@ public class UserController {
     }
     
     @GetMapping("/auth0/{userId}")
-    public ResponseEntity<UserDto> getUserByuserId(@PathVariable String userId) {
+    public ResponseEntity<UserDto> getUserByUserId(@PathVariable String userId) {
         return userService.getUserByUserId(userId)
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)

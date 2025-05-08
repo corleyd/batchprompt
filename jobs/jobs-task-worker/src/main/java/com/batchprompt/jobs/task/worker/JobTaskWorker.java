@@ -1,6 +1,7 @@
 package com.batchprompt.jobs.task.worker;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -24,6 +25,9 @@ import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
+import com.batchprompt.users.client.AccountClient;
+import com.batchprompt.users.model.dto.AccountCreditTransactionDto;
+import com.batchprompt.users.model.dto.AccountDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,6 +47,7 @@ public class JobTaskWorker {
     private final ObjectMapper objectMapper;
     private final JobPricingService jobPricingService;
     private final JobCreditService jobCreditService;
+    private final AccountClient accountClient;
 
     // This method will be called by the listener configurations created in JobTaskListenerConfig
     public void processJobTask(JobTaskMessage message) {
@@ -59,9 +64,9 @@ public class JobTaskWorker {
             if (jobTask == null) {
                 return; // Already logged in the updateTaskToProcessing method
             }
-            
+
             // Check if the user has sufficient credits before proceeding
-            if (!jobCreditService.checkUserHasSufficientCredits(message.getUserId())) {
+            if (!jobCreditService.checkUserHasSufficientCredits(message.getUserUuid())) {
                 // Mark the task as insufficient credits and update the job status
                 updateTaskToInsufficientCredits(jobTaskUuid);
                 jobService.updateJobStatus(jobUuid);
@@ -117,7 +122,7 @@ public class JobTaskWorker {
             );
             
             // Step 4: If successful, update status to Completed in a separate transaction
-            completeTaskWithTokens(jobTaskUuid, chatResponse);
+            completeTaskWithTokens(jobTask, userUuid, chatResponse);
             
             log.info("Job task {} completed successfully", jobTaskUuid);
         } catch (Exception e) {
@@ -166,14 +171,8 @@ public class JobTaskWorker {
         log.debug("Job task {} estimated prompt tokens: {}", jobTaskUuid, estimatedPromptTokens);
     }
     
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void completeTaskWithTokens(UUID jobTaskUuid, ChatModelResponse chatResponse) {
-        JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
-        if (jobTask == null) {
-            log.error("Job task not found: {}", jobTaskUuid);
-            return;
-        }
-        
+    private void completeTaskWithTokens(JobTask jobTask, UUID userUuid, ChatModelResponse chatResponse) {
+        UUID jobTaskUuid = jobTask.getJobTaskUuid();        
         jobTask.setStatus(TaskStatus.COMPLETED);
         jobTask.setResponseText(chatResponse.getResponseText());
         jobTask.setEndTimestamp(LocalDateTime.now());
@@ -209,6 +208,35 @@ public class JobTaskWorker {
                     jobTask.getJobUuid(), e.getMessage(), e);
         }
         
+        // Debit the credits used from the user's account (if credit usage is calculated)
+        if (jobTask.getCreditUsage() != null && userUuid != null) {
+            try {
+                
+                // Create a transaction DTO to debit credits (negative amount represents debit)
+                AccountCreditTransactionDto transactionDto = new AccountCreditTransactionDto();
+                transactionDto.setChangeAmount(-1 * jobTask.getCreditUsage()); // Negative amount for debit
+                transactionDto.setReason("Task credits used: " + jobTask.getJobTaskUuid());
+                transactionDto.setReferenceId(jobTask.getJobTaskUuid().toString());
+                
+                // Get the first account for the user
+                List<AccountDto> accounts = jobCreditService.getUserAccounts(userUuid);
+                
+                if (accounts != null && !accounts.isEmpty()) {
+                    UUID accountUuid = accounts.get(0).getAccountUuid();
+                    
+                    // Call the account client to debit credits
+                    accountClient.addCredits(accountUuid, transactionDto);
+                    log.info("Debited {} credits from account {} for task {}", 
+                            jobTask.getCreditUsage(), accountUuid, jobTaskUuid);
+                } else {
+                    log.error("No accounts found for user {}", userUuid);
+                }
+            } catch (Exception e) {
+                // Don't fail the task if debiting fails, just log the error
+                log.error("Error debiting credits for task {}: {}", jobTaskUuid, e.getMessage(), e);
+            }
+        }
+        
         if (chatResponse.getTotalTokens() != null) {
             log.info("Job task {} completed with {} tokens (prompt: {}, completion: {})", 
                 jobTaskUuid, 
@@ -216,22 +244,6 @@ public class JobTaskWorker {
                 chatResponse.getPromptTokens(),
                 chatResponse.getCompletionTokens());
         }
-    }
-    
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void completeTask(UUID jobTaskUuid, String responseText) {
-        // This method is deprecated, use completeTaskWithTokens instead
-        JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
-        if (jobTask == null) {
-            log.error("Job task not found: {}", jobTaskUuid);
-            return;
-        }
-        
-        jobTask.setStatus(TaskStatus.COMPLETED);
-        jobTask.setResponseText(responseText);
-        jobTask.setEndTimestamp(LocalDateTime.now());
-        
-        jobTaskRepository.save(jobTask);
     }
     
     @Transactional(propagation = Propagation.REQUIRES_NEW)

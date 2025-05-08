@@ -17,7 +17,7 @@ public class JobTaskMessage {
     private UUID fileRecordUuid;
     private String modelId;
     private UUID promptUuid;
-    private String userId;
+    private UUID userUuid;
     private String authToken;
     private Integer maxTokens;
     private Double temperature;

@@ -30,7 +30,8 @@ dependencies {
     implementation project(':jobs:jobs-core')
     implementation project(':jobs:jobs-model')
     implementation project(':files:files-client')
-    implementation project(':prompts:prompts-client')    
+    implementation project(':prompts:prompts-client')
+    implementation project(':users:users-client')
 
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

@@ -27,7 +27,7 @@ public interface UserClient {
     ResponseEntity<UserDto> getUserById(@PathVariable UUID userUuid);
     
     @GetMapping("/auth0/{userId}")
-    ResponseEntity<UserDto> getUserByuserId(@PathVariable String userId);
+    ResponseEntity<UserDto> getUserByUserId(@PathVariable String userId);
     
     @GetMapping("/search")
     ResponseEntity<Page<UserDto>> searchUsersByName(
