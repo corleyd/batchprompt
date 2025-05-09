@@ -18,7 +18,6 @@ public class JobTaskMessage {
     private String modelId;
     private UUID promptUuid;
     private String userId;
-    private String authToken;
     private Integer maxTokens;
     private Double temperature;
 }

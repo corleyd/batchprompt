@@ -278,7 +278,6 @@ public class JobService {
                     .fileRecordUuid(record.getFileRecordUuid())
                     .modelId(jobSubmissionDto.getModelId())
                     .promptUuid(jobSubmissionDto.getPromptUuid())
-                    .authToken(authToken)
                     .maxTokens(job.getMaxTokens())
                     .temperature(job.getTemperature())
                     .build();
@@ -376,7 +375,6 @@ public class JobService {
                         .modelId(job.getModelId())
                         .promptUuid(job.getPromptUuid())
                         .userId(userId)
-                        .authToken(authToken)
                         .maxTokens(job.getMaxTokens())
                         .temperature(job.getTemperature())
                         .build();

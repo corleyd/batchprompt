@@ -86,14 +86,14 @@ public class JobTaskWorker {
             // Step 3: Use the ChatModel to generate the response
             // Get prompt text
             // Use user auth token if available, otherwise service-to-service authentication will be used
-            PromptDto promptDto = promptClient.getPrompt(message.getPromptUuid(), message.getAuthToken());
+            PromptDto promptDto = promptClient.getPrompt(message.getPromptUuid(), null);
             if (promptDto == null) {
                 throw new Exception("Prompt not found: " + message.getPromptUuid());
             }
             
             // Get file record
             // Use user auth token if available, otherwise service-to-service authentication will be used
-            FileRecordDto recordDto = fileClient.getFileRecord(message.getFileRecordUuid(), message.getAuthToken());
+            FileRecordDto recordDto = fileClient.getFileRecord(message.getFileRecordUuid(),null);
             if (recordDto == null) {
                 throw new Exception("File record not found: " + message.getFileRecordUuid());
             }
