@@ -331,9 +331,6 @@ public class JobOutputWorker {
             }
             headers.add(header);
         }
-        
-        // Find field names from the first valid JSON response
-        Set<String> allAvailableStructuredFields = new HashSet<>();
 
         // Add error and full response columns
         if (prompt.getOutputMethod() != PromptOutputMethod.STRUCTURED) {
@@ -346,7 +343,7 @@ public class JobOutputWorker {
         
         if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
             // Add structured fields to headers
-            for (String field : allAvailableStructuredFields) {
+            for (String field : structuredFields) {
                 headers.add(field);
             }
         }

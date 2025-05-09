@@ -35,6 +35,9 @@ export class PromptEditComponent implements OnInit {
     { value: 'BOTH', label: 'Structured Output with Full Response Text' }
   ];
 
+  // Flag to track whether we're in the process of loading a prompt
+  private isLoadingExistingPrompt = false;
+
   constructor(
     private fb: FormBuilder,
     private promptService: PromptService,
@@ -74,6 +77,10 @@ export class PromptEditComponent implements OnInit {
 
   updateFormValidation(format: string): void {
     const schemaControl = this.promptForm.get('outputSchema');
+    console.log("updateFormValidation", format, schemaControl);
+    console.log("Current schema value:", this.promptForm.get('outputSchema')?.value);
+    console.log("Current isAdvancedSchema:", this.isAdvancedSchema);
+    console.log("isLoadingExistingPrompt:", this.isLoadingExistingPrompt);
     const responseColumnNameControl = this.promptForm.get('responseColumnName');
     
     // Handle schema controls
@@ -96,7 +103,8 @@ export class PromptEditComponent implements OnInit {
       schemaControl?.setValidators([Validators.required]);
       
       // Ensure at least one schema property for non-TEXT modes
-      if (this.schemaProperties.length === 0) {
+      // But don't add a property if we're loading a prompt (handled in loadPrompt)
+      if (this.schemaProperties.length === 0 && !this.isLoadingExistingPrompt) {
         this.addSchemaProperty();
       }
       
@@ -128,12 +136,27 @@ export class PromptEditComponent implements OnInit {
   }
 
   addSchemaProperty(): void {
+    console.log("addSchemaProperty - before adding property");
+    console.log("Current schema:", this.promptForm.get('outputSchema')?.value);
+    console.log("Current isAdvancedSchema:", this.isAdvancedSchema);
+    
     this.schemaProperties.push(this.fb.group({
       name: ['', Validators.required],
       type: ['string', Validators.required],
       description: ['', Validators.required]
     }));
-    this.updateOutputSchemaFromProperties();
+    
+    // Only update the schema if we're not loading an existing prompt
+    // or if we are in simple mode
+    if (!this.loading || !this.isAdvancedSchema) {
+      console.log("Calling updateOutputSchemaFromProperties from addSchemaProperty");
+      this.updateOutputSchemaFromProperties();
+    } else {
+      console.log("Skipping updateOutputSchemaFromProperties during loading");
+    }
+    
+    console.log("addSchemaProperty - after adding property");
+    console.log("Updated schema:", this.promptForm.get('outputSchema')?.value);
   }
 
   removeSchemaProperty(index: number): void {
@@ -158,11 +181,13 @@ export class PromptEditComponent implements OnInit {
   }
 
   isSimpleSchema(schemaStr: string): boolean {
+    console.log("isSimpleSchema", schemaStr);
     try {
       const schema = JSON.parse(schemaStr);
       
       // Check if it's a single object with properties
       if (!schema.type || schema.type !== 'object' || !schema.properties) {
+        console.log("Not a simple schema: not an object or no properties");
         return false;
       }
       
@@ -172,35 +197,54 @@ export class PromptEditComponent implements OnInit {
       
       if (propertyNames.length === 0 || !requiredProps.length || 
           !propertyNames.every(prop => requiredProps.includes(prop))) {
+        console.log("Not a simple schema: properties are not all required");
         return false;
       }
       
       // Check if all properties are simple types
-      return propertyNames.every(propName => {
+      let value = propertyNames.every(propName => {
         const prop = schema.properties[propName];
-        return prop && prop.type && 
+        let propResult = prop && prop.type && 
                ['string', 'number', 'boolean', 'integer', 'array'].includes(prop.type) &&
                !prop.properties && !prop.items?.properties;
+        if (!propResult) {
+          console.log("Not a simple schema: property type is not simple: ", prop);
+        }
+        return propResult;
       });
+
+      if (!value) {
+        console.log("Not a simple schema: properties are not simple types");
+      } else {
+        console.log("Simple schema: all properties are simple types");
+      }
+      return value;
+
     } catch (e) {
+      console.log("exception while parsing schema", e);
       return false;
     }
   }
 
   convertJsonSchemaToProperties(): void {
     const schemaStr = this.promptForm.get('outputSchema')?.value;
+    console.log("schemaStr", schemaStr);
     if (!schemaStr || !this.validateJson(schemaStr)) {
       return;
     }
 
     try {
       const schema = JSON.parse(schemaStr);
+
+      console.log("schema", schema);
       
       if (!schema.properties) {
         throw new Error('No properties found in schema');
       }
       
       this.schemaProperties.clear();
+
+      console.log("schema.properties", schema.properties);
       
       Object.entries(schema.properties).forEach(([name, propDetails]: [string, any]) => {
         this.schemaProperties.push(this.fb.group({
@@ -215,7 +259,10 @@ export class PromptEditComponent implements OnInit {
   }
 
   updateOutputSchemaFromProperties(): void {
+    console.log("updateOutputSchemaFromProperties", this.schemaProperties, this.schemaProperties.length);
+
     if (this.schemaProperties.length === 0) {
+      console.log("No schema properties to update");
       return;
     }
 
@@ -244,36 +291,66 @@ export class PromptEditComponent implements OnInit {
 
   loadPrompt(promptId: string): void {
     this.loading = true;
+    this.isLoadingExistingPrompt = true;
     this.promptService.getPromptById(promptId)
       .subscribe({
         next: (prompt) => {
           console.log("PROMPT", prompt);
+          console.log("Loading prompt with schema:", prompt.responseJsonSchema);
+          console.log("Output method:", prompt.outputMethod);
+          
+          // Store the original schema before form patching
+          const originalSchema = prompt.responseJsonSchema;
+          
           this.promptForm.patchValue({
             name: prompt.name,
             description: prompt.description,
             promptText: prompt.promptText,
-            outputSchema: prompt.responseJsonSchema,
+            // Hold off on setting the schema until we've determined the mode
             outputMethod: prompt.outputMethod || 'TEXT',
             responseColumnName: prompt.responseTextColumnName || 'response_text',
           });
           
-          // Determine if it's a simple schema
-          this.isAdvancedSchema = !this.isSimpleSchema(prompt.responseJsonSchema);
-          
-          if (!this.isAdvancedSchema) {
-            try {
-              this.convertJsonSchemaToProperties();
-            } catch (e) {
-              this.isAdvancedSchema = true;
+          // Handle schema mode determination for non-TEXT output methods
+          if (prompt.outputMethod === 'STRUCTURED' || prompt.outputMethod === 'BOTH') {
+            // Determine if it's a simple schema
+            const isSimple = this.isSimpleSchema(originalSchema);
+            console.log("Schema is simple:", isSimple);
+            this.isAdvancedSchema = !isSimple;
+            console.log("Setting isAdvancedSchema to:", this.isAdvancedSchema);
+            
+            // Now set the schema AFTER determining the mode
+            this.promptForm.get('outputSchema')?.setValue(originalSchema);
+            
+            if (!this.isAdvancedSchema) {
+              try {
+                console.log("Converting JSON schema to properties");
+                // Clear existing schema properties before conversion
+                while (this.schemaProperties.length) {
+                  this.schemaProperties.removeAt(0);
+                }
+                this.convertJsonSchemaToProperties();
+                console.log("Schema properties after conversion:", this.schemaProperties.value);
+              } catch (e) {
+                console.error("Error converting schema:", e);
+                this.isAdvancedSchema = true;
+                console.log("Falling back to advanced mode due to error");
+              }
             }
+            console.log("Final schema after loading:", this.promptForm.get('outputSchema')?.value);
+          } else {
+            // For TEXT mode, add a default property
+            this.addSchemaProperty();
           }
           
           this.loading = false;
+          this.isLoadingExistingPrompt = false;
         },
         error: (error) => {
           console.error('Error loading prompt', error);
           this.error = 'Failed to load prompt details. Please try again.';
           this.loading = false;
+          this.isLoadingExistingPrompt = false;
         }
       });
   }

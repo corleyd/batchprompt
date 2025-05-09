@@ -23,7 +23,7 @@ export class PromptService {
   }
 
   getUserPrompts(
-    userId: string, 
+    userId?: string, 
     page: number = 0, 
     size: number = 10, 
     sort: string = 'createTimestamp', 
@@ -34,8 +34,12 @@ export class PromptService {
       .set('size', size.toString())
       .set('sort', sort)
       .set('direction', direction);
+    let url = `${this.apiUrl}/user`;
+    if (userId) {
+      url += `/${userId}`;
+    }
     
-    return this.http.get<any>(`${this.apiUrl}/user/${userId}`, { params });
+    return this.http.get<any>(url, { params });
   }
 
   searchPromptsByName(name: string): Observable<Prompt[]> {
@@ -52,5 +56,12 @@ export class PromptService {
 
   deletePrompt(promptUuid: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${promptUuid}`);
+  }
+  
+  // Admin function to copy a prompt to another user
+  copyPromptToUser(sourcePromptUuid: string, targetUserId: string): Observable<any> {
+    const url = `${this.apiUrl}/admin/copy`;
+    const params = { sourcePromptUuid, targetUserId };
+    return this.http.post(url, null, { params });
   }
 }

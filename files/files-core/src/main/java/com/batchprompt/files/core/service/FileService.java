@@ -15,8 +15,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.batchprompt.files.core.config.MinioConfig;
 import com.batchprompt.files.core.model.FileEntity;
+import com.batchprompt.files.core.model.FileFieldEntity;
 import com.batchprompt.files.core.model.FileMapper;
 import com.batchprompt.files.core.model.FileRecord;
+import com.batchprompt.files.core.repository.FileFieldRepository;
 import com.batchprompt.files.core.repository.FileRecordRepository;
 import com.batchprompt.files.core.repository.FileRepository;
 import com.batchprompt.files.core.service.validation.ExcelValidator;
@@ -38,6 +40,7 @@ public class FileService {
 
     private final FileRepository fileRepository;
     private final FileRecordRepository fileRecordRepository;
+    private final FileFieldRepository fileFieldRepository;
     private final FileFieldService fileFieldService;
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
@@ -332,4 +335,85 @@ public class FileService {
         }
     }
     
+    @Transactional
+    public FileEntity copyFile(FileEntity sourceFile, String targetUserId) {
+        try {
+            // Create a new file entity with a new UUID
+            UUID newFileUuid = UUID.randomUUID();
+            LocalDateTime now = LocalDateTime.now();
+            
+            FileEntity newFile = FileEntity.builder()
+                    .fileUuid(newFileUuid)
+                    .fileType(sourceFile.getFileType())
+                    .userId(targetUserId)
+                    .fileName(sourceFile.getFileName())
+                    .contentType(sourceFile.getContentType())
+                    .fileSize(sourceFile.getFileSize())
+                    .status(FileStatus.READY) // Set status to READY directly
+                    .createdAt(now)
+                    .updatedAt(now)
+                    .build();
+            
+            // Save the new file metadata to the database
+            FileEntity savedFile = fileRepository.save(newFile);
+            
+            // Copy file content from source to target in MinIO
+            InputStream sourceContent = minioClient.getObject(
+                    GetObjectArgs.builder()
+                            .bucket(minioConfig.getBucketName())
+                            .object(sourceFile.getFileUuid().toString())
+                            .build()
+            );
+            
+            // Upload the source content to the new file object
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(minioConfig.getBucketName())
+                            .object(newFileUuid.toString())
+                            .stream(sourceContent, sourceFile.getFileSize(), -1)
+                            .contentType(sourceFile.getContentType())
+                            .build()
+            );
+            
+            // Copy records from source file to new file
+            List<FileRecord> sourceRecords = fileRecordRepository.findByFileFileUuid(sourceFile.getFileUuid());
+            
+            // Create new records with the same data but linked to the new file
+            for (FileRecord sourceRecord : sourceRecords) {
+                FileRecord newRecord = FileRecord.builder()
+                        .fileRecordUuid(UUID.randomUUID())
+                        .file(newFile)
+                        .recordNumber(sourceRecord.getRecordNumber())
+                        .record(sourceRecord.getRecord())
+                        .build();
+                
+                fileRecordRepository.save(newRecord);
+            }
+            
+            // Copy fields from source file to new file
+            List<FileFieldEntity> sourceFields = fileFieldRepository.findByFileFileUuidOrderByFieldOrder(sourceFile.getFileUuid());
+            
+            for (FileFieldEntity sourceField : sourceFields) {
+                FileFieldEntity newField = FileFieldEntity.builder()
+                        .file(newFile)
+                        .fieldName(sourceField.getFieldName())
+                        .fieldType(sourceField.getFieldType())
+                        .fieldOrder(sourceField.getFieldOrder())
+                        .description(sourceField.getDescription())
+                        .createdAt(now)
+                        .updatedAt(now)
+                        .build();
+                        
+                fileFieldRepository.save(newField);
+            }
+            
+            log.info("Successfully copied file {} to user {}, new file UUID: {}", 
+                    sourceFile.getFileUuid(), targetUserId, newFileUuid);
+            
+            return savedFile;
+        } catch (Exception e) {
+            log.error("Error copying file: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to copy file: " + e.getMessage(), e);
+        }
+    }
 }

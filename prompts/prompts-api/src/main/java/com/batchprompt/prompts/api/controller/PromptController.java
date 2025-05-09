@@ -54,6 +54,13 @@ public class PromptController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/user")
+    public ResponseEntity<List<PromptDto>> getPromptsByUserId(
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        return ResponseEntity.ok(promptMapper.toDtoList(promptService.getPromptsByUserId(jwt.getSubject())));
+    }
+
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<PromptDto>> getPromptsByUserId(
         @PathVariable String userId,
@@ -123,5 +130,27 @@ public class PromptController {
         
         List<Prompt> prompts = promptService.getPromptsByUserId(userId);
         return ResponseEntity.ok(prompts);
+    }
+    
+    /**
+     * Admin endpoint to copy a prompt from one user to another
+     */
+    @PostMapping("/admin/copy")
+    public ResponseEntity<?> copyPromptForAdmin(
+            @RequestParam UUID sourcePromptUuid,
+            @RequestParam String targetUserId,
+            @AuthenticationPrincipal Jwt jwt) {
+        
+        // Verify that the requester is an admin
+        if (!serviceAuthenticationService.isAdminUser(jwt)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        return promptService.getPromptById(sourcePromptUuid)
+                .map(prompt -> {
+                    Prompt copiedPrompt = promptService.copyPrompt(prompt, targetUserId);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(promptMapper.toDto(copiedPrompt));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

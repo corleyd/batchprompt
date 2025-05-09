@@ -119,4 +119,11 @@ export class FileService {
   deleteFile(fileId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${fileId}`);
   }
+  
+  // Admin function to copy a file to another user
+  copyFileToUser(sourceFileUuid: string, targetUserId: string): Observable<any> {
+    const url = `${this.apiUrl}/admin/copy`;
+    const params = { sourceFileUuid, targetUserId };
+    return this.http.post(url, null, { params });
+  }
 }

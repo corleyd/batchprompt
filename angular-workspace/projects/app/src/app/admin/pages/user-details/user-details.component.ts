@@ -10,12 +10,15 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { GenericTableModule } from '../../../shared/components/generic-table/generic-table.module';
 import { TableConfig, TableSortEvent, TablePageEvent } from '../../../shared/components/generic-table/table-models';
 import { CreditDialogComponent } from './credit-dialog/credit-dialog.component';
+import { CopyFileDialogComponent } from './copy-file-dialog/copy-file-dialog.component';
+import { CopyPromptDialogComponent } from './copy-prompt-dialog/copy-prompt-dialog.component';
 
 @Component({
   selector: 'app-user-details',
@@ -31,6 +34,7 @@ import { CreditDialogComponent } from './credit-dialog/credit-dialog.component';
     ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
+    MatSnackBarModule,
     GenericTableModule
   ],
   templateUrl: './user-details.component.html',
@@ -136,7 +140,8 @@ export class UserDetailsComponent implements OnInit {
     private jobService: JobService,
     private promptService: PromptService,
     private accountService: AccountService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
@@ -383,5 +388,79 @@ export class UserDetailsComponent implements OnInit {
 
   refreshPrompts(): void {
     this.loadUserPrompts();
+  }
+  
+  // Copy a file to another user
+  copyFileToUser(file: any): void {
+    if (!this.userId || !file || !file.fileUuid) return;
+    
+    const dialogRef = this.dialog.open(CopyFileDialogComponent, {
+      width: '400px',
+      data: {
+        fileUuid: file.fileUuid,
+        fileName: file.fileName,
+        sourceUserId: this.userId
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.targetUserId) {
+        this.fileService.copyFileToUser(file.fileUuid, result.targetUserId).subscribe({
+          next: (response) => {
+            console.log('File copied successfully:', response);
+            this.snackBar.open(
+              `File "${file.fileName}" copied to user ${result.targetUserId}`, 
+              'Dismiss', 
+              { duration: 5000 }
+            );
+          },
+          error: (error) => {
+            console.error('Error copying file:', error);
+            this.snackBar.open(
+              `Failed to copy file: ${error.error?.message || 'Unknown error'}`, 
+              'Dismiss', 
+              { duration: 5000 }
+            );
+          }
+        });
+      }
+    });
+  }
+
+  // Copy a prompt to another user
+  copyPromptToUser(prompt: any): void {
+    if (!this.userId || !prompt || !prompt.promptUuid) return;
+    
+    const dialogRef = this.dialog.open(CopyPromptDialogComponent, {
+      width: '400px',
+      data: {
+        promptUuid: prompt.promptUuid,
+        promptName: prompt.name,
+        sourceUserId: this.userId
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result && result.targetUserId) {
+        this.promptService.copyPromptToUser(prompt.promptUuid, result.targetUserId).subscribe({
+          next: (response) => {
+            console.log('Prompt copied successfully:', response);
+            this.snackBar.open(
+              `Prompt "${prompt.name}" copied to user ${result.targetUserId}`, 
+              'Dismiss', 
+              { duration: 5000 }
+            );
+          },
+          error: (error) => {
+            console.error('Error copying prompt:', error);
+            this.snackBar.open(
+              `Failed to copy prompt: ${error.error?.message || 'Unknown error'}`, 
+              'Dismiss', 
+              { duration: 5000 }
+            );
+          }
+        });
+      }
+    });
   }
 }

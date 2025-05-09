@@ -52,6 +52,8 @@ public class PromptService {
                     existingPrompt.setName(promptDetails.getName());
                     existingPrompt.setDescription(promptDetails.getDescription());
                     existingPrompt.setPromptText(promptDetails.getPromptText());
+                    existingPrompt.setOutputMethod(promptDetails.getOutputMethod());
+                    existingPrompt.setResponseTextColumnName(promptDetails.getResponseTextColumnName());
                     existingPrompt.setResponseJsonSchema(promptDetails.getResponseJsonSchema());
                     existingPrompt.setUpdateTimestamp(LocalDateTime.now());
                     return promptRepository.save(existingPrompt);
@@ -77,5 +79,35 @@ public class PromptService {
      */
     public Page<Prompt> getPromptsByUserIdPaginated(String userId, Pageable pageable) {
         return promptRepository.findByUserId(userId, pageable);
+    }
+
+    /**
+     * Copy a prompt from one user to another
+     * 
+     * @param sourcePrompt The prompt to copy
+     * @param targetUserId The user ID to copy the prompt to
+     * @return The newly created prompt
+     */
+    @Transactional
+    public Prompt copyPrompt(Prompt sourcePrompt, String targetUserId) {
+        // Create a new prompt with a new UUID
+        UUID newPromptUuid = UUID.randomUUID();
+        
+        // Create a copy with the target user ID
+        Prompt newPrompt = Prompt.builder()
+                .promptUuid(newPromptUuid)
+                .userId(targetUserId)
+                .name(sourcePrompt.getName() + " (Copy)")
+                .description(sourcePrompt.getDescription())
+                .promptText(sourcePrompt.getPromptText())
+                .outputMethod(sourcePrompt.getOutputMethod())
+                .responseTextColumnName(sourcePrompt.getResponseTextColumnName())
+                .responseJsonSchema(sourcePrompt.getResponseJsonSchema())
+                .createTimestamp(LocalDateTime.now())
+                .updateTimestamp(LocalDateTime.now())
+                .build();
+                
+        // Save the new prompt
+        return promptRepository.save(newPrompt);
     }
 }

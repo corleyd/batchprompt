@@ -274,6 +274,7 @@ public class JobService {
             JobTaskMessage message = JobTaskMessage.builder()
                     .jobTaskUuid(jobTaskUuid)
                     .jobUuid(jobUuid)
+                    .userId(userId)
                     .fileRecordUuid(record.getFileRecordUuid())
                     .modelId(jobSubmissionDto.getModelId())
                     .promptUuid(jobSubmissionDto.getPromptUuid())

@@ -390,4 +390,23 @@ public class FileController {
         
         return ResponseEntity.ok(files);
     }
+
+    @PostMapping("/admin/copy")
+    public ResponseEntity<?> copyFileForAdmin(
+            @RequestParam UUID sourceFileUuid,
+            @RequestParam String targetUserId,
+            @AuthenticationPrincipal Jwt jwt) {
+        
+        // Verify that the requester is an admin
+        if (!serviceAuthenticationService.isAdminUser(jwt)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        return fileService.getFileById(sourceFileUuid)
+                .map(file -> {
+                    FileEntity copiedFile = fileService.copyFile(file, targetUserId);
+                    return ResponseEntity.status(HttpStatus.CREATED).body(FileMapper.toDto(copiedFile));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }

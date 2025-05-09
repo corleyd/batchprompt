@@ -75,7 +75,7 @@ export class JobSubmitComponent implements OnInit {
     this.loading = true;
     
     // Load prompts and models right away
-    const promptObservable = this.promptService.getAllPrompts();
+    const promptObservable = this.promptService.getUserPrompts();
     const modelsObservable = this.jobService.getSupportedModels();
     
     // First check if we have a fileUuid from route parameters or query parameters
