@@ -15,7 +15,7 @@ public class UserMapper {
 
     public UserDto toDto(User user) {
         return UserDto.builder()
-                .userUuid(user.getUserUuid())
+                .userId(user.getUserId())
                 .userId(user.getUserId())
                 .email(user.getEmail())
                 .name(user.getName())
@@ -29,7 +29,7 @@ public class UserMapper {
 
     public User toEntity(UserDto userDto) {
         return User.builder()
-                .userUuid(userDto.getUserUuid())
+                .userId(userDto.getUserId())
                 .userId(userDto.getUserId())
                 .email(userDto.getEmail())
                 .name(userDto.getName())

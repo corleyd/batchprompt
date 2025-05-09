@@ -15,7 +15,7 @@ public class AccountUserMapper {
     public AccountUserDto toDto(AccountUser accountUser) {
         return AccountUserDto.builder()
                 .accountUuid(accountUser.getAccountUuid())
-                .userUuid(accountUser.getUserUuid())
+                .userId(accountUser.getUserId())
                 .owner(accountUser.isOwner())
                 .createTimestamp(accountUser.getCreateTimestamp())
                 .updateTimestamp(accountUser.getUpdateTimestamp())
@@ -25,7 +25,7 @@ public class AccountUserMapper {
     public AccountUser toEntity(AccountUserDto accountUserDto) {
         return AccountUser.builder()
                 .accountUuid(accountUserDto.getAccountUuid())
-                .userUuid(accountUserDto.getUserUuid())
+                .userId(accountUserDto.getUserId())
                 .owner(accountUserDto.isOwner())
                 .createTimestamp(accountUserDto.getCreateTimestamp())
                 .updateTimestamp(accountUserDto.getUpdateTimestamp())

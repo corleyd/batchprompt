@@ -26,6 +26,7 @@ public class ServiceAuthenticationService {
     private final String audience;
     private final String clientId;
     private final String domain;
+    private final String rolesClaim;
     
     // Cache for service tokens - service name -> token info
     private final Map<String, TokenInfo> tokenCache = new ConcurrentHashMap<>();
@@ -34,11 +35,13 @@ public class ServiceAuthenticationService {
             @Value("${auth0.domain:}") String domain,
             @Value("${auth0.service.client-id:}") String clientId,
             @Value("${auth0.service.client-secret:}") String clientSecret,
-            @Value("${auth0.audience:}") String audience) {
+            @Value("${auth0.audience:}") String audience,
+            @Value("${auth0.roles-claim:}") String rolesClaim) {
         this.authAPI = new AuthAPI(domain, clientId, clientSecret);
         this.audience = audience;
         this.clientId = clientId;
         this.domain = domain;
+        this.rolesClaim = rolesClaim;
     }
 
     /**
@@ -97,7 +100,7 @@ public class ServiceAuthenticationService {
 
     public boolean isAdminUser(Jwt jwt) {
         // Check if the user has the "admin" role
-        List<String> roles = jwt.getClaimAsStringList("roles");
+        List<String> roles = jwt.getClaimAsStringList(rolesClaim);
         return roles != null && roles.contains("admin");
     }
 

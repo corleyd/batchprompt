@@ -66,7 +66,7 @@ public class JobTaskWorker {
             }
 
             // Check if the user has sufficient credits before proceeding
-            if (!jobCreditService.checkUserHasSufficientCredits(message.getUserUuid())) {
+            if (!jobCreditService.checkUserHasSufficientCredits(message.getUserId())) {
                 // Mark the task as insufficient credits and update the job status
                 updateTaskToInsufficientCredits(jobTaskUuid);
                 jobService.updateJobStatus(jobUuid);
@@ -122,7 +122,7 @@ public class JobTaskWorker {
             );
             
             // Step 4: If successful, update status to Completed in a separate transaction
-            completeTaskWithTokens(jobTask, userUuid, chatResponse);
+            completeTaskWithTokens(jobTask, message.getUserId(), chatResponse);
             
             log.info("Job task {} completed successfully", jobTaskUuid);
         } catch (Exception e) {
@@ -171,7 +171,7 @@ public class JobTaskWorker {
         log.debug("Job task {} estimated prompt tokens: {}", jobTaskUuid, estimatedPromptTokens);
     }
     
-    private void completeTaskWithTokens(JobTask jobTask, UUID userUuid, ChatModelResponse chatResponse) {
+    private void completeTaskWithTokens(JobTask jobTask, String userId, ChatModelResponse chatResponse) {
         UUID jobTaskUuid = jobTask.getJobTaskUuid();        
         jobTask.setStatus(TaskStatus.COMPLETED);
         jobTask.setResponseText(chatResponse.getResponseText());
@@ -209,7 +209,7 @@ public class JobTaskWorker {
         }
         
         // Debit the credits used from the user's account (if credit usage is calculated)
-        if (jobTask.getCreditUsage() != null && userUuid != null) {
+        if (jobTask.getCreditUsage() != null && userId != null) {
             try {
                 
                 // Create a transaction DTO to debit credits (negative amount represents debit)
@@ -219,7 +219,7 @@ public class JobTaskWorker {
                 transactionDto.setReferenceId(jobTask.getJobTaskUuid().toString());
                 
                 // Get the first account for the user
-                List<AccountDto> accounts = jobCreditService.getUserAccounts(userUuid);
+                List<AccountDto> accounts = jobCreditService.getUserAccounts(userId);
                 
                 if (accounts != null && !accounts.isEmpty()) {
                     UUID accountUuid = accounts.get(0).getAccountUuid();
@@ -229,7 +229,7 @@ public class JobTaskWorker {
                     log.info("Debited {} credits from account {} for task {}", 
                             jobTask.getCreditUsage(), accountUuid, jobTaskUuid);
                 } else {
-                    log.error("No accounts found for user {}", userUuid);
+                    log.error("No accounts found for user {}", userId);
                 }
             } catch (Exception e) {
                 // Don't fail the task if debiting fails, just log the error

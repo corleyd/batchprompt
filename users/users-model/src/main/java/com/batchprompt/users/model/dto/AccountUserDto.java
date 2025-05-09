@@ -14,7 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AccountUserDto {
     private UUID accountUuid;
-    private UUID userUuid;
+    private String userId;
     private boolean owner;
     private LocalDateTime createTimestamp;
     private LocalDateTime updateTimestamp;

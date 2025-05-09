@@ -38,17 +38,17 @@ public class JobCreditService {
      * @param userId The ID of the user to check
      * @return true if the user has sufficient credits, false otherwise
      */
-    public boolean checkUserHasSufficientCredits(UUID userUuid) {
-        if (userUuid == null) {
-            log.error("User UUID is null when checking for sufficient credits");
+    public boolean checkUserHasSufficientCredits(String userId) {
+        if (userId == null) {
+            log.error("User ID is null when checking for sufficient credits");
             return false;
         }
         
         try {
             // Get all accounts for the user
-            ResponseEntity<List<AccountDto>> accountsResponse = accountClient.getUserAccountsByUserId(userUuid);
+            ResponseEntity<List<AccountDto>> accountsResponse = accountClient.getUserAccountsByUserId(userId);
             if (!accountsResponse.getStatusCode().is2xxSuccessful() || accountsResponse.getBody() == null || accountsResponse.getBody().isEmpty()) {
-                log.error("No accounts found for user UUID: {}", userUuid);
+                log.error("No accounts found for user ID: {}", userId);
                 return false;
             }
             
@@ -67,12 +67,12 @@ public class JobCreditService {
             }
             
             if (!hasSufficientCredits) {
-                log.warn("User {} has insufficient credits available on all accounts", userUuid);
+                log.warn("User {} has insufficient credits available on all accounts", userId);
             }
             
             return hasSufficientCredits;
         } catch (Exception e) {
-            log.error("Error checking available credits for user {}: {}", userUuid, e.getMessage(), e);
+            log.error("Error checking available credits for user {}: {}", userId, e.getMessage(), e);
             return false;
         }
     }
@@ -177,22 +177,22 @@ public class JobCreditService {
      * @param userId The id of the user
      * @return List of account DTOs if found, empty list otherwise
      */
-    public List<AccountDto> getUserAccounts(UUID userUuid) {
-        if (userUuid == null) {
-            log.error("User UUID is null when retrieving user accounts");
+    public List<AccountDto> getUserAccounts(String userId) {
+        if (userId == null) {
+            log.error("User ID is null when retrieving user accounts");
             return List.of();
         }
         
         try {
-            ResponseEntity<List<AccountDto>> response = accountClient.getUserAccountsByUserId(userUuid);
+            ResponseEntity<List<AccountDto>> response = accountClient.getUserAccountsByUserId(userId);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return response.getBody();
             } else {
-                log.error("Could not retrieve accounts for user: {}", userUuid);
+                log.error("Could not retrieve accounts for user: {}", userId);
                 return List.of();
             }
         } catch (Exception e) {
-            log.error("Error retrieving accounts for user {}: {}", userUuid, e.getMessage(), e);
+            log.error("Error retrieving accounts for user {}: {}", userId, e.getMessage(), e);
             return List.of();
         }
     }

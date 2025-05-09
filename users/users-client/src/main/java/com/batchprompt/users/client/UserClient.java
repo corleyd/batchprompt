@@ -23,11 +23,11 @@ import com.batchprompt.users.model.dto.UserDto;
 )
 public interface UserClient {
 
-    @GetMapping("/{userUuid}")
-    ResponseEntity<UserDto> getUserById(@PathVariable UUID userUuid);
+    @GetMapping("/{userId}")
+    ResponseEntity<UserDto> getUserById(@PathVariable("userId") String userId);
     
     @GetMapping("/auth0/{userId}")
-    ResponseEntity<UserDto> getUserByUserId(@PathVariable String userId);
+    ResponseEntity<UserDto> getUserByUserId(@PathVariable("userId") String userId);
     
     @GetMapping("/search")
     ResponseEntity<Page<UserDto>> searchUsersByName(
@@ -45,6 +45,6 @@ public interface UserClient {
     @PostMapping("/register")
     ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto);
     
-    @PutMapping("/{userUuid}")
-    ResponseEntity<UserDto> updateUser(@PathVariable UUID userUuid, @RequestBody UserDto userDto);
+    @PutMapping("/{userId}")
+    ResponseEntity<UserDto> updateUser(@PathVariable("userId") String userId, @RequestBody UserDto userDto);
 }

@@ -67,9 +67,9 @@ public class AccountController {
                 .orElse(ResponseEntity.notFound().build());
     }
     
-    @GetMapping("/user/{userUuid}")
-    public ResponseEntity<List<AccountDto>> getAccountsForUser(@PathVariable UUID userUuid) {
-        return ResponseEntity.ok(accountMapper.toDtoList(accountService.getAccountsForUser(userUuid)));
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<AccountDto>> getAccountsForUser(@PathVariable String userId) {
+        return ResponseEntity.ok(accountMapper.toDtoList(accountService.getAccountsForUser(userId)));
     }
     
     @GetMapping("/{accountUuid}/balance")

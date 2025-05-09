@@ -1,7 +1,6 @@
 package com.batchprompt.users.core.repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,9 +10,7 @@ import org.springframework.stereotype.Repository;
 import com.batchprompt.users.core.model.User;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, UUID> {
-    
-    Optional<User> findByuserId(String userId);
+public interface UserRepository extends JpaRepository<User, String> {
     
     Optional<User> findByEmail(String email);
     

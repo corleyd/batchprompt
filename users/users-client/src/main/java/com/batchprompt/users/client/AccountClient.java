@@ -23,26 +23,26 @@ import com.batchprompt.users.model.dto.AccountDto;
 )
 public interface AccountClient {
  
-    @GetMapping("/user/{userUuid}")
-    ResponseEntity<List<AccountDto>> getUserAccountsByUserId(@PathVariable UUID userUuid);
+    @GetMapping("/user/{userId}")
+    ResponseEntity<List<AccountDto>> getUserAccountsByUserId(@PathVariable("userId") String userId);
     
     @GetMapping("/{accountUuid}")
-    ResponseEntity<AccountDto> getAccountById(@PathVariable UUID accountUuid);
+    ResponseEntity<AccountDto> getAccountById(@PathVariable("accountUuid") UUID accountUuid);
     
     @GetMapping("/{accountUuid}/balance")
-    ResponseEntity<Integer> getAccountBalance(@PathVariable UUID accountUuid);
+    ResponseEntity<Integer> getAccountBalance(@PathVariable("accountUuid") UUID accountUuid);
     
     @GetMapping("/{accountUuid}/transactions")
-    ResponseEntity<List<AccountCreditTransactionDto>> getAccountTransactions(@PathVariable UUID accountUuid);
+    ResponseEntity<List<AccountCreditTransactionDto>> getAccountTransactions(@PathVariable("accountUuid") UUID accountUuid);
     
     @PostMapping
     ResponseEntity<AccountDto> createAccount(@RequestBody AccountDto accountDto);
     
     @PutMapping("/{accountUuid}")
-    ResponseEntity<AccountDto> updateAccount(@PathVariable UUID accountUuid, @RequestBody AccountDto accountDto);
+    ResponseEntity<AccountDto> updateAccount(@PathVariable("accountUuid") UUID accountUuid, @RequestBody AccountDto accountDto);
     
     @PostMapping("/{accountUuid}/credits")
     ResponseEntity<AccountCreditTransactionDto> addCredits(
-            @PathVariable UUID accountUuid,
+            @PathVariable("accountUuid") UUID accountUuid,
             @RequestBody AccountCreditTransactionDto transactionDto);
 }

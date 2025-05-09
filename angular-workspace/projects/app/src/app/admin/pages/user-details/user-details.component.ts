@@ -133,7 +133,7 @@ export class UserDetailsComponent implements OnInit {
     private router: Router,
     private userService: UserService,
     private fileService: FileService,
-    private jobService: JobService,
+   private jobService: JobService,
     private promptService: PromptService,
     private accountService: AccountService,
     private dialog: MatDialog
@@ -301,16 +301,8 @@ export class UserDetailsComponent implements OnInit {
     this.activeTab = event.index;
   }
 
-  downloadFile(fileUuid: string, fileName: string): void {
-    this.fileService.downloadFile(fileUuid, fileName).subscribe({
-      next: () => {
-        // Download is handled by the service
-      },
-      error: (error) => {
-        console.error('Error downloading file:', error);
-        alert('Failed to download file. Please try again.');
-      }
-    });
+  downloadFile(fileUuid: string, fileName?: string): void {
+    this.fileService.downloadFile(fileUuid, fileName).subscribe(() => console.log('File download initiated'));
   }
 
   viewJobDetails(jobUuid: string): void {

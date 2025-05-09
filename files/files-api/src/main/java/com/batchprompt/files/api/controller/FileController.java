@@ -233,12 +233,10 @@ public class FileController {
             @PathVariable UUID fileUuid,
             @AuthenticationPrincipal Jwt jwt) {
         
-        String userId = jwt.getSubject();
-        
         return fileService.getFileById(fileUuid)
                 .map(file -> {
                     // Check if user has access to this file
-                    if (!serviceAuthenticationService.isValidServiceJwt(jwt) && !file.getUserId().equals(userId)) {
+                    if (!serviceAuthenticationService.canAccessUserData(jwt, file.getUserId())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).<String>build();
                     }
                     

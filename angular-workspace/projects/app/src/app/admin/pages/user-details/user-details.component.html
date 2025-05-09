@@ -55,6 +55,9 @@
         <app-generic-table
           [data]="userFiles"
           [config]="filesTableConfig"
+          [customCellTemplates]="{
+            'fileActions': fileActions
+          }"
           [loading]="loadingFiles"
           [totalItems]="filesTotalItems"
           [totalPages]="filesTotalPages"
@@ -78,6 +81,9 @@
         <app-generic-table
           [data]="userJobs"
           [config]="jobsTableConfig"
+          [customCellTemplates]="{
+            'jobActions': jobActions
+          }"          
           [loading]="loadingJobs"
           [totalItems]="jobsTotalItems"
           [totalPages]="jobsTotalPages"
@@ -89,7 +95,7 @@
           (refresh)="refreshJobs()">
           <!-- Custom template for job actions -->
           <ng-template #jobActions let-item>
-            <button class="action-btn" (click)="viewJobDetails(item.jobUuid)">View</button>
+            <button class="action-btn" (click)="downloadFile(item.resultFileUuid)">Download Results</button>
           </ng-template>
         </app-generic-table>
       </div>

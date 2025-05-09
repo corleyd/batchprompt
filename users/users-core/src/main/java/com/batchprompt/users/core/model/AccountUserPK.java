@@ -14,5 +14,5 @@ public class AccountUserPK implements Serializable {
     private static final long serialVersionUID = 1L;
     
     private UUID accountUuid;
-    private UUID userUuid;
+    private String userId;
 }

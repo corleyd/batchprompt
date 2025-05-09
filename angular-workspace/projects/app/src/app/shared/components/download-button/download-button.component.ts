@@ -1,6 +1,6 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FileDownloadService } from '../../../files/file-download.service';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { FileService } from '../../../files/file.service';
 
 @Component({
   selector: 'app-download-button',
@@ -20,13 +20,13 @@ export class DownloadButtonComponent {
   @Output() downloadStarted = new EventEmitter<void>();
   @Output() downloadError = new EventEmitter<any>();
 
-  constructor(private fileDownloadService: FileDownloadService) {}
+  constructor(private fileService: FileService) {}
 
   onClick(): void {
     if (!this.disabled && this.fileUuid) {
       this.download.emit();
       
-      this.fileDownloadService.downloadFile(this.fileUuid, this.fileName).subscribe({
+      this.fileService.downloadFile(this.fileUuid, this.fileName).subscribe({
         next: () => {
           this.downloadStarted.emit();
         },

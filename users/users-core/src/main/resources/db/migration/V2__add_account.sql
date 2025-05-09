@@ -12,11 +12,11 @@ CREATE TABLE account (
 -- Create the mapping between users and accounts
 CREATE TABLE account_user (
     account_uuid UUID NOT NULL REFERENCES account(account_uuid) ON DELETE CASCADE,
-    user_uuid UUID NOT NULL REFERENCES "user"(user_uuid) ON DELETE CASCADE,
+    user_id varchar NOT NULL REFERENCES "user"(user_id) ON DELETE CASCADE,
     is_owner BOOLEAN NOT NULL DEFAULT FALSE,
     create_timestamp TIMESTAMP NOT NULL,
     update_timestamp TIMESTAMP NOT NULL,
-    PRIMARY KEY (account_uuid, user_uuid)
+    PRIMARY KEY (account_uuid, user_id)
 );
 
 -- Track credit transactions for an account
@@ -45,7 +45,7 @@ DECLARE
     r RECORD;
     now_ts TIMESTAMP := CURRENT_TIMESTAMP;
 BEGIN
-    FOR r IN SELECT user_uuid, user_id FROM "user" LOOP
+    FOR r IN SELECT user_id FROM "user" LOOP
         -- Create an account for each user
         INSERT INTO account (
             account_uuid,
@@ -62,14 +62,14 @@ BEGIN
         -- Associate the user with the newly created account and set as owner
         INSERT INTO account_user (
             account_uuid,
-            user_uuid,
+            user_id,
             is_owner,
             create_timestamp,
             update_timestamp
         )
         SELECT
             a.account_uuid,
-            r.user_uuid,
+            r.user_id,
             TRUE,
             now_ts,
             now_ts

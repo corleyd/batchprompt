@@ -2,7 +2,6 @@ package com.batchprompt.users.core;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,12 +27,12 @@ public class UserService {
         return userRepository.findAll(pageable);
     }
 
-    public Optional<User> getUserById(UUID userUuid) {
-        return userRepository.findById(userUuid);
+    public Optional<User> getUserById(String userId) {
+        return userRepository.findById(userId);
     }
 
     public Optional<User> getUserByUserId(String userId) {
-        return userRepository.findByuserId(userId);
+        return userRepository.findById(userId);
     }
     
     public Optional<User> getUserByEmail(String email) {
@@ -56,7 +55,7 @@ public class UserService {
         log.debug("Validating user on login: {}", user.getUserId());
         
         // Check if user already exists by Auth0 ID
-        Optional<User> existingUserOpt = userRepository.findByuserId(user.getUserId());
+        Optional<User> existingUserOpt = userRepository.findById(user.getUserId());
         
         if (existingUserOpt.isPresent()) {
             // Update existing user with latest information
@@ -99,7 +98,7 @@ public class UserService {
     @Transactional
     public User registerUser(User user) {
         // Check if user already exists
-        if (userRepository.findByuserId(user.getUserId()).isPresent()) {
+        if (userRepository.findById(user.getUserId()).isPresent()) {
             throw new IllegalArgumentException("User with this Auth0 ID already exists");
         }
         
@@ -108,7 +107,6 @@ public class UserService {
         }
         
         // Set defaults for a new user
-        user.setUserUuid(UUID.randomUUID());
         LocalDateTime now = LocalDateTime.now();
         user.setCreateTimestamp(now);
         user.setUpdateTimestamp(now);
@@ -137,8 +135,8 @@ public class UserService {
     }
 
     @Transactional
-    public Optional<User> updateUser(UUID userUuid, User userDetails) {
-        return userRepository.findById(userUuid)
+    public Optional<User> updateUser(String userId, User userDetails) {
+        return userRepository.findById(userId)
                 .map(existingUser -> {
                     // Don't update userId as it should remain constant
                     existingUser.setName(userDetails.getName());
@@ -148,7 +146,7 @@ public class UserService {
                     if (!existingUser.getEmail().equals(userDetails.getEmail())) {
                         userRepository.findByEmail(userDetails.getEmail())
                             .ifPresent(user -> {
-                                if (!user.getUserUuid().equals(userUuid)) {
+                                if (!user.getUserId().equals(userId)) {
                                     throw new IllegalArgumentException("Email already in use");
                                 }
                             });
@@ -169,8 +167,8 @@ public class UserService {
     }
 
     @Transactional
-    public boolean deleteUser(UUID userUuid) {
-        return userRepository.findById(userUuid)
+    public boolean deleteUser(String userId) {
+        return userRepository.findById(userId)
                 .map(user -> {
                     userRepository.delete(user);
                     return true;

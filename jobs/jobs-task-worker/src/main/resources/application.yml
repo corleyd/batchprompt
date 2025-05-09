@@ -17,6 +17,7 @@ logging:
     com.batchprompt: TRACE
     org.flywaydb: TRACE
     org.hibernate: INFO
+    feign: TRACE
   file:
     name: logs/${spring.application.name}.log
   logback:

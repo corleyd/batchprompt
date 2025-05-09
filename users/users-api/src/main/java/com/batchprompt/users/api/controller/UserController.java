@@ -1,7 +1,5 @@
 package com.batchprompt.users.api.controller;
 
-import java.util.UUID;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -148,11 +146,11 @@ public class UserController {
         }
     }
 
-    @PutMapping("/{userUuid}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable UUID userUuid, @RequestBody UserDto userDto) {
+    @PutMapping("/{userId}")
+    public ResponseEntity<UserDto> updateUser(@PathVariable String userId, @RequestBody UserDto userDto) {
         try {
             User user = userMapper.toEntity(userDto);
-            return userService.updateUser(userUuid, user)
+            return userService.updateUser(userId, user)
                     .map(userMapper::toDto)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
@@ -161,9 +159,9 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/{userUuid}")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID userUuid) {
-        boolean deleted = userService.deleteUser(userUuid);
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
+        boolean deleted = userService.deleteUser(userId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 }

@@ -29,15 +29,15 @@ public class AccountUser {
     private UUID accountUuid;
 
     @Id
-    @Column(name = "user_uuid")
-    private UUID userUuid;
+    @Column(name = "user_id")
+    private String userId;
 
     @ManyToOne
     @JoinColumn(name = "account_uuid", insertable = false, updatable = false)
     private Account account;
 
     @ManyToOne
-    @JoinColumn(name = "user_uuid", insertable = false, updatable = false)
+    @JoinColumn(name = "user_id", insertable = false, updatable = false)
     private User user;
 
     @Column(name = "is_owner", nullable = false)

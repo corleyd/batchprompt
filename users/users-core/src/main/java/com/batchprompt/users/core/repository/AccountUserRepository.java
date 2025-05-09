@@ -11,6 +11,6 @@ import com.batchprompt.users.core.model.AccountUserPK;
 
 @Repository
 public interface AccountUserRepository extends JpaRepository<AccountUser, AccountUserPK> {
-    List<AccountUser> findByUserUuid(UUID userUuid);
+    List<AccountUser> findByUserId(String userId);
     List<AccountUser> findByAccountUuid(UUID accountUuid);
 }

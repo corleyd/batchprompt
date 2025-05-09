@@ -57,8 +57,8 @@ public class AccountService {
     /**
      * Get accounts for a user
      */
-    public List<Account> getAccountsForUser(UUID userUuid) {
-        List<AccountUser> accountUsers = accountUserRepository.findByUserUuid(userUuid);
+    public List<Account> getAccountsForUser(String userId) {
+        List<AccountUser> accountUsers = accountUserRepository.findByUserId(userId);
         return accountUsers.stream()
                 .map(AccountUser::getAccountUuid)
                 .map(accountRepository::findById)
@@ -107,7 +107,7 @@ public class AccountService {
     public AccountUser createAccountUserAssociation(Account account, User user, boolean isOwner) {
         AccountUser accountUser = new AccountUser();
         accountUser.setAccountUuid(account.getAccountUuid());
-        accountUser.setUserUuid(user.getUserUuid());
+        accountUser.setUserId(user.getUserId());
         accountUser.setOwner(isOwner);
         LocalDateTime now = LocalDateTime.now();
         accountUser.setCreateTimestamp(now);

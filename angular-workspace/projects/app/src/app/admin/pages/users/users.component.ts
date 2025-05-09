@@ -63,7 +63,7 @@ export class UsersComponent implements OnInit {
   initializeTableConfig(): void {
     this.tableConfig = {
       columns: [
-        { key: 'userUuid', header: 'ID', sortable: true },
+        { key: 'userId', header: 'ID', sortable: true },
         { key: 'name', header: 'Name', sortable: true },
         { key: 'email', header: 'Email', sortable: true },
         { 
@@ -157,10 +157,10 @@ export class UsersComponent implements OnInit {
     this.router.navigate(['/admin/users', user.userId]);
   }
 
-  deleteUser(userUuid: string, event: Event): void {
+  deleteUser(userId: string, event: Event): void {
     event.stopPropagation(); // Prevent row click event
     if (confirm('Are you sure you want to delete this user?')) {
-      this.userService.deleteUser(userUuid).subscribe({
+      this.userService.deleteUser(userId).subscribe({
         next: () => {
           this.loadUsers();
         },
@@ -171,10 +171,10 @@ export class UsersComponent implements OnInit {
     }
   }
 
-  editUser(userUuid: string, event: Event): void {
+  editUser(userId: string, event: Event): void {
     event.stopPropagation(); // Prevent row click event
     // Implementation for editing a user
-    console.log('Edit user:', userUuid);
+    console.log('Edit user:', userId);
   }
 
   viewUserFiles(userId: string, event: Event): void {

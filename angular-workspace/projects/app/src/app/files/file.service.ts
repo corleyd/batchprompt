@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable } from 'rxjs';
+import { map, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -90,13 +90,31 @@ export class FileService {
       .pipe(map((token: string) => `${this.apiUrl}/${fileUuid}/download/${token}`));
   }
 
-  // Download a file
-  downloadFile(fileId: string, fileName?: string): Observable<Blob> {
-    return this.http.get(`${this.apiUrl}/${fileId}/content`, {
-      responseType: 'blob'
-    });
-  }
+  /**
+   * Downloads a file using its UUID
+   * @param fileUuid The UUID of the file to download
+   * @param fileName Optional custom file name for the download
+   */
+  downloadFile(fileUuid: string, fileName?: string): Observable<string> {
+    return this.getDownloadUrl(fileUuid).pipe(
+      tap(downloadUrl => {
+        // Create an anchor element to trigger the download
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.download = fileName || 'download';
+        a.target = '_self';
+        document.body.appendChild(a);
+        a.click();
 
+        // Remove the element after download is initiated
+        setTimeout(() => {
+          document.body.removeChild(a);
+        }, 1000);
+      })
+    );
+  }
+  
   // Delete a file
   deleteFile(fileId: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${fileId}`);

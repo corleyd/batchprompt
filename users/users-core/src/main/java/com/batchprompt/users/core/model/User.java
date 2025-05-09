@@ -1,7 +1,8 @@
 package com.batchprompt.users.core.model;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+
+import com.batchprompt.users.model.UserRole;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,8 +15,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.batchprompt.users.model.UserRole;
-
 @Data
 @Entity
 @Builder
@@ -25,9 +24,6 @@ import com.batchprompt.users.model.UserRole;
 public class User {
 
     @Id
-    @Column(name = "user_uuid")
-    private UUID userUuid;
-
     @Column(name = "user_id", nullable = false, unique = true)
     private String userId;
 
