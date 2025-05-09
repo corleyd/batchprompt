@@ -25,6 +25,8 @@ export class JobSubmitComponent implements OnInit {
   errorMessage = '';
   includeAllFields = true;
   showAdditionalOptions = false;
+  // User ID parameter for submitting on behalf of another user
+  onBehalfOfUserId: string | null = null;
   
   constructor(
     private fb: FormBuilder,
@@ -74,10 +76,6 @@ export class JobSubmitComponent implements OnInit {
   ngOnInit(): void {
     this.loading = true;
     
-    // Load prompts and models right away
-    const promptObservable = this.promptService.getUserPrompts();
-    const modelsObservable = this.jobService.getSupportedModels();
-    
     // First check if we have a fileUuid from route parameters or query parameters
     this.route.paramMap.subscribe(params => {
       const paramFileUuid = params.get('fileUuid');
@@ -85,6 +83,15 @@ export class JobSubmitComponent implements OnInit {
       this.route.queryParamMap.subscribe(queryParams => {
         const queryFileUuid = queryParams.get('fileUuid');
         const fileUuid = paramFileUuid || queryFileUuid;
+        
+        // Check if we're submitting on behalf of another user
+        this.onBehalfOfUserId = queryParams.get('onBehalfOf');
+        
+        // Load prompts (either for current user or target user) and models right away
+        const promptObservable = this.onBehalfOfUserId ? 
+                                this.promptService.getUserPrompts(this.onBehalfOfUserId) : 
+                                this.promptService.getUserPrompts();
+        const modelsObservable = this.jobService.getSupportedModels();
         
         if (fileUuid) {
           // If a fileUuid is provided, only load that specific file
@@ -96,7 +103,8 @@ export class JobSubmitComponent implements OnInit {
             next: (results) => {
               // Create a single-item array with the retrieved file
               this.files = [results.file];
-              this.prompts = results.prompts;
+              // Handle paginated response for prompts
+              this.prompts = results.prompts && results.prompts.content ? results.prompts.content : results.prompts;
               this.models = results.models;
               this.loading = false;
               
@@ -119,7 +127,8 @@ export class JobSubmitComponent implements OnInit {
             next: (results) => {
               // Extract the files from the paginated response
               this.files = results.files.content || [];
-              this.prompts = results.prompts;
+              // Handle paginated response for prompts
+              this.prompts = results.prompts && results.prompts.content ? results.prompts.content : results.prompts;
               this.models = results.models;
               this.loading = false;
             },
@@ -204,7 +213,9 @@ export class JobSubmitComponent implements OnInit {
       maxRecords: formValue.maxRecords || undefined,
       startRecordNumber: formValue.startRecordNumber || undefined,
       temperature: formValue.temperature || undefined,
-      maxTokens: formValue.maxTokens || undefined
+      maxTokens: formValue.maxTokens || undefined,
+      // Include target user ID if submitting on behalf of another user
+      targetUserId: this.onBehalfOfUserId || undefined
     };
     
     this.jobService.submitJob(jobSubmission).subscribe({

@@ -69,8 +69,9 @@
           (refresh)="refreshFiles()">
           <!-- Custom template for file actions -->
           <ng-template #fileActions let-item>
-            <button class="action-btn" (click)="downloadFile(item.fileUuid, item.fileName)">Download</button>
-            <button class="action-btn" (click)="copyFileToUser(item)">Copy to User</button>
+            <button class="action-btn" (click)="downloadFile(item.fileUuid, item.fileName); $event.stopPropagation()">Download</button>
+            <button class="action-btn" (click)="copyFileToUser(item); $event.stopPropagation()">Copy to User</button>
+            <button class="action-btn" *ngIf="item.status === 'READY'" (click)="submitJobForUser(item); $event.stopPropagation()">Submit Job</button>
           </ng-template>
         </app-generic-table>
       </div>

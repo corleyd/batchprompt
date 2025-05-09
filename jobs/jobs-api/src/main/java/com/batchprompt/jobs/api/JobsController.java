@@ -160,6 +160,18 @@ public class JobsController {
         String userId = jwt.getSubject();
         String authToken = jwt.getTokenValue();
         
+        // If targetUserId is specified and the current user is an admin, use the target user ID
+        if (jobSubmissionDto.getTargetUserId() != null && !jobSubmissionDto.getTargetUserId().isBlank()) {
+            if (serviceAuthenticationService.canAccessUserData(jwt, jobSubmissionDto.getTargetUserId())) {
+                // Admin is submitting on behalf of another user
+                userId = jobSubmissionDto.getTargetUserId();
+            } else {
+                // Not authorized to submit on behalf of another user
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(null);
+            }
+        }
+        
         Job job = jobService.submitJob(
                 jobSubmissionDto,
                 userId,

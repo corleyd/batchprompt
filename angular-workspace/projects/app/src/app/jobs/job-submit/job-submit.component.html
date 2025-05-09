@@ -7,6 +7,12 @@
   </div>
 
   <div *ngIf="!loading" class="job-form-container">
+    <!-- Notification when submitting on behalf of another user -->
+    <div *ngIf="onBehalfOfUserId" class="behalf-notification">
+      <div class="notification-icon">ℹ️</div>
+      <p>You are submitting this job on behalf of another user (ID: {{onBehalfOfUserId}})</p>
+    </div>
+
     <div *ngIf="submitSuccess" class="success-message">
       <div class="success-icon">✓</div>
       <p>Job submitted successfully! Redirecting...</p>

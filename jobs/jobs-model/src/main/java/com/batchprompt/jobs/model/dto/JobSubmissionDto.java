@@ -30,4 +30,7 @@ public class JobSubmissionDto {
     private Double temperature;
     private Integer maxRecords;
     private Integer startRecordNumber;
+    
+    // Target user ID when submitting a job on behalf of another user
+    private String targetUserId;
 }

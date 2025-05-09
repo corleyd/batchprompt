@@ -19,6 +19,7 @@ import { TableConfig, TableSortEvent, TablePageEvent } from '../../../shared/com
 import { CreditDialogComponent } from './credit-dialog/credit-dialog.component';
 import { CopyFileDialogComponent } from './copy-file-dialog/copy-file-dialog.component';
 import { CopyPromptDialogComponent } from './copy-prompt-dialog/copy-prompt-dialog.component';
+import { SubmitJobDialogComponent } from './submit-job-dialog/submit-job-dialog.component';
 
 @Component({
   selector: 'app-user-details',
@@ -459,6 +460,30 @@ export class UserDetailsComponent implements OnInit {
               { duration: 5000 }
             );
           }
+        });
+      }
+    });
+  }
+
+  // Submit a job on behalf of a user
+  submitJobForUser(file: any): void {
+    if (!this.userId || !file || !file.fileUuid) return;
+    
+    const dialogRef = this.dialog.open(SubmitJobDialogComponent, {
+      width: '400px',
+      data: {
+        fileUuid: file.fileUuid,
+        fileName: file.fileName,
+        userId: this.userId,
+        userName: this.userName
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirmed => {
+      if (confirmed) {
+        // Navigate to job submit page with query parameters for the file and target user
+        this.router.navigate(['/dashboard/jobs/submit', file.fileUuid], {
+          queryParams: { onBehalfOf: this.userId }
         });
       }
     });

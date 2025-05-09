@@ -12,6 +12,7 @@ export interface JobSubmissionDto {
   temperature?: number;
   maxRecords?: number;
   startRecordNumber?: number;
+  targetUserId?: string; // User ID when submitting on behalf of another user
 }
 
 export interface ModelDto {
