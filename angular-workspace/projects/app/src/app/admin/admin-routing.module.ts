@@ -43,6 +43,9 @@ const routes: Routes = [
       {
         path: 'reports',
         component: ReportsComponent
+      },
+      { 
+        path: 'prompts/:id', loadComponent: () => import('../../app/prompts/prompt-edit/prompt-edit.component').then(m => m.PromptEditComponent)
       }
     ]
   }

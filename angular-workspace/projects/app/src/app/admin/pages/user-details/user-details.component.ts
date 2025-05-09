@@ -130,10 +130,10 @@ export class UserDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    public router: Router,
     private userService: UserService,
     private fileService: FileService,
-   private jobService: JobService,
+    private jobService: JobService,
     private promptService: PromptService,
     private accountService: AccountService,
     private dialog: MatDialog

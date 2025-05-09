@@ -115,6 +115,7 @@
           [sortDirection]="promptsSortDirection"
           (pageChange)="onPromptsPageChange($event)"
           (sortChange)="onPromptsSortChange($event)"
+          (rowClick)="router.navigate(['/admin/prompts', $event.promptUuid])"
           (refresh)="refreshPrompts()">
           <!-- Custom template for prompt actions -->
           <ng-template #promptActions let-item>
