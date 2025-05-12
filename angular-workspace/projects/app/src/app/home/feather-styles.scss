@@ -1,0 +1,59 @@
+/* Add styles for Feather icons */
+:host ::ng-deep i-feather {
+  vertical-align: middle;
+  margin-right: 0.5rem;
+  stroke-width: 2;
+  color: #2196f3;
+}
+
+/* Make icons in file and job lists smaller */
+:host ::ng-deep .small-icon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+
+/* Update card headers for feather icons */
+.card h2 i-feather {
+  margin-right: 0.5rem;
+  color: #2196f3;
+}
+
+/* Update action buttons for feather icons */
+.action-btn i-feather {
+  margin-bottom: 0.75rem;
+  width: 24px;
+  height: 24px;
+}
+
+/* Update file and job actions for feather icons */
+.file-actions button i-feather,
+.job-actions button i-feather {
+  margin-right: 0;
+  width: 16px;
+  height: 16px;
+}
+
+/* Override view-all-link for feather icons */
+.view-all-link i-feather {
+  margin-left: 0.25rem;
+  margin-right: 0;
+  transition: transform 0.2s ease;
+}
+
+.view-all-link:hover i-feather {
+  transform: translateX(3px);
+}
+
+/* Override card-action-btn for feather icons */
+.card-action-btn i-feather {
+  margin-left: 0.5rem;
+  margin-right: 0;
+  transition: transform 0.2s ease;
+}
+
+.card-action-btn:hover i-feather {
+  transform: translateX(3px);
+}
+
+/* Rest of original styles */

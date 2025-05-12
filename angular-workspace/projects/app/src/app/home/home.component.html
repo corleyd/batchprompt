@@ -7,18 +7,18 @@
   <div class="dashboard-grid">
     <!-- Quick Actions Section -->
     <div class="quick-actions-card card">
-      <h2><i class="fas fa-bolt"></i> Quick Actions</h2>
+      <h2><i-feather name="zap"></i-feather> Quick Actions</h2>
       <div class="action-buttons">
         <a routerLink="/dashboard/files/upload" class="action-btn upload-btn">
-          <i class="fas fa-upload"></i>
+          <i-feather name="upload"></i-feather>
           <span>Upload Files</span>
         </a>
         <a routerLink="/dashboard/prompts/new" class="action-btn prompt-btn">
-          <i class="fas fa-code"></i>
+          <i-feather name="code"></i-feather>
           <span>Create Prompt</span>
         </a>
         <a routerLink="/dashboard/jobs/submit" class="action-btn job-btn">
-          <i class="fas fa-play-circle"></i>
+          <i-feather name="play-circle"></i-feather>
           <span>Run a Job</span>
         </a>
       </div>
@@ -26,7 +26,7 @@
 
     <!-- Recent Files Section -->
     <div class="recent-files-card card" *ngIf="recentFiles && recentFiles.length > 0">
-      <h2><i class="fas fa-file-alt"></i> Recent Files</h2>
+      <h2><i-feather name="file"></i-feather> Recent Files</h2>
       <div class="recent-files-list">
         <div class="empty-state" *ngIf="recentFiles.length === 0">
           <p>No recently uploaded files</p>
@@ -40,21 +40,18 @@
             </div>
           </div>
           <div class="file-actions">
-            <button [routerLink]="['/dashboard/files/status', file.fileUuid]" class="btn btn-sm icon-btn">
-              <i class="fas fa-eye"></i>
-            </button>
-            <button *ngIf="file.status === 'READY'" [routerLink]="['/dashboard/jobs/submit', file.fileUuid]" class="btn btn-sm action-btn icon-btn">
-              <i class="fas fa-play"></i>
+            <button *ngIf="file.status === 'READY'" [routerLink]="['/dashboard/jobs/submit', file.fileUuid]" class="btn btn-sm action-btn icon-btn small-icon" title="Create Job from this File">
+              <i-feather name="play"></i-feather>
             </button>
           </div>
         </div>
       </div>
-      <a routerLink="/dashboard/files" class="view-all-link">View all files <i class="fas fa-arrow-right"></i></a>
+      <a routerLink="/dashboard/files" class="view-all-link">View all files <i-feather name="arrow-right" class="small-icon"></i-feather></a>
     </div>
 
     <!-- Recent Jobs Section -->
     <div class="recent-jobs-card card" *ngIf="recentJobs && recentJobs.length > 0">
-      <h2><i class="fas fa-tasks"></i> Recent Jobs</h2>
+      <h2><i-feather name="list"></i-feather> Recent Jobs</h2>
       <div class="recent-jobs-list">
         <div class="empty-state" *ngIf="recentJobs.length === 0">
           <p>No recently created jobs</p>
@@ -73,21 +70,22 @@
             </div>
           </div>
           <div class="job-actions">
-            <button [routerLink]="['/dashboard/jobs']" class="view-btn">
-              <i class="fas fa-eye"></i>
+            <!-- Download icon for Download Job Results -->
+            <button *ngIf="job.status === 'COMPLETED' || job.status === 'PARTIAL_SUCCESS'" (click)="downloadJobResults(job)" class="btn btn-sm action-btn icon-btn small-icon" title="Download Job Results">
+              <i-feather name="download"></i-feather>
             </button>
           </div>
         </div>
       </div>
-      <a routerLink="/dashboard/jobs" class="view-all-link">View all jobs <i class="fas fa-arrow-right"></i></a>
+      <a routerLink="/dashboard/jobs" class="view-all-link">View all jobs <i-feather name="arrow-right" class="small-icon"></i-feather></a>
     </div>
 
     <!-- Prompts Card -->
     <div class="prompts-card card">
-      <h2><i class="fas fa-comment-alt"></i> My Prompts</h2>
+      <h2><i-feather name="message-square"></i-feather> My Prompts</h2>
       <p>Create, manage and use custom prompts for your batch processing jobs.</p>
       <a routerLink="/dashboard/prompts" class="card-action-btn">
-        Manage Prompts <i class="fas fa-arrow-right"></i>
+        Manage Prompts <i-feather name="arrow-right" class="small-icon"></i-feather>
       </a>
     </div>
   </div>

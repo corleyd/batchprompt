@@ -99,7 +99,7 @@ export class FileUploadComponent {
           },
           error: (err: any) => {
             this.progress = 0;
-            this.errorMsg = 'Could not upload the file!';
+            this.errorMsg = 'Could not upload the file. Please ensure that the file is a valid Excel spreadsshet in XLSX format.';
             this.currentFile = undefined;
           }
         });

@@ -1,6 +1,6 @@
 import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, tap } from 'rxjs';
+import { map, Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -86,8 +86,15 @@ export class FileService {
 
   // New method to get a download token from the server
   getDownloadUrl(fileUuid: string): Observable<string> {
+    console.log('Fetching download URL for file:', fileUuid);
     return this.http.get(`${this.apiUrl}/${fileUuid}/token`, { responseType: 'text' })
-      .pipe(map((token: string) => `${this.apiUrl}/${fileUuid}/download/${token}`));
+      .pipe(
+        map((token: string) => `${this.apiUrl}/${fileUuid}/download/${token}`),
+        catchError(error => {
+          console.error('Error fetching download URL:', error);
+          return throwError(() => new Error('Failed to get download URL.'));
+        })
+      );
   }
 
   /**
@@ -108,9 +115,14 @@ export class FileService {
         a.click();
 
         // Remove the element after download is initiated
-        setTimeout(() => {
+      setTimeout(() => {
           document.body.removeChild(a);
         }, 1000);
+      }),
+      catchError(error => {
+        console.error('Error downloading file:', error);
+        // Optionally, you could show a user-facing error message here
+        return throwError(() => new Error('File download failed.'));
       })
     );
   }

@@ -5,11 +5,12 @@ import { AuthService } from '@auth0/auth0-angular';
 import { FileService } from '../files/file.service';
 import { JobService } from '../services/job.service';
 import { catchError, switchMap, tap, of } from 'rxjs';
+import { IconsModule } from '../icons/icons.module';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IconsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
@@ -77,5 +78,14 @@ export class HomeComponent implements OnInit {
       default:
         return '';
     }
+  }
+
+  downloadJobResults(job: any): void {
+    // Implement the logic to download job results.
+    // This might involve calling a method in JobService.
+    console.log('Downloading results for job:', job);
+    this.fileService.downloadFile(job.resultFileUuid).subscribe(() => {
+      console.log('Download started for job:', job);
+    });
   }
 }

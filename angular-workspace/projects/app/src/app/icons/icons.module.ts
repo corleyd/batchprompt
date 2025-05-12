@@ -20,7 +20,16 @@ import {
   MessageSquare,
   Settings,
   BarChart2,
-  Users
+  Users,
+  // Additional icons for home component
+  Code,
+  PlayCircle,
+  File,
+  Play,
+  ArrowRight,
+  Zap,
+  CheckSquare,
+  List
 } from 'angular-feather/icons';
 
 // Select some icons (use an object, not an array)
@@ -43,7 +52,16 @@ const icons = {
   MessageSquare,
   Settings,
   BarChart2,
-  Users
+  Users,
+  // Additional icons for home component
+  Code,
+  PlayCircle,
+  File,
+  Play,
+  ArrowRight,
+  Zap,
+  CheckSquare,
+  List
 };
 
 @NgModule({

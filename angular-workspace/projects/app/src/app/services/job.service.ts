@@ -87,3 +87,4 @@ export class JobService {
     return this.http.get<any>(`${this.apiUrl}/${jobUuid}/tasks`, { params });
   }
 }
+ 
