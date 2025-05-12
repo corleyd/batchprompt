@@ -26,9 +26,7 @@
       background-color: #f5f7f9;
     }
     
-    &.mobile-toggle {
-      // Specific styles for mobile toggle if needed
-    }
+
   }
 
   .sidebar {
@@ -38,10 +36,12 @@
     border-right: 1px solid #e0e0e0;
     padding: 20px 0;
     transition: all 0.3s ease;
+    position: relative;  /* Add position:relative for better positioning context */
     
     &.collapsed {
       min-width: 70px;
       width: 70px;
+      z-index: 100;
       
       .nav-header {
         padding: 0 10px 15px;
@@ -100,7 +100,7 @@
     
     .nav-links {
       display: flex;
-      flex-direction: column;
+      flex-direction: column !important;
       
       a {
         padding: 12px 20px;
@@ -140,6 +140,9 @@
   .main-content {
     flex: 1;
     overflow: hidden;
+    margin-left: 0 !important;
+    position: relative;
+    transition: margin-left 0.3s ease;
     
     .scrolling-content-wrapper {
       height: 100%;
@@ -150,15 +153,33 @@
   
   &.sidebar-collapsed {
     .main-content {
-      margin-left: 0;
+      margin-left: 0 !important;
+    }
+    .sidebar .nav-links {
+      flex-direction: column !important;
+    }
+    .collapse-toggle.desktop-toggle {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
   }
+}
+
+// Visually hidden class for accessibility
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
 }
 
 // Responsive styles
 @media (max-width: 768px) {
   .navigation-container {
-    flex-direction: column;
+    flex-direction: row;
     
     .sidebar {
       position: fixed;
@@ -178,8 +199,8 @@
       }
       
       .nav-links {
-        flex-direction: row;
-        overflow-x: auto;
+        flex-direction: column !important;
+        overflow-x: visible;
         margin-top: 60px; // Space for the toggle button
         
         a {
@@ -199,4 +220,57 @@
       }
     }
   }
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.35);
+    z-index: 999;
+    transition: opacity 0.3s;
+  }
+  .sidebar {
+    z-index: 1000;
+  }
+}
+
+@media (min-width: 769px) {
+  /* Adjust layout for desktop only */
+  .sidebar:not(.collapsed) + .main-content {
+    margin-left: 250px !important;
+  }
+  
+  .sidebar.collapsed + .main-content {
+    margin-left: 70px !important;
+  }
+}
+
+.collapse-toggle.desktop-toggle {
+  position: absolute; /* Absolute position relative to container */
+  top: 15px;
+  left: 230px; /* Position at the edge of expanded sidebar */
+  z-index: 101;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+  border-radius: 50%;
+  width: 32px; /* Slightly smaller */
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.collapse-toggle.desktop-toggle.collapsed-toggle {
+  left: 85px; /* Position to the right of the collapsed sidebar */
 }

@@ -32,6 +32,11 @@ export class NavigationLayoutComponent {
   
   constructor(public auth: AuthService) {
     this.checkScreenSize();
+    // Restore sidebar state from sessionStorage if available
+    const saved = sessionStorage.getItem('sidebarCollapsed');
+    if (saved !== null) {
+      this.isSidebarCollapsed = saved === 'true';
+    }
   }
   
   @HostListener('window:resize', ['$event'])
@@ -41,14 +46,15 @@ export class NavigationLayoutComponent {
   
   private checkScreenSize() {
     this.isMobileView = window.innerWidth < 768;
-    // Only auto-collapse on mobile
-    if (this.isMobileView) {
+    // On mobile, auto-collapse, but allow user to open/close
+    if (this.isMobileView && sessionStorage.getItem('sidebarCollapsed') === null) {
       this.isSidebarCollapsed = true;
     }
   }
   
   toggleSidebar() {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    sessionStorage.setItem('sidebarCollapsed', String(this.isSidebarCollapsed));
     this.sidebarToggled.emit(this.isSidebarCollapsed);
   }
 }
