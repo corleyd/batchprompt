@@ -1,7 +1,7 @@
 <div class="job-list-container">
   <div class="job-list-header section-header">
     <h1>Manage Your Processing Jobs</h1>
-    <button class="primary-btn new-job-btn" (click)="createNewJob()">Create New Job</button>
+    <button class="btn btn-primary btn-md" (click)="createNewJob()">Create New Job</button>
   </div>
 
   <!-- Custom Templates for the Generic Table -->
@@ -12,7 +12,7 @@
       </div>
       <h3>You don't have any jobs yet</h3>
       <p>Create your first job to start processing data with AI</p>
-      <button (click)="createNewJob()" class="primary-btn create-job-btn">Create Your First Job</button>
+      <button (click)="createNewJob()" class="btn btn-primary btn-md">Create Your First Job</button>
     </div>
   </ng-template>
 
@@ -32,9 +32,9 @@
         [fileUuid]="job.resultFileUuid"
         [fileName]="'Results_' + job.jobUuid + '.xlsx'"
         [buttonText]="'Download'"
-        buttonClass="download-button"
+        buttonClass="btn btn-sm action-btn"
       ></app-download-button>
-      <button *ngIf="job.status === 'COMPLETED' && !job.resultFileUuid" class="secondary-btn view-results-btn">View Results</button>
+      <button *ngIf="job.status === 'COMPLETED' && !job.resultFileUuid" class="btn btn-secondary btn-md">View Results</button>
     </div>
   </ng-template>
 

@@ -56,6 +56,8 @@ body {
   padding: 0 1rem;
 }
 
+@import 'controls';
+
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.2;
@@ -170,41 +172,105 @@ table {
   }
 }
 
-/* Button styling */
+/* Global Button System
+ * A unified set of button styles that can be used across the application
+ * with different size variations and button types.
+ */
 .btn {
   display: inline-block;
   font-weight: 500;
   text-align: center;
   vertical-align: middle;
   user-select: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  border-radius: 0.25rem;
+  border-radius: 4px;
   transition: all 0.2s ease-in-out;
+  cursor: pointer;
+  font-family: inherit;
+  border: none;
   
+  /* Button Sizes */
+  &.btn-sm {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  
+  &.btn-md {
+    padding: 0.5rem 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  
+  &.btn-lg {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+  
+  /* Primary Button */
+  &.primary-btn,
   &.btn-primary {
     color: #fff;
-    background-color: #4361ee;
-    border: 1px solid #4361ee;
+    background-color: #1976d2;
+    border: 1px solid #1976d2;
     
     &:hover {
-      background-color: #3a56d4;
-      border-color: #3a56d4;
+      background-color: #1565c0;
+      border-color: #1565c0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.3);
     }
   }
   
+  /* Secondary Button */
+  &.secondary-btn,
   &.btn-secondary {
-    color: #4361ee;
-    background-color: transparent;
-    border: 1px solid #4361ee;
+    color: #333;
+    background-color: #f5f5f5;
+    border: 1px solid #ddd;
     
     &:hover {
-      background-color: rgba(67, 97, 238, 0.05);
+      background-color: #e0e0e0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
     }
   }
   
-  &.btn-danger {
+  /* Outline Button */
+  &.outline-btn {
+    color: #1976d2;
+    background-color: transparent;
+    border: 1px solid #1976d2;
+    
+    &:hover {
+      background-color: rgba(25, 118, 210, 0.05);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+  }
+  
+  /* Action Button */
+  &.action-btn {
+    color: #fff;
+    background-color: #4caf50;
+    border: 1px solid #4caf50;
+    
+    &:hover {
+      background-color: #43a047;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  /* Danger Button */
+  &.btn-danger,
+  &.danger-btn {
     color: #fff;
     background-color: #dc3545;
     border: 1px solid #dc3545;
@@ -213,5 +279,24 @@ table {
       background-color: #c82333;
       border-color: #bd2130;
     }
+  }
+  
+  /* Icon Button */
+  &.icon-btn {
+    padding: 0.375rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    &.rounded {
+      border-radius: 50%;
+    }
+  }
+  
+  /* Disabled state for all buttons */
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }

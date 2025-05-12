@@ -1,7 +1,7 @@
 <div class="prompt-list-container">
   <div class="header">
     <h1>My Prompts</h1>
-    <button routerLink="new" class="primary-button">Create New Prompt</button>
+    <button routerLink="new" class="btn btn-md primary-btn">Create New Prompt</button>
   </div>
 
   <div class="loading-spinner" *ngIf="loading">
@@ -11,14 +11,14 @@
 
   <div class="error-message" *ngIf="error">
     <p>Failed to load prompts. Please try again later.</p>
-    <button (click)="loadPrompts()" class="secondary-button">Retry</button>
+    <button (click)="loadPrompts()" class="btn btn-md secondary-btn">Retry</button>
   </div>
 
   <div class="empty-state" *ngIf="!loading && !error && prompts.length === 0">
     <div class="card">
       <h2>You don't have any prompts yet</h2>
       <p>Create your first prompt to get started with batch processing</p>
-      <button routerLink="/dashboard/prompts/new" class="primary-button">Create Your First Prompt</button>
+      <button routerLink="/dashboard/prompts/new" class="btn btn-md primary-btn">Create Your First Prompt</button>
     </div>
   </div>
 
@@ -29,7 +29,7 @@
       <div class="sort-buttons">
         <button 
           *ngFor="let option of sortOptions" 
-          class="sort-button" 
+          class="btn btn-sm sort-button" 
           [class.active]="sortField === option.value"
           (click)="changeSorting(option.value)">
           {{ option.label }} 
@@ -62,8 +62,8 @@
           <small>Updated: {{ prompt.updateTimestamp | date:'medium' }}</small>
         </div>
         <div class="prompt-actions">
-          <button [routerLink]="[ prompt.promptUuid]" class="action-button">Edit</button>
-          <button (click)="deletePrompt(prompt.promptUuid!)" class="action-button delete">Delete</button>
+          <button [routerLink]="[ prompt.promptUuid]" class="btn btn-sm primary-btn">Edit</button>
+          <button (click)="deletePrompt(prompt.promptUuid!)" class="btn btn-sm secondary-btn">Delete</button>
         </div>
       </div>
     </div>
@@ -74,13 +74,13 @@
     <button 
       [disabled]="currentPage === 0" 
       (click)="goToPage(0)" 
-      class="pagination-button">
+      class="btn btn-sm icon-btn pagination-button">
       <i class="fas fa-angle-double-left"></i>
     </button>
     <button 
       [disabled]="currentPage === 0" 
       (click)="goToPage(currentPage - 1)" 
-      class="pagination-button">
+      class="btn btn-sm icon-btn pagination-button">
       <i class="fas fa-angle-left"></i>
     </button>
     
@@ -92,18 +92,18 @@
     <button 
       [disabled]="currentPage >= totalPages - 1" 
       (click)="goToPage(currentPage + 1)" 
-      class="pagination-button">
+      class="btn btn-sm icon-btn pagination-button">
       <i class="fas fa-angle-right"></i>
     </button>
     <button 
       [disabled]="currentPage >= totalPages - 1" 
       (click)="goToPage(totalPages - 1)" 
-      class="pagination-button">
+      class="btn btn-sm icon-btn pagination-button">
       <i class="fas fa-angle-double-right"></i>
     </button>
   </div>
 
   <div class="navigation">
-    <button routerLink="/dashboard" class="secondary-button">Back to Dashboard</button>
+    <button routerLink="/dashboard" class="btn btn-md secondary-btn">Back to Dashboard</button>
   </div>
 </div>

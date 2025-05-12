@@ -40,10 +40,10 @@
             </div>
           </div>
           <div class="file-actions">
-            <button [routerLink]="['/dashboard/files/status', file.fileUuid]" class="view-btn">
+            <button [routerLink]="['/dashboard/files/status', file.fileUuid]" class="btn btn-sm icon-btn">
               <i class="fas fa-eye"></i>
             </button>
-            <button *ngIf="file.status === 'READY'" [routerLink]="['/dashboard/jobs/submit', file.fileUuid]" class="job-btn">
+            <button *ngIf="file.status === 'READY'" [routerLink]="['/dashboard/jobs/submit', file.fileUuid]" class="btn btn-sm action-btn icon-btn">
               <i class="fas fa-play"></i>
             </button>
           </div>

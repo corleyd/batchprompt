@@ -243,16 +243,16 @@
   }
 }
 
-@media (min-width: 769px) {
-  /* Adjust layout for desktop only */
-  .sidebar:not(.collapsed) + .main-content {
-    margin-left: 250px !important;
-  }
+// @media (min-width: 769px) {
+//   /* Adjust layout for desktop only */
+//   .sidebar:not(.collapsed) + .main-content {
+//     margin-left: 250px !important;
+//   }
   
-  .sidebar.collapsed + .main-content {
-    margin-left: 70px !important;
-  }
-}
+//   .sidebar.collapsed + .main-content {
+//     margin-left: 70px !important;
+//   }
+// }
 
 .collapse-toggle.desktop-toggle {
   position: absolute; /* Absolute position relative to container */

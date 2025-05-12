@@ -1,29 +1,32 @@
 <div class="file-list-container">
   <div class="file-list-header">
     <h1>My Files</h1>
-    <a routerLink="files/upload" class="btn primary-btn">Upload New File</a>
+    <a routerLink="files/upload" class="btn btn-lg primary-btn">Upload New File</a>
   </div>
 
   <div class="filter-controls" *ngIf="!loading && !error && files.length > 0">
-    <div class="filter-group">
-      <label for="fileType">File Type:</label>
-      <select id="fileType" [(ngModel)]="fileTypeFilter" class="form-control">
-        <option [ngValue]="undefined">All Types</option>
-        <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
-      </select>
-    </div>
-    
-    <div class="filter-group">
-      <label for="status">Status:</label>
-      <select id="status" [(ngModel)]="statusFilter" class="form-control">
-        <option [ngValue]="undefined">All Statuses</option>
-        <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
-      </select>
+    <div class="filter-options">
+      <span>Filter by:</span>
+      <div class="filter-selectors">
+        <div class="filter-group">
+          <select id="fileType" [(ngModel)]="fileTypeFilter" class="filter-select">
+            <option [ngValue]="undefined">All Types</option>
+            <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <select id="status" [(ngModel)]="statusFilter" class="filter-select">
+            <option [ngValue]="undefined">All Statuses</option>
+            <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
+          </select>
+        </div>
+      </div>
     </div>
     
     <div class="filter-actions">
-      <button (click)="applyFilters()" class="btn primary-btn">Apply Filters</button>
-      <button (click)="clearFilters()" class="btn secondary-btn">Clear</button>
+      <button (click)="applyFilters()" class="btn btn-sm filter-button">Apply Filters</button>
+      <button (click)="clearFilters()" class="btn btn-sm filter-button secondary">Clear</button>
     </div>
   </div>
 
@@ -31,7 +34,7 @@
   <ng-template #emptyStateTemplate>
     <div class="empty-state">
       <p>You don't have any files yet.</p>
-      <a routerLink="files/upload" class="btn primary-btn">Upload Your First File</a>
+      <a routerLink="files/upload" class="btn btn-md primary-btn">Upload Your First File</a>
     </div>
   </ng-template>
 
@@ -45,28 +48,14 @@
     <div class="actions-container">
       <button *ngIf="file.status === 'READY'" 
               (click)="createJob(file); $event.stopPropagation()" 
-              class="btn action-btn">
+              class="btn btn-sm action-btn">
         Create Job
       </button>
       
-      <button class="btn secondary-btn context-menu-trigger" 
+      <button class="btn btn-sm secondary-btn context-menu-trigger" 
               (click)="toggleContextMenu($event, file)">
         <i-feather name="more-vertical" class="context-menu-icon"></i-feather>
       </button>
-      
-      <div class="context-menu" *ngIf="activeContextMenuFile === file.fileUuid">
-        <div class="context-menu-item" 
-             (click)="$event.stopPropagation(); downloadFile(file);"
-             [class.disabled]="file.status === 'PROCESSING'">
-          <i-feather name="download" class="menu-icon"></i-feather>
-          Download
-        </div>
-        <div class="context-menu-item delete-action" 
-             (click)="$event.stopPropagation(); deleteFile(file);">
-          <i-feather name="trash-2" class="menu-icon"></i-feather>
-          Delete
-        </div>
-      </div>
     </div>
   </ng-template>
 
@@ -94,6 +83,23 @@
   ></app-generic-table>
 
   <div class="back-link">
-    <a routerLink="home" class="btn primary-btn">Back to Home</a>
+    <a routerLink="home" class="btn btn-md primary-btn">Back to Home</a>
+  </div>
+
+  <!-- Global context menu -->
+  <div class="context-menu" *ngIf="activeContextMenuFile && menuPosition" 
+       [style.top.px]="menuPosition.top"
+       [style.left.px]="menuPosition.left">
+    <div class="context-menu-item" 
+         (click)="$event.stopPropagation(); downloadFile(getActiveFile());"
+         [class.disabled]="getActiveFile()?.status === 'PROCESSING'">
+      <i-feather name="download" class="menu-icon"></i-feather>
+      Download
+    </div>
+    <div class="context-menu-item delete-action" 
+         (click)="$event.stopPropagation(); deleteFile(getActiveFile());">
+      <i-feather name="trash-2" class="menu-icon"></i-feather>
+      Delete
+    </div>
   </div>
 </div>

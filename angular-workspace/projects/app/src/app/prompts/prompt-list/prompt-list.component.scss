@@ -1,3 +1,6 @@
+@import 'variables';
+@import 'controls';
+
 // Variables to match the screenshot's color scheme
 $primary-blue: #4285f4; // Button blue from screenshot
 $hover-blue: #3367d6; // Darker blue for hover states
@@ -272,14 +275,7 @@ $header-bg: #f5f7fa;
 
 // New styles for sorting controls
 .sorting-controls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-  padding: 15px;
-  background-color: $header-bg;
-  border-radius: $border-radius;
-  border: 1px solid $border-color;
+  @extend .control-bar;
   
   .sort-options {
     display: flex;

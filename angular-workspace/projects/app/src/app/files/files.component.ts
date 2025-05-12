@@ -149,11 +149,32 @@ export class FilesComponent implements OnInit {
     }
   }
 
+  // Context menu properties
+  menuPosition: { top: number, left: number } | null = null;
+  
   // Context menu methods
   toggleContextMenu(event: MouseEvent, file: any): void {
     event.stopPropagation();
     // Toggle the menu - close if already open, open if closed
-    this.activeContextMenuFile = this.activeContextMenuFile === file.fileUuid ? null : file.fileUuid;
+    if (this.activeContextMenuFile === file.fileUuid) {
+      this.activeContextMenuFile = null;
+      this.menuPosition = null;
+    } else {
+      this.activeContextMenuFile = file.fileUuid;
+      
+      // Calculate position based on the click event
+      // We want to position it near the "..." button that was clicked
+      const rect = (event.target as HTMLElement).getBoundingClientRect();
+      this.menuPosition = {
+        top: rect.bottom + window.scrollY,
+        left: rect.right - 150 + window.scrollX // 150 is the approximate width of the menu
+      };
+    }
+  }
+  
+  // Helper method to get the currently active file
+  getActiveFile(): any {
+    return this.files.find(f => f.fileUuid === this.activeContextMenuFile);
   }
 
   // Close the context menu when clicking outside

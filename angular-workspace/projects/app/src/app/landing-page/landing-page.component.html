@@ -10,13 +10,13 @@
           
           <!-- Dashboard Access for logged-in users -->
           <div *ngIf="auth.isAuthenticated$ | async" class="cta-buttons">
-              <button class="signup-btn" (click)="navigateToDashboard()">Go to My Dashboard</button>
+              <button class="btn btn-lg primary-btn" (click)="navigateToDashboard()">Go to My Dashboard</button>
           </div>
           
           <!-- CTA for non-authenticated users -->
           <div *ngIf="!(auth.isAuthenticated$ | async)" class="cta-buttons">
-            <button class="signup-btn" (click)="signup()">Get Started</button>
-            <button class="login-btn" (click)="login()">Login</button>
+            <button class="btn btn-lg primary-btn" (click)="signup()">Get Started</button>
+            <button class="btn btn-lg outline-btn" (click)="login()">Login</button>
           </div>
         </div>
         <!-- <div class="hero-image">
