@@ -12,6 +12,7 @@
             "files-api",
             "jobs-task-worker",
             "jobs-output-worker",
+            "jobs-validation-worker",
             "users-api"
           ]
         }
@@ -51,6 +52,13 @@
             "request": "launch",
             "mainClass": "com.batchprompt.jobs.task.worker.JobsTaskWorkerApplication",
             "projectName": "jobs-task-worker"
+        },
+        {
+            "type": "java",
+            "name": "jobs-validation-worker",
+            "request": "launch",
+            "mainClass": "com.batchprompt.jobs.validation.worker.JobsValidationWorkerApplication",
+            "projectName": "jobs-validation-worker"
         },
         {
             "type": "java",

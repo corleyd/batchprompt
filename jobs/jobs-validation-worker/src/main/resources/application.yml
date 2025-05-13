@@ -1,0 +1,9 @@
+server:
+  port: 0
+debug: true
+spring:
+  config:
+    import:
+      - classpath:jobs-core-application.yml
+  application:
+    name: jobs-validation-worker

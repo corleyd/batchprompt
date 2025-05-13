@@ -5,13 +5,13 @@ plugins {
 
 group = 'com.batchprompt'
 version = '0.0.1-SNAPSHOT'
-sourceCompatibility = '21'
 
 
 dependencies {
+    implementation project(':prompts:prompts-model')
+    
     implementation project(':common:common-services')
     implementation project(':prompts:prompts-core')
-    implementation project(':prompts:prompts-model')
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'

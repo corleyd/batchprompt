@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.batchprompt.jobs.core.exception.JobSubmissionException;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
+import com.batchprompt.jobs.model.dto.JobValidationMessage;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,9 @@ public class MessageProducer {
     
     @Value("${rabbitmq.queue.job-output.routing-key}")
     private String jobsOutputRoutingKey;
+    
+    @Value("${rabbitmq.queue.job-validation.routing-key}")
+    private String jobsValidationRoutingKey;
     
     /**
      * Send a job task message to the appropriate queue based on the model id.
@@ -60,5 +64,16 @@ public class MessageProducer {
         log.info("Sending job output message to queue: {}", outputMessage.getJobUuid());
         rabbitTemplate.convertAndSend(exchangeName, jobsOutputRoutingKey, outputMessage);
         log.info("Job output message sent to queue: {}", outputMessage.getJobUuid());
+    }
+    
+    /**
+     * Send a job validation message to the validation queue
+     * 
+     * @param validationMessage The validation message to send
+     */
+    public void sendJobValidation(JobValidationMessage validationMessage) {
+        log.info("Sending job validation message to queue: {}", validationMessage.getJobUuid());
+        rabbitTemplate.convertAndSend(exchangeName, jobsValidationRoutingKey, validationMessage);
+        log.info("Job validation message sent to queue: {}", validationMessage.getJobUuid());
     }
 }

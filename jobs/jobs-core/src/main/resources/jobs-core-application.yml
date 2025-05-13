@@ -40,6 +40,9 @@ rabbitmq:
     job-output:
       name: job-output-queue
       routing-key: job-output-queue
+    job-validation:
+      name: job-validation-queue
+      routing-key: job-validation-queue
 
 users-api:
   url: ${USERS_API_URL:http://localhost:8085}

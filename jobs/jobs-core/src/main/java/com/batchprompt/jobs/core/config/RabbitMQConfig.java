@@ -28,6 +28,13 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.job-output.routing-key}")
     private String jobsOutputRoutingKey;
     
+    @Value("${rabbitmq.queue.job-validation.name}")
+    private String jobsValidationtQueueName;
+    
+    @Value("${rabbitmq.queue.job-validation.routing-key}")
+    private String jobsValidationRoutingKey;
+    
+
     @Bean
     public DirectExchange exchange() {
         return new DirectExchange(exchangeName);
@@ -46,6 +53,15 @@ public class RabbitMQConfig {
     @Bean
     public Binding jobsOutputBinding(DirectExchange exchange, Queue jobsOutputQueueName) {
         return BindingBuilder.bind(jobsOutputQueueName).to(exchange).with(jobsOutputRoutingKey);
+    }
+
+    @Bean
+    public Queue jobsValidationQueueName() {
+        return new Queue(jobsValidationtQueueName, true);
+    }
+
+    @Bean Binding jobsValidationBinding(DirectExchange exchange, Queue jobsValidationQueueName) {
+        return BindingBuilder.bind(jobsValidationQueueName).to(exchange).with(jobsValidationRoutingKey);
     }
     
     @Bean

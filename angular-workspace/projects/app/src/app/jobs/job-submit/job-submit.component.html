@@ -130,8 +130,8 @@
       </div>
 
       <div class="form-actions">
-        <button type="submit" [disabled]="jobForm.invalid || submitting" class="submit-button">
-          <span *ngIf="!submitting">Submit Job</span>
+        <button type="Validate" [disabled]="jobForm.invalid || submitting" class="validate-button">
+          <span *ngIf="!submitting">Validate Job</span>
           <span *ngIf="submitting" class="button-spinner"></span>
         </button>
         <a routerLink="files" class="cancel-button">Cancel</a>

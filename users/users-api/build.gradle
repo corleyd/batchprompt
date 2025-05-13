@@ -4,7 +4,6 @@ plugins {
 }
 
 group = 'com.batchprompt'
-sourceCompatibility = '21'
 
 dependencies {
     implementation project(':users:users-core')

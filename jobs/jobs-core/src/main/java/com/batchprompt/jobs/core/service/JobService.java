@@ -31,7 +31,8 @@ import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
-import com.batchprompt.jobs.model.dto.JobSubmissionDto;
+import com.batchprompt.jobs.model.dto.JobDefinitionDto;
+import com.batchprompt.jobs.model.dto.JobValidationMessage;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
@@ -129,29 +130,29 @@ public class JobService {
     }
     
     /**
-     * Submit a new job for processing
+     * Create a new job based on the provided job submit for validation
      * 
-     * @param jobSubmissionDto The job submission data transfer object
+     * @param jobDefinitionDto The job submission data transfer object
      * @param userId The user ID submitting the job
      * @param authToken The authentication token for calling other services
      * @return The created job
      * @throws JobSubmissionException If there's an error during job submission
      */
     @Transactional
-    public Job submitJob(JobSubmissionDto jobSubmissionDto, String userId, String authToken) {
+    public Job validateJob(JobDefinitionDto jobDefinitionDto, String userId, String authToken) {
         // Validate model
-        if (!modelService.isModelSupported(jobSubmissionDto.getModelId())) {
-            throw new JobSubmissionException("Unsupported model: " + jobSubmissionDto.getModelId());
+        if (!modelService.isModelSupported(jobDefinitionDto.getModelId())) {
+            throw new JobSubmissionException("Unsupported model: " + jobDefinitionDto.getModelId());
         }
         
         // Validate file exists and belongs to the user
-        FileDto file = fileClient.getFile(jobSubmissionDto.getFileUuid(), authToken);
+        FileDto file = fileClient.getFile(jobDefinitionDto.getFileUuid(), authToken);
         if (file == null) {
-            throw new JobSubmissionException("File not found: " + jobSubmissionDto.getFileUuid());
+            throw new JobSubmissionException("File not found: " + jobDefinitionDto.getFileUuid());
         }
         
         if (!file.getUserId().equals(userId)) {
-            throw new JobSubmissionException("File " + jobSubmissionDto.getFileUuid() + " does not belong to user " + userId);
+            throw new JobSubmissionException("File " + jobDefinitionDto.getFileUuid() + " does not belong to user " + userId);
         }
         
         // Validate file is ready
@@ -160,13 +161,13 @@ public class JobService {
         }
         
         // Validate prompt exists and belongs to the user
-        PromptDto prompt = promptClient.getPrompt(jobSubmissionDto.getPromptUuid(), authToken);
+        PromptDto prompt = promptClient.getPrompt(jobDefinitionDto.getPromptUuid(), authToken);
         if (prompt == null) {
-            throw new JobSubmissionException("Prompt not found: " + jobSubmissionDto.getPromptUuid());
+            throw new JobSubmissionException("Prompt not found: " + jobDefinitionDto.getPromptUuid());
         }
         
         if (!prompt.getUserId().equals(userId)) {
-            throw new JobSubmissionException("Prompt " + jobSubmissionDto.getPromptUuid() + " does not belong to user " + userId);
+            throw new JobSubmissionException("Prompt " + jobDefinitionDto.getPromptUuid() + " does not belong to user " + userId);
         }
         
         // Create job
@@ -174,8 +175,8 @@ public class JobService {
         LocalDateTime now = LocalDateTime.now();
         
         // Determine record range parameters
-        int startRecordNumber = jobSubmissionDto.getStartRecordNumber() != null ? jobSubmissionDto.getStartRecordNumber() : 1;
-        Integer maxRecords = jobSubmissionDto.getMaxRecords();
+        int startRecordNumber = jobDefinitionDto.getStartRecordNumber() != null ? jobDefinitionDto.getStartRecordNumber() : 1;
+        Integer maxRecords = jobDefinitionDto.getMaxRecords();
         
         // Get file record count to determine how many records to process
         int pageSize = 100; // Process records in batches of 100
@@ -183,7 +184,7 @@ public class JobService {
         
         // Retrieve first page to get total count and start processing
         Page<FileRecordDto> recordsPage = fileClient.getFileRecordsPaginated(
-            jobSubmissionDto.getFileUuid(), 
+            jobDefinitionDto.getFileUuid(), 
             startPage, 
             pageSize, 
             "recordNumber", 
@@ -192,7 +193,7 @@ public class JobService {
         );
         
         if (recordsPage == null || recordsPage.getTotalElements() == 0) {
-            throw new JobSubmissionException("No records found for file: " + jobSubmissionDto.getFileUuid());
+            throw new JobSubmissionException("No records found for file: " + jobDefinitionDto.getFileUuid());
         }
         
         // Calculate total records to process based on maxRecords and starting position
@@ -205,22 +206,22 @@ public class JobService {
             throw new JobSubmissionException("No records to process based on startRecordNumber: " + startRecordNumber);
         }
         
-        log.info("Processing {} records from file {} starting at record {}", recordsToProcess, jobSubmissionDto.getFileUuid(), startRecordNumber);
+        log.info("Processing {} records from file {} starting at record {}", recordsToProcess, jobDefinitionDto.getFileUuid(), startRecordNumber);
         
         Job job = Job.builder()
                 .jobUuid(jobUuid)
                 .userId(userId)
-                .fileUuid(jobSubmissionDto.getFileUuid())
+                .fileUuid(jobDefinitionDto.getFileUuid())
                 .fileName(file.getFileName())
-                .promptUuid(jobSubmissionDto.getPromptUuid())
-                .modelId(jobSubmissionDto.getModelId())
+                .promptUuid(jobDefinitionDto.getPromptUuid())
+                .modelId(jobDefinitionDto.getModelId())
                 .status(JobStatus.SUBMITTED)
                 .taskCount((int)recordsToProcess)
                 .completedTaskCount(0)
-                .maxTokens(jobSubmissionDto.getMaxTokens())
-                .temperature(jobSubmissionDto.getTemperature())
-                .maxRecords(jobSubmissionDto.getMaxRecords())
-                .startRecordNumber(jobSubmissionDto.getStartRecordNumber())
+                .maxTokens(jobDefinitionDto.getMaxTokens())
+                .temperature(jobDefinitionDto.getTemperature())
+                .maxRecords(jobDefinitionDto.getMaxRecords())
+                .startRecordNumber(jobDefinitionDto.getStartRecordNumber())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -228,12 +229,12 @@ public class JobService {
         jobRepository.save(job);
         
         // Log the outputFieldUuids parameter to check if it's null or empty
-        log.info("Job {} submitted with outputFieldUuids: {}", jobUuid, jobSubmissionDto.getOutputFieldUuids());
+        log.info("Job {} submitted with outputFieldUuids: {}", jobUuid, jobDefinitionDto.getOutputFieldUuids());
         
         // Save selected output fields if provided
-        if (jobSubmissionDto.getOutputFieldUuids() != null && !jobSubmissionDto.getOutputFieldUuids().isEmpty()) {
+        if (jobDefinitionDto.getOutputFieldUuids() != null && !jobDefinitionDto.getOutputFieldUuids().isEmpty()) {
             int fieldOrder = 0;
-            for (UUID fieldUuid : jobSubmissionDto.getOutputFieldUuids()) {
+            for (UUID fieldUuid : jobDefinitionDto.getOutputFieldUuids()) {
                 JobOutputField outputField = JobOutputField.builder()
                         .jobOutputFieldUuid(UUID.randomUUID())
                         .job(job)
@@ -242,50 +243,118 @@ public class JobService {
                         .build();
                 jobOutputFieldRepository.save(outputField);
             }
-            log.info("Saved {} output fields for job {}", jobSubmissionDto.getOutputFieldUuids().size(), jobUuid);
+            log.info("Saved {} output fields for job {}", jobDefinitionDto.getOutputFieldUuids().size(), jobUuid);
         } else {
             log.info("No output fields specified for job {}, will include all fields", jobUuid);
         }
-        
-        // Store messages to be sent after transaction commits
-        final List<JobTaskMessage> messagesToSend = new ArrayList<>();
-        
-        // Calculate the actual offset within the page for the start record
-        int recordOffset = startRecordNumber - 1 - (startPage * pageSize);
-        int recordsInFirstBatch = (int) Math.min(recordsToProcess, recordsPage.getContent().size() - recordOffset);
-        
-        // Create job tasks for the first batch
-        for (int i = 0; i < recordsInFirstBatch; i++) {
-            FileRecordDto record = recordsPage.getContent().get(i + recordOffset);
-            UUID jobTaskUuid = UUID.randomUUID();
+
+        while (recordsPage.getNumberOfElements() > 0) {
+            // Check if we have enough records to process
+            if (recordsToProcess <= 0) {
+                break;
+            }
             
-            JobTask task = JobTask.builder()
-                    .jobTaskUuid(jobTaskUuid)
-                    .jobUuid(jobUuid)
-                    .fileRecordUuid(record.getFileRecordUuid())
-                    .recordNumber(record.getRecordNumber())
-                    .modelId(jobSubmissionDto.getModelId())
-                    .status(TaskStatus.SUBMITTED)
-                    .build();
-                    
-            jobTaskRepository.save(task);
+            // Create job tasks for the first batch
+            for (int i = 0; i < recordsPage.getNumberOfElements(); i++) {
+                FileRecordDto record = recordsPage.getContent().get(i);
+                UUID jobTaskUuid = UUID.randomUUID();
+                
+                JobTask task = JobTask.builder()
+                        .jobTaskUuid(jobTaskUuid)
+                        .jobUuid(jobUuid)
+                        .fileRecordUuid(record.getFileRecordUuid())
+                        .recordNumber(record.getRecordNumber())
+                        .modelId(jobDefinitionDto.getModelId())
+                        .status(TaskStatus.SUBMITTED)
+                        .build();
+                        
+                jobTaskRepository.save(task);
+
+            }
             
-            // Create the message but don't send it yet
+            // Check if we need to process more pages
+            if (recordsToProcess > recordsPage.getNumberOfElements()) {
+                recordsToProcess -= recordsPage.getNumberOfElements();
+                startPage++;
+                
+                // Get the next page of records
+                recordsPage = fileClient.getFileRecordsPaginated(
+                    jobDefinitionDto.getFileUuid(), 
+                    startPage, 
+                    pageSize, 
+                    "recordNumber", 
+                    "asc", 
+                    authToken
+                );
+            } else {
+                break;
+            }
+        }
+
+        JobValidationMessage validationMessage = JobValidationMessage.builder()
+                .jobUuid(job.getJobUuid())
+                .build();
+
+                // Register a callback to be executed after the transaction is successfully committed
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                // Send the validation message
+                messageProducer.sendJobValidation(validationMessage);
+                log.info("Sent job validation message for job {} after transaction commit", job.getJobUuid());
+            }
+        });
+        
+        log.info("Job {} submitted for file {} and prompt {}", jobUuid, jobDefinitionDto.getFileUuid(), jobDefinitionDto.getPromptUuid());
+        
+        return job;
+    }
+
+    /**
+     * Submit a job for processing
+     * 
+     * @param jobUuid The job to be submitted
+     */
+
+    @Transactional
+    public void submitJob(UUID jobUuid) {
+        Job job = jobRepository.findById(jobUuid).orElse(null);
+        if (job == null) {
+            throw new JobSubmissionException("Job not found: " + jobUuid);
+        }
+        
+        // Check if the job is already submitted
+        if (job.getStatus() != JobStatus.VALIDATED) {
+            throw new JobSubmissionException("Job is not in VALIDATED status: " + job.getStatus());
+        }
+        
+        // Retrieve the tasks for the job
+
+        List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
+
+        // Update the job status to SUBMITTED
+        job.setStatus(JobStatus.SUBMITTED);
+        job.setUpdatedAt(LocalDateTime.now());
+        jobRepository.save(job);
+
+        List<JobTaskMessage> messagesToSend = new ArrayList<>();
+
+        for (JobTask task : tasks) {
+                // Create the message but don't send it yet
             JobTaskMessage message = JobTaskMessage.builder()
-                    .jobTaskUuid(jobTaskUuid)
-                    .jobUuid(jobUuid)
-                    .userId(userId)
-                    .fileRecordUuid(record.getFileRecordUuid())
-                    .modelId(jobSubmissionDto.getModelId())
-                    .promptUuid(jobSubmissionDto.getPromptUuid())
+                    .jobTaskUuid(task.getJobTaskUuid())
+                    .jobUuid(task.getJobUuid())
+                    .userId(job.getUserId())
+                    .fileRecordUuid(task.getFileRecordUuid())
+                    .modelId(task.getModelId())
+                    .promptUuid(job.getPromptUuid())
                     .maxTokens(job.getMaxTokens())
                     .temperature(job.getTemperature())
                     .build();
-                    
-            messagesToSend.add(message);
+                            
+                    messagesToSend.add(message);
         }
-        
-        // Register a callback to be executed after the transaction is successfully committed
+
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override
             public void afterCommit() {
@@ -294,167 +363,10 @@ public class JobService {
                     messageProducer.sendJobTask(message);
                 }
                 log.info("Sent {} job task messages for job {} after transaction commit", messagesToSend.size(), jobUuid);
-                
-                // Process remaining pages after initial batch if there are more records to process
-                if (recordsToProcess > recordsPage.getContent().size()) {
-                    // The method will run in a separate transaction to avoid holding transaction too long
-                    processBatchRecords(job, recordsPage.getNumberOfElements(), recordsToProcess, startPage + 1, 
-                                       pageSize, userId, authToken);
-                }
             }
-        });
+        });   
         
-        log.info("Job {} submitted for file {} and prompt {}", jobUuid, jobSubmissionDto.getFileUuid(), jobSubmissionDto.getPromptUuid());
-        
-        return job;
-    }
-    
-    /**
-     * Process remaining file records in batches
-     * 
-     * @param job The job being processed
-     * @param processedSoFar Number of records already processed
-     * @param totalToProcess Total number of records to process
-     * @param startPage The page number to start from (0-based)
-     * @param pageSize Size of each batch
-     * @param userId User ID for authorization
-     * @param authToken Auth token for service calls
-     */
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void processBatchRecords(Job job, long processedSoFar, long totalToProcess, 
-                                  int startPage, int pageSize, String userId, String authToken) {
-        log.info("Processing next batch for job {} - page {}, processed so far: {}/{}", 
-                job.getJobUuid(), startPage, processedSoFar, totalToProcess);
-        
-        // Calculate how many more records to process
-        long remainingToProcess = totalToProcess - processedSoFar;
-        
-        try {
-            // Get the next batch of records
-            Page<FileRecordDto> recordsPage = fileClient.getFileRecordsPaginated(
-                job.getFileUuid(), 
-                startPage, 
-                pageSize, 
-                "recordNumber", 
-                "asc", 
-                authToken
-            );
-            
-            if (recordsPage == null || recordsPage.getContent().isEmpty()) {
-                log.warn("No more records found for job {} at page {}", job.getJobUuid(), startPage);
-                return;
-            }
-            
-            // Store messages to be sent after transaction commits
-            final List<JobTaskMessage> messagesToSend = new ArrayList<>();
-            
-            // Determine how many records to take from this page
-            int recordsToTakeFromPage = (int) Math.min(remainingToProcess, recordsPage.getContent().size());
-            
-            // Create job tasks for this batch
-            for (int i = 0; i < recordsToTakeFromPage; i++) {
-                FileRecordDto record = recordsPage.getContent().get(i);
-                UUID jobTaskUuid = UUID.randomUUID();
-                
-                JobTask task = JobTask.builder()
-                        .jobTaskUuid(jobTaskUuid)
-                        .jobUuid(job.getJobUuid())
-                        .fileRecordUuid(record.getFileRecordUuid())
-                        .recordNumber(record.getRecordNumber())
-                        .modelId(job.getModelId())
-                        .status(TaskStatus.SUBMITTED)
-                        .build();
-                        
-                jobTaskRepository.save(task);
-                
-                // Create the message
-                JobTaskMessage message = JobTaskMessage.builder()
-                        .jobTaskUuid(jobTaskUuid)
-                        .jobUuid(job.getJobUuid())
-                        .fileRecordUuid(record.getFileRecordUuid())
-                        .modelId(job.getModelId())
-                        .promptUuid(job.getPromptUuid())
-                        .userId(userId)
-                        .maxTokens(job.getMaxTokens())
-                        .temperature(job.getTemperature())
-                        .build();
-                        
-                messagesToSend.add(message);
-            }
-            
-            // Register a callback to be executed after the transaction is successfully committed
-            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                @Override
-                public void afterCommit() {
-                    // Send all messages for this batch
-                    for (JobTaskMessage message : messagesToSend) {
-                        messageProducer.sendJobTask(message);
-                    }
-                    log.info("Sent {} job task messages for job {} batch {} after transaction commit", 
-                             messagesToSend.size(), job.getJobUuid(), startPage);
-                    
-                    // Process remaining pages if needed
-                    long newProcessedSoFar = processedSoFar + recordsToTakeFromPage;
-                    if (newProcessedSoFar < totalToProcess) {
-                        // Continue with the next page in a new transaction
-                        processBatchRecords(job, newProcessedSoFar, totalToProcess, 
-                                          startPage + 1, pageSize, userId, authToken);
-                    } else {
-                        log.info("Completed processing all records for job {}: {}/{}", 
-                                 job.getJobUuid(), newProcessedSoFar, totalToProcess);
-                    }
-                }
-            });
-            
-        } catch (Exception e) {
-            log.error("Error processing batch for job {}: {}", job.getJobUuid(), e.getMessage(), e);
-        }
-    }
-    
-    /**
-     * Submit a new job for processing with specific output fields
-     * 
-     * @param fileUuid The UUID of the file to process
-     * @param promptUuid The UUID of the prompt to use
-     * @param modelId The ID of the model to use
-     * @param outputFieldUuids List of field UUIDs to include in the output (can be null for all fields)
-     * @param userId The user ID submitting the job
-     * @param authToken The authentication token for calling other services
-     * @return The created job
-     * @throws JobSubmissionException If there's an error during job submission
-     */
-    @Transactional
-    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelId, List<UUID> outputFieldUuids, String userId, String authToken) {
-        JobSubmissionDto jobSubmissionDto = JobSubmissionDto.builder()
-                .fileUuid(fileUuid)
-                .promptUuid(promptUuid)
-                .modelId(modelId)
-                .outputFieldUuids(outputFieldUuids)
-                .build();
-        
-        return submitJob(jobSubmissionDto, userId, authToken);
-    }
-    
-    /**
-     * Submit a new job for processing with all fields included
-     * 
-     * @param fileUuid The UUID of the file to process
-     * @param promptUuid The UUID of the prompt to use
-     * @param modelId The ID of the model to use
-     * @param userId The user ID submitting the job
-     * @param authToken The authentication token for calling other services
-     * @return The created job
-     * @throws JobSubmissionException If there's an error during job submission
-     */
-    @Transactional
-    public Job submitJob(UUID fileUuid, UUID promptUuid, String modelId, String userId, String authToken) {
-        JobSubmissionDto jobSubmissionDto = JobSubmissionDto.builder()
-                .fileUuid(fileUuid)
-                .promptUuid(promptUuid)
-                .modelId(modelId)
-                .build();
-        
-        return submitJob(jobSubmissionDto, userId, authToken);
+        log.info("Job {} submitted for processing", jobUuid);
     }
     
     /**

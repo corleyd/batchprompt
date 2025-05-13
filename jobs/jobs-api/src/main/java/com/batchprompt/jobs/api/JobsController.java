@@ -27,7 +27,7 @@ import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.dto.JobDto;
-import com.batchprompt.jobs.model.dto.JobSubmissionDto;
+import com.batchprompt.jobs.model.dto.JobDefinitionDto;
 import com.batchprompt.jobs.model.dto.JobTaskDto;
 import com.batchprompt.jobs.model.dto.ModelDto;
 
@@ -152,19 +152,19 @@ public class JobsController {
         return ResponseEntity.ok(modelService.getSupportedModelDetails());
     }
 
-    @PostMapping("/submit")
-    public ResponseEntity<JobDto> submitJob(
-            @RequestBody @Valid JobSubmissionDto jobSubmissionDto,
+    @PostMapping("/validate")
+    public ResponseEntity<JobDto> validateJob(
+            @RequestBody @Valid JobDefinitionDto jobDefinitionDto,
             @AuthenticationPrincipal Jwt jwt) {
         
         String userId = jwt.getSubject();
         String authToken = jwt.getTokenValue();
         
         // If targetUserId is specified and the current user is an admin, use the target user ID
-        if (jobSubmissionDto.getTargetUserId() != null && !jobSubmissionDto.getTargetUserId().isBlank()) {
-            if (serviceAuthenticationService.canAccessUserData(jwt, jobSubmissionDto.getTargetUserId())) {
+        if (jobDefinitionDto.getTargetUserId() != null && !jobDefinitionDto.getTargetUserId().isBlank()) {
+            if (serviceAuthenticationService.canAccessUserData(jwt, jobDefinitionDto.getTargetUserId())) {
                 // Admin is submitting on behalf of another user
-                userId = jobSubmissionDto.getTargetUserId();
+                userId = jobDefinitionDto.getTargetUserId();
             } else {
                 // Not authorized to submit on behalf of another user
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -172,8 +172,8 @@ public class JobsController {
             }
         }
         
-        Job job = jobService.submitJob(
-                jobSubmissionDto,
+        Job job = jobService.validateJob(
+                jobDefinitionDto,
                 userId,
                 "Bearer " + authToken
         );

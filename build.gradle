@@ -9,6 +9,11 @@ repositories {
 allprojects {
     apply plugin: 'io.spring.dependency-management'
 
+    plugins.withType(JavaPlugin).configureEach {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+    
     repositories {
         mavenCentral()
     }

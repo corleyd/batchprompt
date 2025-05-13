@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-export interface JobSubmissionDto {
+export interface JobDefinitionDto {
   fileUuid: string;
   promptUuid: string;
   modelId: string;
@@ -40,8 +40,8 @@ export class JobService {
   }
 
   // Submit a job with all parameters
-  submitJob(submission: JobSubmissionDto): Observable<any> {
-    return this.http.post(`${this.apiUrl}/submit`, submission);
+  submitJob(jobDefinition: JobDefinitionDto): Observable<any> {
+    return this.http.post(`${this.apiUrl}/validate`, jobDefinition);
   }
 
   // Get jobs for current user with pagination and sorting

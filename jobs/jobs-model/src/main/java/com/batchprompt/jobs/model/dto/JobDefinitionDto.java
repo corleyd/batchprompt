@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class JobSubmissionDto {
+public class JobDefinitionDto {
     @NotNull
     private UUID fileUuid;
     

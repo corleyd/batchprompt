@@ -71,6 +71,9 @@ public class Job {
     
     @Column(name = "credit_usage")
     private Double creditUsage;
+
+    @Column(name = "credit_estimate")
+    private Double creditEstimate;
     
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
