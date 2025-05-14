@@ -59,6 +59,12 @@ public class JobTask {
     
     @Column(name = "estimated_prompt_tokens")
     private Integer estimatedPromptTokens;
+
+    @Column(name = "estimated_completion_tokens")
+    private Integer estimatedCompletionTokens;
+
+    @Column(name = "estimated_thinking_tokens")
+    private Integer estimatedThinkingTokens;
     
     @Column(name = "prompt_tokens")
     private Integer promptTokens;
@@ -78,6 +84,12 @@ public class JobTask {
     @Column(name = "credit_usage")
     private Double creditUsage;
 
+    @Column(name = "cost_estimate")
+    private Double costEstimate;
+
     @Column(name = "credit_estimate")
     private Double creditEstimate;
+
+    @Column(name = "prompt_text")
+    private String promptText;
 }

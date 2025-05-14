@@ -118,7 +118,7 @@ export class JobListComponent implements OnInit {
 
   // Handle row click event if needed
   onRowClick(job: any): void {
-    // Navigate to job details or perform other actions
-    console.log('Job clicked', job);
+    // Navigate to job details page
+    this.router.navigate(['/dashboard/jobs', job.jobUuid]);
   }
 }

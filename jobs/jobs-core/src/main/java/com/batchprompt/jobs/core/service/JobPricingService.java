@@ -42,52 +42,81 @@ public class JobPricingService {
             return null;
         }
 
+        // Delegate to the parameterized calculateCost method
+        Double totalCost = calculateCost(
+                jobTask.getModelId(),
+                jobTask.getPromptTokens(),
+                jobTask.getCompletionTokens(),
+                jobTask.getThinkingTokens());
+
+        if (totalCost != null) {
+            // Add job task UUID to the log if available
+            log.debug("Calculated cost for job task {}: ${}", jobTask.getJobTaskUuid(), totalCost);
+            
+            // Calculate and set credit usage for this task
+            calculateAndSetCreditUsage(jobTask, totalCost);
+        }
+
+        return totalCost;
+    }
+
+    /**
+     * Calculate the cost based on model ID and token counts
+     * 
+     * @param modelId The ID of the model used
+     * @param promptTokens The number of input/prompt tokens
+     * @param completionTokens The number of output/completion tokens
+     * @param thinkingTokens The number of thinking tokens (optional)
+     * @return The calculated cost in USD, or null if cost cannot be calculated
+     */
+    public Double calculateCost(String modelId, Integer promptTokens, Integer completionTokens, Integer thinkingTokens) {
+        if (modelId == null || promptTokens == null || completionTokens == null) {
+            log.warn("Cannot calculate cost: model ID or token counts are null");
+            return null;
+        }
+
         // Find current pricing for the model
-        List<ModelCost> modelCosts = modelCostRepository.findCurrentCostsForModel(jobTask.getModelId());
+        List<ModelCost> modelCosts = modelCostRepository.findCurrentCostsForModel(modelId);
         if (modelCosts.isEmpty()) {
-            log.warn("No pricing information found for model: {}", jobTask.getModelId());
+            log.warn("No pricing information found for model: {}", modelId);
             return null;
         }
 
         // Find the applicable model cost based on input token count
-        ModelCost applicableModelCost = findApplicableModelCost(modelCosts, jobTask.getPromptTokens());
+        ModelCost applicableModelCost = findApplicableModelCost(modelCosts, promptTokens);
         if (applicableModelCost == null) {
             log.warn("No applicable pricing tier found for model: {} with {} input tokens", 
-                    jobTask.getModelId(), jobTask.getPromptTokens());
+                    modelId, promptTokens);
             return null;
         }
 
         // Calculate cost based on the token usage and pricing rates
-        // Formula: (input_tokens * input_rate + output_tokens * output_rate + thinking_tokens * thinking_rate) / 1,000,000
         double inputCost = calculateTokenTypeCost(
-                jobTask.getPromptTokens(), 
+                promptTokens, 
                 applicableModelCost.getInputToken1mCostUsd());
         
         double outputCost = calculateTokenTypeCost(
-                jobTask.getCompletionTokens(),
+                completionTokens,
                 applicableModelCost.getOutputToken1mCostUsd());
         
         double thinkingCost = 0.0;
-        if (jobTask.getThinkingTokens() != null && jobTask.getThinkingTokens() > 0) {
+        if (thinkingTokens != null && thinkingTokens > 0) {
             thinkingCost = calculateTokenTypeCost(
-                    jobTask.getThinkingTokens(),
+                    thinkingTokens,
                     applicableModelCost.getThinkingToken1mCostUsd());
         }
 
         double totalCost = inputCost + outputCost + thinkingCost;
 
         // Log detailed cost breakdown for debugging
-        log.debug("Cost calculation for job task {}: input tokens: {} (${} per 1M) = ${}, " +
+        log.debug("Cost calculation: model: {}, input tokens: {} (${} per 1M) = ${}, " +
                 "output tokens: {} (${} per 1M) = ${}, thinking tokens: {} (${} per 1M) = ${}, " +
                 "total cost: ${}",
-                jobTask.getJobTaskUuid(),
-                jobTask.getPromptTokens(), applicableModelCost.getInputToken1mCostUsd(), inputCost,
-                jobTask.getCompletionTokens(), applicableModelCost.getOutputToken1mCostUsd(), outputCost,
-                jobTask.getThinkingTokens(), applicableModelCost.getThinkingToken1mCostUsd(), thinkingCost,
+                modelId,
+                promptTokens, applicableModelCost.getInputToken1mCostUsd(), inputCost,
+                completionTokens, applicableModelCost.getOutputToken1mCostUsd(), outputCost,
+                thinkingTokens, applicableModelCost.getThinkingToken1mCostUsd(), thinkingCost,
                 totalCost);
-
-        // Calculate and set credit usage for this task
-        calculateAndSetCreditUsage(jobTask, totalCost);
 
         return totalCost;
     }

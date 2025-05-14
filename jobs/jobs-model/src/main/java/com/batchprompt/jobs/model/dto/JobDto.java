@@ -37,5 +37,6 @@ public class JobDto {
     
     // Added credit usage tracking
     private Double creditUsage;
+    private Double costEstimate;
     private Double creditEstimate;
 }

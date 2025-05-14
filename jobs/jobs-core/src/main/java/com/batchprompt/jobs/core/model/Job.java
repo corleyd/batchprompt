@@ -72,6 +72,9 @@ public class Job {
     @Column(name = "credit_usage")
     private Double creditUsage;
 
+    @Column(name = "cost_estimate")
+    private Double costEstimate;
+    
     @Column(name = "credit_estimate")
     private Double creditEstimate;
     

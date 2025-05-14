@@ -76,6 +76,13 @@ public class JobsController {
         return ResponseEntity.ok(jobService.convertToDto(job));
     }
 
+    @PostMapping("/{jobUuid}/submit")
+    public ResponseEntity<JobDto> submitJob(@PathVariable UUID jobUuid) {
+        // Submit the job for processing
+        Job job = jobService.submitJob(jobUuid);
+        return ResponseEntity.ok(jobService.convertToDto(job));
+    }
+
     @GetMapping("/user")
     public ResponseEntity<?> getJobsByUser(
             @AuthenticationPrincipal Jwt jwt,

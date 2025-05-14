@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "job_validation_message")
+@Table(name = "job_validation_result_message")
 public class JobValidationResultMessage {
 
     @Id
@@ -28,9 +28,6 @@ public class JobValidationResultMessage {
     
     @Column(name = "job_uuid", nullable = false)
     private UUID jobUuid;
-    
-    @Column(name = "job_task_uuid")
-    private UUID jobTaskUuid;
     
     @Column(name = "record_number")
     private Integer recordNumber;

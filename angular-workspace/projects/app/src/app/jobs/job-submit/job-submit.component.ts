@@ -218,7 +218,7 @@ export class JobSubmitComponent implements OnInit {
       targetUserId: this.onBehalfOfUserId || undefined
     };
     
-    this.jobService.submitJob(jobSubmission).subscribe({
+    this.jobService.validateJob(jobSubmission).subscribe({
       next: (response) => {
         this.submitting = false;
         this.submitSuccess = true;

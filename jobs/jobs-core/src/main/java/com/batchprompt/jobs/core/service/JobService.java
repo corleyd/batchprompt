@@ -18,7 +18,6 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import com.batchprompt.files.client.FileClient;
 import com.batchprompt.files.model.FileStatus;
 import com.batchprompt.files.model.dto.FileDto;
-import com.batchprompt.files.model.dto.FileRecordDto;
 import com.batchprompt.jobs.core.exception.JobSubmissionException;
 import com.batchprompt.jobs.core.model.Job;
 import com.batchprompt.jobs.core.model.JobOutputField;
@@ -29,11 +28,11 @@ import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.specification.JobSpecification;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
+import com.batchprompt.jobs.model.dto.JobDefinitionDto;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
-import com.batchprompt.jobs.model.dto.JobDefinitionDto;
-import com.batchprompt.jobs.model.dto.JobValidationMessage;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
+import com.batchprompt.jobs.model.dto.JobValidationMessage;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
 
@@ -175,39 +174,7 @@ public class JobService {
         LocalDateTime now = LocalDateTime.now();
         
         // Determine record range parameters
-        int startRecordNumber = jobDefinitionDto.getStartRecordNumber() != null ? jobDefinitionDto.getStartRecordNumber() : 1;
-        Integer maxRecords = jobDefinitionDto.getMaxRecords();
-        
-        // Get file record count to determine how many records to process
-        int pageSize = 100; // Process records in batches of 100
-        int startPage = (startRecordNumber - 1) / pageSize; // Calculate the starting page based on startRecordNumber
-        
-        // Retrieve first page to get total count and start processing
-        Page<FileRecordDto> recordsPage = fileClient.getFileRecordsPaginated(
-            jobDefinitionDto.getFileUuid(), 
-            startPage, 
-            pageSize, 
-            "recordNumber", 
-            "asc", 
-            authToken
-        );
-        
-        if (recordsPage == null || recordsPage.getTotalElements() == 0) {
-            throw new JobSubmissionException("No records found for file: " + jobDefinitionDto.getFileUuid());
-        }
-        
-        // Calculate total records to process based on maxRecords and starting position
-        long totalRecords = recordsPage.getTotalElements();
-        long recordsToProcess = maxRecords != null 
-            ? Math.min(maxRecords, totalRecords - (startRecordNumber - 1)) 
-            : (totalRecords - (startRecordNumber - 1));
-            
-        if (recordsToProcess <= 0) {
-            throw new JobSubmissionException("No records to process based on startRecordNumber: " + startRecordNumber);
-        }
-        
-        log.info("Processing {} records from file {} starting at record {}", recordsToProcess, jobDefinitionDto.getFileUuid(), startRecordNumber);
-        
+      
         Job job = Job.builder()
                 .jobUuid(jobUuid)
                 .userId(userId)
@@ -215,8 +182,7 @@ public class JobService {
                 .fileName(file.getFileName())
                 .promptUuid(jobDefinitionDto.getPromptUuid())
                 .modelId(jobDefinitionDto.getModelId())
-                .status(JobStatus.SUBMITTED)
-                .taskCount((int)recordsToProcess)
+                .status(JobStatus.PENDING_VALIDATION)
                 .completedTaskCount(0)
                 .maxTokens(jobDefinitionDto.getMaxTokens())
                 .temperature(jobDefinitionDto.getTemperature())
@@ -248,48 +214,11 @@ public class JobService {
             log.info("No output fields specified for job {}, will include all fields", jobUuid);
         }
 
-        while (recordsPage.getNumberOfElements() > 0) {
-            // Check if we have enough records to process
-            if (recordsToProcess <= 0) {
-                break;
-            }
-            
-            // Create job tasks for the first batch
-            for (int i = 0; i < recordsPage.getNumberOfElements(); i++) {
-                FileRecordDto record = recordsPage.getContent().get(i);
-                UUID jobTaskUuid = UUID.randomUUID();
-                
-                JobTask task = JobTask.builder()
-                        .jobTaskUuid(jobTaskUuid)
-                        .jobUuid(jobUuid)
-                        .fileRecordUuid(record.getFileRecordUuid())
-                        .recordNumber(record.getRecordNumber())
-                        .modelId(jobDefinitionDto.getModelId())
-                        .status(TaskStatus.SUBMITTED)
-                        .build();
-                        
-                jobTaskRepository.save(task);
 
-            }
-            
-            // Check if we need to process more pages
-            if (recordsToProcess > recordsPage.getNumberOfElements()) {
-                recordsToProcess -= recordsPage.getNumberOfElements();
-                startPage++;
-                
-                // Get the next page of records
-                recordsPage = fileClient.getFileRecordsPaginated(
-                    jobDefinitionDto.getFileUuid(), 
-                    startPage, 
-                    pageSize, 
-                    "recordNumber", 
-                    "asc", 
-                    authToken
-                );
-            } else {
-                break;
-            }
-        }
+        /*
+         * The job tasks are created in the job validation step. This is so that we don't have to 
+         * query the file twice - once to build the tasks and later to validate the job.
+         */
 
         JobValidationMessage validationMessage = JobValidationMessage.builder()
                 .jobUuid(job.getJobUuid())
@@ -317,7 +246,7 @@ public class JobService {
      */
 
     @Transactional
-    public void submitJob(UUID jobUuid) {
+    public Job submitJob(UUID jobUuid) {
         Job job = jobRepository.findById(jobUuid).orElse(null);
         if (job == null) {
             throw new JobSubmissionException("Job not found: " + jobUuid);
@@ -365,8 +294,8 @@ public class JobService {
                 log.info("Sent {} job task messages for job {} after transaction commit", messagesToSend.size(), jobUuid);
             }
         });   
-        
         log.info("Job {} submitted for processing", jobUuid);
+        return job;
     }
     
     /**
@@ -528,4 +457,5 @@ public class JobService {
         }
         return builder.build();
     }
+
 }

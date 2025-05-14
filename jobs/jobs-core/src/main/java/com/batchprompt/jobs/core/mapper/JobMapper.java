@@ -33,6 +33,7 @@ public class JobMapper {
                 .startRecordNumber(job.getStartRecordNumber())
                 .creditUsage(job.getCreditUsage())
                 .creditEstimate(job.getCreditEstimate())
+                .costEstimate(job.getCostEstimate())
                 .build();
     }
     
@@ -55,6 +56,9 @@ public class JobMapper {
                 .calculatedCostUsd(jobTask.getCalculatedCostUsd())
                 .creditUsage(jobTask.getCreditUsage())
                 .creditEstimate(jobTask.getCreditEstimate())
+                .costEstimate(jobTask.getCostEstimate())
+                .thinkingTokens(jobTask.getThinkingTokens())
+                .promptText(jobTask.getPromptText())
                 .build();
     }
     

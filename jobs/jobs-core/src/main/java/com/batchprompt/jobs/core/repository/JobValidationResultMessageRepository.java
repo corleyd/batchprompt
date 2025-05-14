@@ -12,7 +12,7 @@ import com.batchprompt.jobs.core.model.JobValidationResultMessage;
  * Repository for JobValidationMessageEntity
  */
 @Repository
-public interface JobValidationMessageRepository extends JpaRepository<JobValidationResultMessage, UUID> {
+public interface JobValidationResultMessageRepository extends JpaRepository<JobValidationResultMessage, UUID> {
     
     /**
      * Find all validation messages for a specific job
@@ -21,14 +21,6 @@ public interface JobValidationMessageRepository extends JpaRepository<JobValidat
      * @return list of validation messages for the job
      */
     List<JobValidationResultMessage> findByJobUuid(UUID jobUuid);
-    
-    /**
-     * Find all validation messages for a specific job task
-     *
-     * @param jobTaskUuid the UUID of the job task
-     * @return list of validation messages for the job task
-     */
-    List<JobValidationResultMessage> findByJobTaskUuid(UUID jobTaskUuid);
     
     /**
      * Delete all validation messages for a specific job

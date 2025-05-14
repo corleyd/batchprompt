@@ -32,5 +32,7 @@ public class JobTaskDto {
     private Integer totalTokens;
     private Double calculatedCostUsd;
     private Double creditUsage;
+    private Double costEstimate;
     private Double creditEstimate;
+    private String promptText;
 }

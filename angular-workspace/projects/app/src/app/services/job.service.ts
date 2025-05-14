@@ -39,8 +39,8 @@ export class JobService {
     return this.http.get<ModelDto[]>(`${this.apiUrl}/models`);
   }
 
-  // Submit a job with all parameters
-  submitJob(jobDefinition: JobDefinitionDto): Observable<any> {
+  // Validate a job with all parameters
+  validateJob(jobDefinition: JobDefinitionDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/validate`, jobDefinition);
   }
 
@@ -85,6 +85,21 @@ export class JobService {
       .set('direction', direction);
     
     return this.http.get<any>(`${this.apiUrl}/${jobUuid}/tasks`, { params });
+  }
+
+  // Submit a job for processing after validation
+  submitJob(jobUuid: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${jobUuid}/submit`, {});
+  }
+
+  // Continue processing a job that was paused due to insufficient credits
+  continueProcessingJob(jobUuid: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${jobUuid}/continue`, {});
+  }
+
+  // Cancel a job
+  cancelJob(jobUuid: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${jobUuid}/cancel`, {});
   }
 }
  

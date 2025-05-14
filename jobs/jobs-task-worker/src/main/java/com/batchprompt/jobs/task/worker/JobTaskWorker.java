@@ -3,15 +3,11 @@ package com.batchprompt.jobs.task.worker;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.batchprompt.files.client.FileClient;
-import com.batchprompt.files.model.dto.FileRecordDto;
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
@@ -20,7 +16,6 @@ import com.batchprompt.jobs.core.service.JobCreditService;
 import com.batchprompt.jobs.core.service.JobPricingService;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
-import com.batchprompt.jobs.core.service.TokenEstimator;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
@@ -42,7 +37,6 @@ public class JobTaskWorker {
     private final JobTaskRepository jobTaskRepository;
     private final JobService jobService;
     private final ModelService modelService;
-    private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
     private final JobPricingService jobPricingService;
@@ -91,15 +85,6 @@ public class JobTaskWorker {
                 throw new Exception("Prompt not found: " + message.getPromptUuid());
             }
             
-            // Get file record
-            // Use user auth token if available, otherwise service-to-service authentication will be used
-            FileRecordDto recordDto = fileClient.getFileRecord(message.getFileRecordUuid(),null);
-            if (recordDto == null) {
-                throw new Exception("File record not found: " + message.getFileRecordUuid());
-            }
-            
-            // Convert record data to JsonNode
-            JsonNode recordData = recordDto.getRecord();
             
             // Convert output schema to JsonNode if it exists
             JsonNode outputSchema = null;
@@ -107,15 +92,9 @@ public class JobTaskWorker {
                 outputSchema = objectMapper.readTree(promptDto.getResponseJsonSchema());
             }
 
-            String promptText = replacePlaceholders(promptDto.getPromptText(), recordData);
-            
-            // Estimate token count before sending to model
-            int estimatedPromptTokens = TokenEstimator.estimateTokenCount(promptText, message.getModelId(), modelService);
-            updateEstimatedTokens(jobTaskUuid, estimatedPromptTokens);
-            
             // Use the new chat model response method to get response with token counts
             ChatModelResponse chatResponse = chatModel.generateChatResponse(
-                    promptText,
+                    jobTask.getPromptText(),
                     outputSchema,
                     message.getMaxTokens(),
                     message.getTemperature()
@@ -156,21 +135,7 @@ public class JobTaskWorker {
         
         return jobTaskRepository.save(jobTask);
     }
-    
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void updateEstimatedTokens(UUID jobTaskUuid, int estimatedPromptTokens) {
-        JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
-        if (jobTask == null) {
-            log.error("Job task not found: {}", jobTaskUuid);
-            return;
-        }
-        
-        jobTask.setEstimatedPromptTokens(estimatedPromptTokens);
-        jobTaskRepository.save(jobTask);
-        
-        log.debug("Job task {} estimated prompt tokens: {}", jobTaskUuid, estimatedPromptTokens);
-    }
-    
+
     private void completeTaskWithTokens(JobTask jobTask, String userId, ChatModelResponse chatResponse) {
         UUID jobTaskUuid = jobTask.getJobTaskUuid();        
         jobTask.setStatus(TaskStatus.COMPLETED);
@@ -277,58 +242,4 @@ public class JobTaskWorker {
         log.info("Job task {} marked as INSUFFICIENT_CREDITS", jobTaskUuid);
     }
 
-    private String replacePlaceholders(String promptText, JsonNode recordData) {
-        // Find all of the placeholders in the promt text (e.g., {{fieldName}})
-        // For each one, try to find a matching field in the record data.
-        //
-        // Matching is done as follows:
-        // 1. exact name
-        // 2. trim both sides and compare
-        // 3. trim both sides, convert to lowercase and compare
-        // 4. trim both sides, convert to lowercase and replace spaces with underscores
-
-        // First, find all placeholders in the prompt text
-        String regex = "\\{\\{\\s*([^\\s]+)\\s*\\}\\}";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(promptText);
-        while (matcher.find()) {
-            String placeholder = matcher.group(0);
-            String placeholderName = matcher.group(1).trim();
-            String fieldValue = null;
-
-            fieldValue = findMatchingFieldValue(placeholderName, recordData, s -> s);
-
-            if (fieldValue == null) {
-                fieldValue = findMatchingFieldValue(placeholderName, recordData, s-> s.trim());
-            }
-
-            if (fieldValue == null) {
-                fieldValue = findMatchingFieldValue(placeholderName, recordData, s -> s.trim().toLowerCase());
-            }
-
-            if (fieldValue == null) {
-                fieldValue = findMatchingFieldValue(placeholderName, recordData, s -> s.trim().toLowerCase().replace(" ", "_"));
-            }
-
-            if (fieldValue == null) {
-               log.warn("Field not found in record data: {}", placeholderName);
-               fieldValue = "";
-            }
-
-            promptText = promptText.replace(placeholder, fieldValue);
-        }
-        return promptText;
-    }
-
-    private String findMatchingFieldValue(String placeholderName, JsonNode recordData, java.util.function.Function<String, String> transform) {
-        String transformedPlaceholderName = placeholderName != null ? transform.apply(placeholderName) : null;
-
-        for (var property : recordData.properties()) {
-            String transformedPropertyName = transform.apply(property.getKey());
-            if (transformedPropertyName.equals(transformedPlaceholderName)) {
-                return property.getValue().asText();
-            }
-        }
-        return null;
-    }
 }

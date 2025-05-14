@@ -26,11 +26,6 @@ public class JobValidationResultMessageDto {
     private UUID jobUuid;
     
     /**
-     * The UUID of the job task this validation message is associated with, if applicable
-     */
-    private UUID jobTaskUuid;
-    
-    /**
      * The record number in the file where the validation issue was found, if applicable
      */
     private Integer recordNumber;
