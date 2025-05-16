@@ -1,5 +1,7 @@
 package com.batchprompt.jobs.core.service;
 
+import com.batchprompt.jobs.core.model.Model;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -16,8 +18,8 @@ public class OpenAIChatModel extends AbstractOpenAICompatibleChatModel {
      * @param modelName The name of the OpenAI model
      * @param apiKey The OpenAI API key
      */
-    public OpenAIChatModel(String modelId, String providerModelId, String apiKey) {
-        super(modelId, providerModelId, apiKey);
+    public OpenAIChatModel(Model model, String apiKey) {
+        super(model, apiKey);
     }
     
     @Override

@@ -11,7 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
-import com.batchprompt.jobs.core.service.ChatModel;
+import com.batchprompt.jobs.core.service.AbstractChatModel;
 import com.batchprompt.jobs.core.service.JobCreditService;
 import com.batchprompt.jobs.core.service.JobPricingService;
 import com.batchprompt.jobs.core.service.JobService;
@@ -69,7 +69,7 @@ public class JobTaskWorker {
             }
             
             // Step 2: Get the ChatModel for the model id. If job status is Submitted, update it to Processing
-            ChatModel chatModel = modelService.getChatModel(message.getModelId());
+            AbstractChatModel chatModel = modelService.getChatModel(message.getModelId());
             if (chatModel == null) {
                 throw new Exception("Model not found: " + message.getModelId());
             }

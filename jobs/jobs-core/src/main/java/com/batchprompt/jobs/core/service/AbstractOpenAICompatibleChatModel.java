@@ -1,6 +1,7 @@
 package com.batchprompt.jobs.core.service;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
+import com.batchprompt.jobs.core.model.Model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -38,11 +39,11 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
     /**
      * Constructor
      * 
-     * @param modelName The name of the model
+     * @param model The model to use
      * @param apiKey The API key
      */
-    public AbstractOpenAICompatibleChatModel(String modelId, String providerModelId, String apiKey) {
-        super(modelId, providerModelId);
+    public AbstractOpenAICompatibleChatModel(Model model, String apiKey) {
+        super(model);
         this.apiKey = apiKey;
     }
     
@@ -68,30 +69,30 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
             // Create messages array
             ArrayNode messages = requestBody.putArray("messages");
             
-            // System message with instructions
-            ObjectNode systemMessage = objectMapper.createObjectNode();
-            systemMessage.put("role", "system");
-            systemMessage.put("content", "You are a helpful assistant. Process the following data according to the instructions.");
-            messages.add(systemMessage);
-            
-            // User message with prompt and data
-            ObjectNode userMessage = objectMapper.createObjectNode();
-            userMessage.put("role", "user");
-            
-            StringBuilder contentBuilder = new StringBuilder();
-            contentBuilder.append(prompt).append("\n\n");
-            
-            if (outputSchema != null) {
-                contentBuilder.append("\n\nOutput should follow this JSON schema: ")
-                             .append(outputSchema.toString());
-            }
-            
-            userMessage.put("content", contentBuilder.toString());
-            messages.add(userMessage);
-            
             // Set parameters with defaults if not provided
             requestBody.put("temperature", temperature != null ? temperature : DEFAULT_TEMPERATURE);
             requestBody.put("max_tokens", maxTokens != null ? maxTokens : DEFAULT_MAX_TOKENS);
+            
+            if (outputSchema != null) {
+                if (getModel().isSimulateStructuredOutput()) {
+                    prompt = simulateStructuredOutput(prompt, outputSchema);
+                } else {
+                    ObjectNode responseFormatNode = objectMapper.createObjectNode();
+                    responseFormatNode.put("type", "json_schema");
+                    ObjectNode jsonSchemaNode = objectMapper.createObjectNode();
+                    jsonSchemaNode.put("name", "response");
+                    jsonSchemaNode.set("schema", outputSchema);
+                    responseFormatNode.set("json_schema", jsonSchemaNode);
+                    requestBody.set("response_format", responseFormatNode);
+                }
+            }
+
+            // User message with prompt and data
+            ObjectNode userMessage = objectMapper.createObjectNode();
+            userMessage.put("role", "user");
+            userMessage.put("content", prompt);
+            messages.add(userMessage);
+            requestBody.set("messages", messages);
             
             // Create request entity
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);

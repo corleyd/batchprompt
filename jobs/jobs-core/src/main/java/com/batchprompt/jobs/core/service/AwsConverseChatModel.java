@@ -1,6 +1,7 @@
 package com.batchprompt.jobs.core.service;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
+import com.batchprompt.jobs.core.model.Model;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.annotation.Nullable;
@@ -30,12 +31,12 @@ public class AwsConverseChatModel extends AbstractChatModel {
      * @param modelName The name of the AWS model
      * @param modelId The AWS model ID (e.g., "anthropic.claude-3-sonnet-20240229-v1:0")
      */
-    public AwsConverseChatModel(String modelId, String providerModelId) {
-        super(modelId, providerModelId);
+    public AwsConverseChatModel(Model model) {
+        super(model);
         
         // Create Bedrock client using default credential providers and region from environment
         this.bedrockClient = BedrockRuntimeClient.create();
-        log.info("Created AWS Bedrock client for model {} ({})", getProviderModelId(), modelId);
+        log.info("Created AWS Bedrock client for model {} ({})", getProviderModelId(), model.getModelId());
     }
 
     @Override
@@ -49,7 +50,7 @@ public class AwsConverseChatModel extends AbstractChatModel {
             
             // Append schema if provided
             if (outputSchema != null) {
-                messageContent = messageContent + "\n\nOutput should follow this JSON schema: " + outputSchema.toString();
+                prompt = simulateStructuredOutput(prompt, outputSchema);
             }
             
             // Create a ContentBlock using the fromText factory method

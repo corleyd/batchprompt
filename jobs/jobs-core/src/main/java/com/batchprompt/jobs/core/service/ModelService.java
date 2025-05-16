@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ModelService {
     
     // Map of model name to ChatModel instance
-    private final Map<String, ChatModel> modelMap = new HashMap<>();
+    private final Map<String, AbstractChatModel> modelMap = new HashMap<>();
     
     // Map of model name to queue name
     private final Map<String, String> queueMap = new HashMap<>();
@@ -85,26 +85,26 @@ public class ModelService {
         List<Model> enabledModels = modelRepository.findAll();
         
         for (Model modelDef : enabledModels) {
-            ChatModel model = null;
+            AbstractChatModel model = null;
             
             try {
                 String modelProviderId = modelDef.getProvider().getModelProviderId();
                 
                 switch (modelProviderId) {
                     case "OPENAI":
-                        model = new OpenAIChatModel(modelDef.getModelId(), modelDef.getModelProviderModelId(), openaiApiKey);
+                        model = new OpenAIChatModel(modelDef, openaiApiKey);
                         break;
                         
                     case "AWS":
-                        model = new AwsConverseChatModel(modelDef.getModelId(), modelDef.getModelProviderModelId());
+                        model = new AwsConverseChatModel(modelDef);
                         break;
                         
                     case "GOOGLE":
-                        model = new GeminiChatModel(modelDef.getModelId(), modelDef.getModelProviderModelId(), googleApiKey);
+                        model = new GeminiChatModel(modelDef, googleApiKey);
                         break;
                         
                     case "XAI":
-                        model = new XaiChatModel(modelDef.getModelId(), modelDef.getModelProviderModelId(), xaiApiKey);
+                        model = new XaiChatModel(modelDef, xaiApiKey);
                         break;
                         
                     default:
@@ -170,7 +170,7 @@ public class ModelService {
      * @param modelId The id of the model
      * @return The ChatModel instance, or null if not found
      */
-    public ChatModel getChatModel(String modelId) {
+    public AbstractChatModel getChatModel(String modelId) {
         return modelMap.get(modelId);
     }
     

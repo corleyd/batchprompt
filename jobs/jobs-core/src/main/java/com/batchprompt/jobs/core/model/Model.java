@@ -40,7 +40,10 @@ public class Model {
     
     @Column(name = "model_provider_model_id", nullable = false)
     private String modelProviderModelId;
-    
+
+    @Column(name = "simulate_structured_output", nullable = false)
+    private boolean simulateStructuredOutput;
+
     @Column(name = "model_provider_properties", columnDefinition = "jsonb")
     @Type(JsonType.class)
     private JsonNode modelProviderProperties;

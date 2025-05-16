@@ -21,7 +21,6 @@ export class JobSubmitComponent implements OnInit {
   loading = false;
   fieldsLoading = false;
   submitting = false;
-  submitSuccess = false;
   errorMessage = '';
   includeAllFields = true;
   showAdditionalOptions = false;
@@ -220,11 +219,7 @@ export class JobSubmitComponent implements OnInit {
     
     this.jobService.validateJob(jobSubmission).subscribe({
       next: (response) => {
-        this.submitting = false;
-        this.submitSuccess = true;
-        setTimeout(() => {
-          this.router.navigate(['/dashboard/jobs']);
-        }, 2000);
+        this.router.navigate(['/dashboard/jobs', response.jobUuid ]);
       },
       error: (error) => {
         console.error('Error submitting job:', error);

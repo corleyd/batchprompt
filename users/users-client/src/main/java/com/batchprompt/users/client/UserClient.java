@@ -1,7 +1,5 @@
 package com.batchprompt.users.client;
 
-import java.util.UUID;
-
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;

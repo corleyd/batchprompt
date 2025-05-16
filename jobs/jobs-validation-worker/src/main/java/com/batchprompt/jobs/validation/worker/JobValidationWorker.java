@@ -124,7 +124,17 @@ public class JobValidationWorker {
             
             // Create job tasks for the first batch
             for (int i = 0; i < recordsPage.getNumberOfElements(); i++) {
+                // Check if we've hit the max records limit
+                if (maxRecords != null && taskCount >= maxRecords) {
+                    break;
+                }
+                
                 FileRecordDto record = recordsPage.getContent().get(i);
+                // Skip records with record numbers less than startRecordNumber
+                if (record.getRecordNumber() < startRecordNumber) {
+                    continue;
+                }
+                
                 UUID jobTaskUuid = UUID.randomUUID();
                 
                 String promptText = createPromptText(job, promptDto, record);
@@ -171,13 +181,17 @@ public class JobValidationWorker {
                 jobTaskRepository.save(task);
 
                 taskCount++;
-
             }
             
             // Check if we need to process more pages
             if (recordsToProcess > recordsPage.getNumberOfElements()) {
                 recordsToProcess -= recordsPage.getNumberOfElements();
                 startPage++;
+                
+                // If we've already processed maxRecords, no need to fetch more pages
+                if (maxRecords != null && taskCount >= maxRecords) {
+                    break;
+                }
                 
                 // Get the next page of records
                 recordsPage = fileClient.getFileRecordsPaginated(

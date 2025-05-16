@@ -13,12 +13,7 @@
       <p>You are submitting this job on behalf of another user (ID: {{onBehalfOfUserId}})</p>
     </div>
 
-    <div *ngIf="submitSuccess" class="success-message">
-      <div class="success-icon">✓</div>
-      <p>Job submitted successfully! Redirecting...</p>
-    </div>
-
-    <form *ngIf="!submitSuccess" [formGroup]="jobForm" (ngSubmit)="onSubmit()" class="job-form">
+    <form [formGroup]="jobForm" (ngSubmit)="onSubmit()" class="job-form">
       <div class="form-group">
         <label for="file">Select File:</label>
         <select id="file" formControlName="fileUuid">

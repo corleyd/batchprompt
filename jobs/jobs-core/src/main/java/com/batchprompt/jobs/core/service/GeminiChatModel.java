@@ -1,6 +1,13 @@
 package com.batchprompt.jobs.core.service;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
 import com.batchprompt.jobs.core.model.ChatModelResponse;
+import com.batchprompt.jobs.core.model.Model;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -8,12 +15,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Implementation of ChatModel for Google Gemini models
@@ -34,8 +35,8 @@ public class GeminiChatModel extends AbstractChatModel {
      * @param providerModelId The name of the Gemini model
      * @param apiKey The Google API key
      */
-    public GeminiChatModel(String modelId, String providerModelId, String apiKey) {
-        super(modelId, providerModelId);
+    public GeminiChatModel(Model model, String apiKey) {
+        super(model);
         this.apiKey = apiKey;
     }
     
@@ -67,15 +68,8 @@ public class GeminiChatModel extends AbstractChatModel {
             ArrayNode parts = userMessage.putArray("parts");
             ObjectNode textPart = objectMapper.createObjectNode();
             
-            StringBuilder contentBuilder = new StringBuilder();
-            contentBuilder.append(prompt).append("\n\n");
-            
-            if (outputSchema != null) {
-                contentBuilder.append("\n\nOutput should follow this JSON schema: ")
-                             .append(outputSchema.toString());
-            }
-            
-            textPart.put("text", contentBuilder.toString());
+            // Just use the prompt as is, without appending the schema
+            textPart.put("text", prompt);
             parts.add(textPart);
             
             // Add the message to contents
@@ -85,6 +79,12 @@ public class GeminiChatModel extends AbstractChatModel {
             ObjectNode generationConfig = requestBody.putObject("generationConfig");
             generationConfig.put("temperature", temperature != null ? temperature : DEFAULT_TEMPERATURE);
             generationConfig.put("maxOutputTokens", maxTokens != null ? maxTokens : DEFAULT_MAX_TOKENS);
+            
+            // Add responseSchema to generationConfig if outputSchema is provided
+            if (outputSchema != null) {
+                generationConfig.set("responseSchema", outputSchema);
+                generationConfig.put("responseMimeType", "application/json");
+            }
             
             // Create request entity
             HttpEntity<String> requestEntity = new HttpEntity<>(requestBody.toString(), headers);
