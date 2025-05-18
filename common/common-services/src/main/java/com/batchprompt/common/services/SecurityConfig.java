@@ -40,16 +40,22 @@ public class SecurityConfig {
             CorsConfigurationSource corsConfigurationSource = request -> {
                 CorsConfiguration config = new CorsConfiguration();
                 config.setAllowedOrigins(List.of("*"));
-                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
+                // Add these lines to ensure WebSocket handshake works properly with SockJS
+                config.setAllowCredentials(true);
+                config.setExposedHeaders(List.of("Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
                 return config;
             };
             cors.configurationSource(corsConfigurationSource);
         });
         
         http.authorizeHttpRequests(authz -> authz
-            .requestMatchers("/api/public/**").permitAll()
+            .requestMatchers("/api/public/**", "/test/**").permitAll()
             .requestMatchers(RegexRequestMatcher.regexMatcher("^/api/files/[a-f0-9\\-]+/download/[a-f0-9\\-]+$")).permitAll()
+            // Allow WebSocket info endpoint without authentication for handshake
+            .requestMatchers("/ws/info/**").permitAll()
+            .requestMatchers("/ws/**").authenticated()
             .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.decoder(jwtDecoder())));

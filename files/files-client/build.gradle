@@ -21,9 +21,6 @@ dependencies {
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.9'
 
-    // Lombok dependency for boilerplate code reduction
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 
     // Auth0 dependencies
     implementation 'com.auth0:auth0-spring-security-api:1.5.1'

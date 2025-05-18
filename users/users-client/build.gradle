@@ -22,9 +22,6 @@ dependencies {
 
     implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 
-    // Lombok dependency for boilerplate code reduction
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 }
 
 bootJar {

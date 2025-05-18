@@ -52,7 +52,7 @@ public class JobService {
     private final ModelService modelService;
     private final MessageProducer messageProducer;
     private final ObjectProvider<JobService> selfProvider;
-
+    private final JobNotificationService jobNotificationService;
     
     /**
      * Get all jobs
@@ -265,7 +265,7 @@ public class JobService {
         job.setStatus(JobStatus.SUBMITTED);
         job.setUpdatedAt(LocalDateTime.now());
         jobRepository.save(job);
-
+        jobNotificationService.sendJobUpdateNotification(job);
         List<JobTaskMessage> messagesToSend = new ArrayList<>();
 
         for (JobTask task : tasks) {
@@ -401,6 +401,7 @@ public class JobService {
             }
             job.setUpdatedAt(LocalDateTime.now());
             jobRepository.save(job);
+            jobNotificationService.sendJobUpdateNotification(job);
             
             // If all tasks completed and we're not in INSUFFICIENT_CREDITS, queue for output processing
             if (newStatus == JobStatus.PENDING_OUTPUT) {

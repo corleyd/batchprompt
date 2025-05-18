@@ -20,6 +20,7 @@ import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.repository.JobValidationResultMessageRepository;
 import com.batchprompt.jobs.core.service.CreditCalculationService;
+import com.batchprompt.jobs.core.service.JobNotificationService;
 import com.batchprompt.jobs.core.service.JobPricingService;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.model.JobStatus;
@@ -45,6 +46,7 @@ public class JobValidationWorker {
     private final JobPricingService jobPricingService;
     private final CreditCalculationService creditCalculationService;
     private final JobValidationResultMessageRepository jobValidationResultMessageRepository;
+    private final JobNotificationService jobNotificationService;
     
     @Value("${rabbitmq.queue.job-validation.name}")
     private String jobValidationQueueName;
@@ -69,6 +71,7 @@ public class JobValidationWorker {
             log.error("Error validating job: {}", jobUuid, e);
             failValidation(job, "Validation error: " + e.getMessage());
         }
+        jobNotificationService.sendJobUpdateNotification(job);
     }
 
     private boolean buildJobTasks(Job job) {

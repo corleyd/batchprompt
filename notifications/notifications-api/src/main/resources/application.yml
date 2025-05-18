@@ -1,0 +1,13 @@
+server:
+  port: 8086
+debug: true
+spring:
+  application:
+    name: notifications-api
+  config:
+    import:
+      - ${HOME}/.batchprompt/local.yml
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+

@@ -24,9 +24,7 @@ dependencies {
     // Database
     runtimeOnly 'org.postgresql:postgresql'
     
-    // Lombok
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+
     
     // Project dependencies
     implementation project(':jobs:jobs-core')

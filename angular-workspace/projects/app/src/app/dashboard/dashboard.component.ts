@@ -1,17 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { NavigationLayoutComponent, NavigationLink } from '../shared/components/navigation-layout/navigation-layout.component';
+import { NotificationIndicatorComponent } from '../shared/components/notification-indicator.component';
+import { NotificationService } from '../services/notification.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavigationLayoutComponent],
+  imports: [CommonModule, RouterModule, NavigationLayoutComponent, NotificationIndicatorComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit, OnDestroy {
   dashboardLinks: NavigationLink[] = [
     { path: 'home', label: 'Home', icon: 'Home' },
     { path: 'files/upload', label: 'Upload New File', icon: 'Upload' },
@@ -21,8 +24,32 @@ export class DashboardComponent {
   ];
   
   sidebarCollapsed = false;
+  isAuthenticated = false;
+  private destroy$ = new Subject<void>();
 
-  constructor(public auth: AuthService) {}
+  constructor(
+    public auth: AuthService,
+    private notificationService: NotificationService
+  ) {}
+  
+  ngOnInit(): void {
+    // Track authentication state
+    this.auth.isAuthenticated$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isAuthenticated => {
+        this.isAuthenticated = isAuthenticated;
+        if (isAuthenticated) {
+          this.notificationService.connect();
+          // Subscribe to all notifications
+          this.notificationService.subscribeToAllNotifications();
+        }
+      });
+  }
+  
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   
   onSidebarToggled(collapsed: boolean) {
     this.sidebarCollapsed = collapsed;

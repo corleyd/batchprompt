@@ -10,6 +10,8 @@ dependencies {
     implementation project(':common:common-services')
     implementation project(':jobs:jobs-core')
     implementation project(':jobs:jobs-model')
+    implementation project(':files:files-client')
+    implementation project(':notifications:notifications-client')
 
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -17,16 +19,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    implementation 'org.springframework.boot:spring-boot-starter-reactor-netty'
+    implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
     implementation 'org.postgresql:postgresql'
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'
     implementation 'io.hypersistence:hypersistence-utils-hibernate-63:3.9.9'
     implementation 'org.apache.poi:poi:5.4.1'
     implementation 'org.apache.poi:poi-ooxml:5.4.1'
-
-      // Lombok dependency for boilerplate code reduction
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 
     // Auth0 dependencies
     implementation 'com.auth0:auth0-spring-security-api:1.5.1'

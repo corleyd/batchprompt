@@ -2,4 +2,7 @@
   [links]="dashboardLinks"
   [collapsible]="true"
   (sidebarToggled)="onSidebarToggled($event)">
+  <div class="notification-container">
+    <app-notification-indicator *ngIf="isAuthenticated"></app-notification-indicator>
+  </div>
 </app-navigation-layout>

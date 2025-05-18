@@ -12,6 +12,14 @@ allprojects {
     plugins.withType(JavaPlugin).configureEach {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
+    }   
+
+    plugins.withType(JavaPlugin) {
+        dependencies {
+            // Lombok
+            compileOnly 'org.projectlombok:lombok'
+            annotationProcessor 'org.projectlombok:lombok'
+        }
     }
     
     repositories {

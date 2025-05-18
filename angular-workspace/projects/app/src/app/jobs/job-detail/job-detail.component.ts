@@ -1,11 +1,13 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
-import { JobService } from '../../services/job.service';
 import { CommonModule } from '@angular/common';
-import { IconsModule } from '../../icons/icons.module';
-import { DownloadButtonComponent } from '../../shared/components';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
+import { IconsModule } from '../../icons/icons.module';
+import { JobService } from '../../services/job.service';
+import { NotificationService } from '../../services/notification.service';
+import { DownloadButtonComponent } from '../../shared/components';
 
 @Component({
   selector: 'app-job-detail',
@@ -14,17 +16,19 @@ import { MatButtonModule } from '@angular/material/button';
   standalone: true,
   imports: [CommonModule, IconsModule, DownloadButtonComponent, MatProgressBarModule, MatButtonModule]
 })
-export class JobDetailComponent implements OnInit {
+export class JobDetailComponent implements OnInit, OnDestroy {
   job: any;
   loading = true;
   error = false;
   errorMessage = '';
   Math = Math; // Make Math available in the template
+  private destroy$ = new Subject<void>();
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private jobService: JobService
+    private jobService: JobService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
@@ -32,12 +36,27 @@ export class JobDetailComponent implements OnInit {
       const jobUuid = params.get('jobUuid');
       if (jobUuid) {
         this.loadJobDetails(jobUuid);
+        
+        // Subscribe to job-specific notifications
+        this.notificationService.subscribeToAllNotifications
+        this.notificationService.notifications$
+          .pipe(takeUntil(this.destroy$))
+          .subscribe(notification => {
+            console.log('Job notification received:', notification);
+            // Refresh job details when a notification is received
+            this.loadJobDetails(jobUuid);
+          });
       } else {
         this.error = true;
         this.errorMessage = 'Job ID not found';
         this.loading = false;
       }
     });
+  }
+  
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadJobDetails(jobUuid: string): void {

@@ -8,11 +8,9 @@ version = '0.0.1-SNAPSHOT'
 
 
 dependencies {
+    implementation project(':notifications:notifications-model')
     implementation 'com.fasterxml.jackson.core:jackson-databind'
 
-    // Lombok dependency for boilerplate code reduction
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
 }
 
 bootJar {

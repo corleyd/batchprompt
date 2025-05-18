@@ -1,0 +1,24 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.4'
+    id 'java-library'
+}
+
+group = 'com.batchprompt'
+version = '0.0.1-SNAPSHOT'
+
+
+dependencies {
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+test {
+    useJUnitPlatform()
+}

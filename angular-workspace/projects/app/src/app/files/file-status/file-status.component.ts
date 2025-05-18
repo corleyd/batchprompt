@@ -1,31 +1,45 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { FileService } from '../file.service';
-import { interval, Subscription } from 'rxjs';
-import { switchMap, takeWhile } from 'rxjs/operators';
+import { interval, Subscription, Subject } from 'rxjs';
+import { switchMap, takeWhile, takeUntil } from 'rxjs/operators';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-file-status',
   templateUrl: './file-status.component.html',
   styleUrls: ['./file-status.component.scss'],
 })
-export class FileStatusComponent implements OnInit {
+export class FileStatusComponent implements OnInit, OnDestroy {
   @Input() file: any;
   
   statusPolling?: Subscription;
   statusMessage = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fileService: FileService,
-    private router: Router
+    private router: Router,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit(): void {
-    // Poll for status updates if the file is in a processing state
+    this.updateStatusMessage();
+    
+    // Subscribe to file-specific notifications
+    if (this.file && this.file.fileUuid) {
+      this.notificationService.subscribeToAllNotifications();
+      this.notificationService.notifications$
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(notification => {
+          console.log('File notification received:', notification);
+        });
+    }
+    
+    // Fallback polling for processing files in case WebSocket fails
+    // Poll less frequently since we have WebSocket notifications
     if (this.file && this.file.status === 'PROCESSING') {
       this.pollFileStatus();
-    } else {
-      this.updateStatusMessage();
     }
   }
 
@@ -33,13 +47,17 @@ export class FileStatusComponent implements OnInit {
     if (this.statusPolling) {
       this.statusPolling.unsubscribe();
     }
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   pollFileStatus(): void {
-    this.statusPolling = interval(5000)
+    // Reduced polling frequency since we have WebSocket notifications
+    this.statusPolling = interval(15000) // 15 seconds instead of 5 seconds
       .pipe(
         switchMap(() => this.fileService.getFileStatus(this.file.id)),
-        takeWhile(status => status.status === 'PROCESSING', true)
+        takeWhile(status => status.status === 'PROCESSING', true),
+        takeUntil(this.destroy$)
       )
       .subscribe({
         next: (updatedStatus) => {

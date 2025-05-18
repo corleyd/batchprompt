@@ -2,6 +2,9 @@ rootProject.name = "batchprompt"
 
 include('common:common-core')
 include('common:common-services')
+include('notifications:notifications-client')
+include('notifications:notifications-api')
+include('notifications:notifications-model')
 include('prompts:prompts-core')
 include('prompts:prompts-model')
 include('prompts:prompts-api')

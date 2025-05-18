@@ -13,7 +13,8 @@
             "jobs-task-worker",
             "jobs-output-worker",
             "jobs-validation-worker",
-            "users-api"
+            "users-api",
+            "notifications-api"
           ]
         }
     ],    
@@ -66,6 +67,13 @@
             "request": "launch",
             "mainClass": "com.batchprompt.users.api.UsersApiApplication",
             "projectName": "users-api"
+        },
+        {
+            "type": "java",
+            "name": "notifications-api",
+            "request": "launch",
+            "mainClass": "com.batchprompt.notifications.api.NotificationsApiApplication",
+            "projectName": "notifications-api"
         }
     ]
 }

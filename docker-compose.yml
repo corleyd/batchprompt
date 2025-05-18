@@ -44,7 +44,6 @@ services:
      volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
-
 volumes:
    postgres:
    minio-data:
