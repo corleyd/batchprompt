@@ -26,12 +26,17 @@ spring:
     password: batchprompt
     virtual-host: /
 
+common:
+  security:
+    service-name: jobs-service
+
 services:
-  name: jobs-service
   files:
     url: ${FILES_SERVICE_URL:http://localhost:8083}
   prompts:
     url: ${PROMPTS_SERVICE_URL:http://localhost:8082}
+  notifications:
+    url: ${NOTIFICATIONS_SERVICE_URL:http://localhost:8086}
 
 rabbitmq:
   exchange:

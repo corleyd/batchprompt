@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
  * This is used when notifications are disabled.
  */
 @Component
-@ConditionalOnProperty(name = "notifications.rest.enabled", havingValue = "false", matchIfMissing = true)
+@ConditionalOnProperty(name = "services.notifications.rest.enabled", havingValue = "false", matchIfMissing = false)
 @Slf4j
 public class NoOpNotificationSender implements NotificationSender {
 

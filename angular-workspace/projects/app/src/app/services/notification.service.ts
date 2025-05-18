@@ -1,8 +1,7 @@
 import { Injectable, OnDestroy, inject } from '@angular/core';
 import { AuthService } from '@auth0/auth0-angular';
-import { BehaviorSubject, Observable, Subject, filter, map, takeUntil } from 'rxjs';
 import { Client, IFrame, IMessage, StompSubscription } from '@stomp/stompjs';
-// Import SockJS as a constructor function
+import { BehaviorSubject, Subject, filter, takeUntil } from 'rxjs';
 import SockJS from 'sockjs-client';
 import { environment } from '../../environments/environment';
 
@@ -57,6 +56,8 @@ export class NotificationService implements OnDestroy {
     this.authService.getAccessTokenSilently().subscribe({
       next: (token) => {
         try {
+          const sockjsUrl = `${environment.apiBaseUrl}/ws`;
+
           console.log('Attempting to connect to WebSocket...');
           
           // Create WebSocket connection using native WebSockets with SockJS fallback
@@ -65,30 +66,7 @@ export class NotificationService implements OnDestroy {
               // Direct WebSocket connection WITHOUT token in URL (more secure)
               const wsUrl = `${environment.apiBaseUrl.replace('http', 'ws')}/ws`;
               console.log('Creating direct WebSocket connection to:', wsUrl);
-              
-              try {
-                // First attempt native WebSocket with auth in protocol
-                const bearerToken = `Bearer ${token}`;
-                const ws = new WebSocket(wsUrl, ['v10.stomp', 'v11.stomp', bearerToken]);
-                
-                // Add event listeners for debugging
-                ws.onopen = () => console.log('Native WebSocket connection opened successfully');
-                ws.onclose = (e) => console.log('Native WebSocket closed with code:', e.code, 'reason:', e.reason);
-                ws.onerror = (e) => {
-                  console.error('Native WebSocket error:', e);
-                  // Fall back to SockJS in case of error
-                  console.log('Will try SockJS fallback on next reconnect...');
-                };
-                
-                return ws;
-              } catch (error) {
-                // Fallback to SockJS if native WebSocket fails
-                console.log('Using SockJS fallback due to browser limitations or error');
-                const sockjsUrl = `${environment.apiBaseUrl}/ws`;
-                // Create SockJS connection (SockJS options don't support headers directly)
-                const sockjs = new SockJS(sockjsUrl);
-                return sockjs;
-              }
+              return new SockJS(sockjsUrl);
             },
             // Always include token in STOMP headers too
             connectHeaders: {

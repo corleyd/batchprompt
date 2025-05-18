@@ -37,9 +37,6 @@ public class FileClient {
     @Value("${services.files.url}")
     private String filesServiceUrl;
     
-    @Value("${services.name:jobs-service}")
-    private String serviceName;
-    
     /**
      * Get a file by UUID
      * 
@@ -49,8 +46,7 @@ public class FileClient {
      */
     public FileDto getFile(UUID fileUuid, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
             
             ResponseEntity<FileDto> response = restTemplate.exchange(
@@ -75,10 +71,7 @@ public class FileClient {
      */
     public List<FileRecordDto> getFileRecords(UUID fileUuid, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
-            log.debug("Calling files service with auth token: {}", token);
-            
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
             
             ResponseEntity<List<FileRecordDto>> response = restTemplate.exchange(
@@ -108,10 +101,8 @@ public class FileClient {
     public Page<FileRecordDto> getFileRecordsPaginated(UUID fileUuid, int page, int size, 
                                                       String sortBy, String sortDirection, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
-            log.debug("Calling files service with auth token: {}", token);
             
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
             
             String url = filesServiceUrl + "/api/files/" + fileUuid + "/records?paginate=true" +
@@ -147,12 +138,8 @@ public class FileClient {
      */
     public FileRecordDto getFileRecord(UUID recordUuid, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
-            
-            log.debug("Calling files service for record {}, token: {}", 
-                     recordUuid, token);
             
             ResponseEntity<FileRecordDto> response = restTemplate.exchange(
                 filesServiceUrl + "/api/files/records/" + recordUuid,
@@ -180,10 +167,8 @@ public class FileClient {
      */
     public FileDto uploadFile(InputStream fileStream, String fileName, String contentType, long fileSize, String fileType, String authToken, String userId) {
         try {
-            String token = getEffectiveToken(authToken);
-            log.debug("Uploading file with token: {}", token);
             
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
             
             // Create resource from input stream
@@ -239,8 +224,7 @@ public class FileClient {
      */
     public boolean validateFile(UUID fileUuid, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
             
             ResponseEntity<Void> response = restTemplate.exchange(
@@ -266,8 +250,7 @@ public class FileClient {
      */
     public List<FileFieldDto> getFileFields(UUID fileUuid, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
-            HttpHeaders headers = createAuthHeaders(token);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
             
             ResponseEntity<List<FileFieldDto>> response = restTemplate.exchange(
@@ -282,37 +265,5 @@ public class FileClient {
             return null;
         }
     }
-    
-    /**
-     * Get an effective token for the request. If user token is null, get a service token.
-     * 
-     * @param userToken The user's auth token or null
-     * @return An effective token for the request
-     */
-    private String getEffectiveToken(String userToken) {
-        if (userToken != null && !userToken.isEmpty()) {
-            return userToken;
-        }
-        // Use service authentication when no user token is provided
-        return authService.getServiceToken(serviceName);
-    }
-    
-    /**
-     * Create HTTP headers with authentication token
-     * 
-     * @param token The authentication token
-     * @return HTTP headers with properly formatted auth token
-     */
-    private HttpHeaders createAuthHeaders(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        // Ensure token has the proper "Bearer " prefix
-        if (token != null) {
-            if (!token.startsWith("Bearer ")) {
-                token = "Bearer " + token;
-            }
-            headers.set("Authorization", token);
-        }
-        return headers;
-    }
-    
+
 }

@@ -19,7 +19,7 @@ public class FeignClientConfig {
     @Bean
     public RequestInterceptor serviceAuthRequestInterceptor() {
         return requestTemplate -> {
-            String token = authService.getServiceToken("users-client");
+            String token = authService.getServiceToken();
             if (token != null) {
                 requestTemplate.header("Authorization", token);
                 log.debug("Added service authentication token to request");

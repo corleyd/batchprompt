@@ -29,3 +29,11 @@ minio:
   access-key: batchprompt
   secret-key: batchprompt
   bucket: batchprompt
+
+services:
+  notifications:
+    url: ${NOTIFICATIONS_SERVICE_URL:http://localhost:8086}
+
+common:
+  security:
+    service-name: files-service

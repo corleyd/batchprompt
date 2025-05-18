@@ -1,2 +1,7 @@
-auth0:
-  roles-claim: https://batchprompt.ai/roles
+common:
+  services:
+    security:
+      roles-claim: https://batchprompt.ai/roles
+      allowed-origins:
+        - http://localhost:4200
+        - https://batchprompt.ai

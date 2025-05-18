@@ -3,12 +3,13 @@ package com.batchprompt.prompts.client;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.batchprompt.common.core.HeaderUtil;
 import com.batchprompt.common.services.ServiceAuthenticationService;
 import com.batchprompt.prompts.model.dto.PromptDto;
 
@@ -26,9 +27,6 @@ public class PromptClient {
     @Value("${services.prompts.url}")
     private String promptsServiceUrl;
     
-    @Value("${services.name:jobs-service}")
-    private String serviceName;
-    
     /**
      * Get a prompt by UUID
      * 
@@ -38,11 +36,13 @@ public class PromptClient {
      */
     public PromptDto getPrompt(UUID promptUuid, String authToken) {
         try {
-            String token = getEffectiveToken(authToken);
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
+            HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+            
             ResponseEntity<PromptDto> response = restTemplate.exchange(
                 promptsServiceUrl + "/api/prompts/" + promptUuid,
                 HttpMethod.GET,
-                HeaderUtil.createEntityWithAuthHeader(token),
+                requestEntity,
                 PromptDto.class
             );
             return response.getBody();
@@ -51,18 +51,5 @@ public class PromptClient {
             return null;
         }
     }
-    
-    /**
-     * Get an effective token for the request. If user token is null, get a service token.
-     * 
-     * @param userToken The user's auth token or null
-     * @return An effective token for the request
-     */
-    private String getEffectiveToken(String userToken) {
-        if (userToken != null && !userToken.isEmpty()) {
-            return userToken;
-        }
-        // Use service authentication when no user token is provided
-        return authService.getServiceToken(serviceName);
-    }
+
 }

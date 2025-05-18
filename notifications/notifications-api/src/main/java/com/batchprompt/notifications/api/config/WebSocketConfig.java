@@ -5,9 +5,9 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.messaging.simp.stomp.StompCommand;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
@@ -24,8 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final JwtHandshakeInterceptor jwtHandshakeInterceptor;
-
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
         // Topic prefix for broadcasting messages to subscribers
@@ -40,7 +38,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         // Register native WebSocket endpoint without SockJS
         registry.addEndpoint("/ws")
                 .setAllowedOriginPatterns("*")  // Allow connections from any origin for development
-                .addInterceptors(jwtHandshakeInterceptor)
                 // Enable SockJS fallback for browsers that don't support WebSocket
                 .withSockJS();
         
@@ -52,10 +49,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registration.interceptors(new ChannelInterceptor() {
             @Override
             public Message<?> preSend(Message<?> message, MessageChannel channel) {
-                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-                if (accessor != null) {
-                    // Log the headers for debugging
-                    log.debug("Stomp headers: {}", accessor.toNativeHeaderMap());
+                StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
+                if (StompCommand.CONNECT.equals(accessor.getCommand())) {
+                    String authHeader = accessor.getFirstNativeHeader("Authorization");
+                    // Validate token and set user: accessor.setUser(...)
                 }
                 return message;
             }

@@ -1,6 +1,11 @@
 package com.batchprompt.common.services;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
@@ -10,10 +15,6 @@ import com.auth0.json.auth.TokenHolder;
 import com.auth0.net.TokenRequest;
 
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Service for managing service-to-service authentication using Auth0 client credentials
@@ -27,6 +28,7 @@ public class ServiceAuthenticationService {
     private final String clientId;
     private final String domain;
     private final String rolesClaim;
+    private final String serviceName;
     
     // Cache for service tokens - service name -> token info
     private final Map<String, TokenInfo> tokenCache = new ConcurrentHashMap<>();
@@ -36,12 +38,13 @@ public class ServiceAuthenticationService {
             @Value("${auth0.service.client-id:}") String clientId,
             @Value("${auth0.service.client-secret:}") String clientSecret,
             @Value("${auth0.audience:}") String audience,
-            @Value("${auth0.roles-claim:}") String rolesClaim) {
+            CommonServicesSecurityProperties securityProperties) {
         this.authAPI = new AuthAPI(domain, clientId, clientSecret);
         this.audience = audience;
         this.clientId = clientId;
         this.domain = domain;
-        this.rolesClaim = rolesClaim;
+        this.rolesClaim = securityProperties.getRolesClaim();
+        this.serviceName = securityProperties.getServiceName();
     }
 
     /**
@@ -49,7 +52,7 @@ public class ServiceAuthenticationService {
      * @param serviceName The name of the service requesting the token (for caching)
      * @return A valid bearer token
      */
-    public String getServiceToken(String serviceName) {
+    public String getServiceToken() {
         // Check cache first
         TokenInfo cachedToken = tokenCache.get(serviceName);
         if (cachedToken != null && !cachedToken.isExpired()) {
@@ -83,6 +86,41 @@ public class ServiceAuthenticationService {
             return null;
         }
     }
+
+    
+    /**
+     * Get an effective token for the request. If user token is null, get a service token.
+     * 
+     * @param userToken The user's auth token or null
+     * @return An effective token for the request
+     */
+    private String getEffectiveToken(String userToken) {
+        if (userToken != null && !userToken.isEmpty()) {
+            return userToken;
+        }
+        // Use service authentication when no user token is provided
+        return getServiceToken();
+    }    
+
+    /**
+     * Create HTTP headers with authentication token
+     * 
+     * @param token The authentication token
+     * @return HTTP headers with properly formatted auth token
+     */
+    public HttpHeaders createAuthHeaders(String token) {
+        String realToken = getEffectiveToken(token);
+
+        HttpHeaders headers = new HttpHeaders();
+        // Ensure token has the proper "Bearer " prefix
+        if (realToken != null) {
+            if (!realToken.startsWith("Bearer ")) {
+                realToken = "Bearer " + realToken;
+            }
+            headers.set("Authorization", realToken);
+        }
+        return headers;
+    }    
 
     public boolean isValidServiceJwt(Jwt jwt) {
         /*

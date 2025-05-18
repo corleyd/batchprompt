@@ -2,12 +2,15 @@ package com.batchprompt.notifications.client;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import com.batchprompt.notifications.model.Notification;
-
+import com.batchprompt.common.services.ServiceAuthenticationService;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -15,17 +18,20 @@ import lombok.extern.slf4j.Slf4j;
  * This sends notifications to a centralized notification service via HTTP.
  */
 @Component
-@ConditionalOnProperty(name = "notifications.rest.enabled", havingValue = "true")
+@ConditionalOnProperty(name = "services.notifications.rest.enabled", havingValue = "true", matchIfMissing = true)
 @Slf4j
 public class RestNotificationSender implements NotificationSender {
 
     private final RestTemplate restTemplate;
     private final String notificationServiceUrl;
+    private final ServiceAuthenticationService authService;
     
     public RestNotificationSender(
-            @Value("${notifications.service.url}") String notificationServiceUrl) {
+            ServiceAuthenticationService authService,
+            @Value("${services.notifications.url}") String notificationServiceUrl) {
         this.restTemplate = new RestTemplate();
         this.notificationServiceUrl = notificationServiceUrl;
+        this.authService = authService;
         log.info("Initialized REST notification sender with service URL: {}", notificationServiceUrl);
     }
     
@@ -39,8 +45,18 @@ public class RestNotificationSender implements NotificationSender {
     public void send(String eventType, Object payload, String userId) {
         try {
             String url = notificationServiceUrl + "/api/notifications";
+            HttpHeaders headers = authService.createAuthHeaders(null);
             Notification notification = Notification.create(eventType, payload, userId);
-            ResponseEntity<Void> response = restTemplate.postForEntity(url, notification, Void.class);
+            HttpEntity<Notification> requestEntity = new HttpEntity<>(notification, headers);
+
+            log.debug("Sending notification: {}", notification);
+
+            ResponseEntity<Void> response = restTemplate.exchange(
+                url,
+                HttpMethod.POST,
+                requestEntity,
+                Void.class
+            );            
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("Successfully sent notification: {}", notification);
             } else {
