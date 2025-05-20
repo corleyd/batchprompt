@@ -20,8 +20,7 @@ public class NoOpNotificationSender implements NotificationSender {
 
     @Override
     public void send(String notificationType, Object payload, String userId) {
-        // No operation performed
-        log.debug("No-op notification sender. Notification type: {}, payload: {}", notificationType, payload);
+        log.debug("No-op notification sender. topic {}, payload: {}", notificationType, payload);
     }
     
 

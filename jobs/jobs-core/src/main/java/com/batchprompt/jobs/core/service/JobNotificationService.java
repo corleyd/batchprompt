@@ -24,13 +24,23 @@ public class JobNotificationService {
      * Sends a notification for a job status change.
      *
      * @param job the job with the new status
-     * @param previousStatus the previous status
      */
     public void sendJobUpdateNotification(Job job) {
         try {
-            notificationSender.send("job-updated", jobMapper.toDto(job), job.getUserId());
+            log.debug("Sending job update notification for job: {}, status: {}", job.getJobUuid(), job.getStatus());
+            
+            /*
+             * Send notifications to:
+             * 1. The general jobs topic - for job lists/dashboards
+             * 2. The specific job topic - for job detail views watching a single job
+             */
+            notificationSender.send("jobs", jobMapper.toDto(job), job.getUserId());
+            notificationSender.send("jobs/" + job.getJobUuid().toString(), jobMapper.toDto(job), job.getUserId());
+            
+            // Log the destination paths for debugging
+            log.debug("Sent job notifications to 'jobs' and 'jobs/{}'", job.getJobUuid().toString());
         } catch (Exception e) {
-            log.error("Failed to send job status notification", e);
+            log.error("Failed to send job status notification for job {}: {}", job.getJobUuid(), e.getMessage(), e);
         }
     }
 

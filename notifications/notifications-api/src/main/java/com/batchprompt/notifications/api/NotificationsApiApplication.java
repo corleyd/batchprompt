@@ -3,7 +3,7 @@ package com.batchprompt.notifications.api;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
+/** UserDestinationMessageHandler
  * Spring Boot Application for the Notifications Service.
  * This service handles real-time notifications using WebSockets.
  */

@@ -28,8 +28,24 @@ public class NotificationDispatcherService {
             return;
         }
         
-        // Broadcast to all notifications topic
-        messagingTemplate.convertAndSend("/topic/notifications", notification);
-        log.debug("Dispatched notification: {}", notification);
+        // Get the notification type without any leading slash
+        String notificationType = notification.getNotificationType();
+        if (notificationType.startsWith("/")) {
+            notificationType = notificationType.substring(1);
+        }
+        
+        // Log basic notification information
+        log.info("Dispatching notification: type={}, userId={}", notificationType, notification.getUserId());
+        
+        // For debugging: log the current architecture and formats
+
+        String destination = "/topic/" + notificationType;
+        log.debug("Dispatching notification to destination: {}", destination);
+        try {
+            messagingTemplate.convertAndSendToUser(notification.getUserId(), destination, notification);
+        } catch (Exception e) {
+            log.error("Error dispatching notification: {}", e.getMessage(), e);
+        }
+
     }
 }

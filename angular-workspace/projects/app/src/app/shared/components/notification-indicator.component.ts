@@ -95,13 +95,6 @@ export class NotificationIndicatorComponent implements OnInit, OnDestroy {
       .subscribe(connected => {
         this.connected = connected;
       });
-
-    // Subscribe to all notifications
-    this.notificationService.notifications$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(notification => {
-        this.addNotification(notification);
-      });
   }
 
   ngOnDestroy(): void {

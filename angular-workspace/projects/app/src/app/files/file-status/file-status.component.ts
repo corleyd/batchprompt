@@ -28,8 +28,7 @@ export class FileStatusComponent implements OnInit, OnDestroy {
     
     // Subscribe to file-specific notifications
     if (this.file && this.file.fileUuid) {
-      this.notificationService.subscribeToAllNotifications();
-      this.notificationService.notifications$
+      this.notificationService.subscribeTo("/files/" + this.file.fileUuid)
         .pipe(takeUntil(this.destroy$))
         .subscribe(notification => {
           console.log('File notification received:', notification);

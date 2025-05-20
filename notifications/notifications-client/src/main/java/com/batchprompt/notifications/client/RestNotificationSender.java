@@ -7,10 +7,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 
-import com.batchprompt.notifications.model.Notification;
 import com.batchprompt.common.services.ServiceAuthenticationService;
+import com.batchprompt.notifications.model.Notification;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,15 +41,33 @@ public class RestNotificationSender implements NotificationSender {
     /**
      * Sends a notification to the notification service.
      * 
-     * @param eventType The type of the event
+     * @param notificationType The type of the event
      * @param payload The payload of the notification
      */
     @Override
-    public void send(String eventType, Object payload, String userId) {
+    public void send(String notificationType, Object payload, String userId) {
+
+        // check to see if a transaction is in progress
+
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            // if so, add the notification to the transaction
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    sendInternal(notificationType, payload, userId);
+                }
+            });
+        } else {
+            // if not, send the notification immediately
+            sendInternal(notificationType, payload, userId);
+        }
+    }
+
+    public void sendInternal(String notificationType, Object payload, String userId) {
         try {
             String url = notificationServiceUrl + "/api/notifications";
             HttpHeaders headers = authService.createAuthHeaders(null);
-            Notification notification = Notification.create(eventType, payload, userId);
+            Notification notification = Notification.create(notificationType, payload, userId);
             HttpEntity<Notification> requestEntity = new HttpEntity<>(notification, headers);
 
             log.debug("Sending notification: {}", notification);

@@ -38,13 +38,21 @@ export class JobDetailComponent implements OnInit, OnDestroy {
         this.loadJobDetails(jobUuid);
         
         // Subscribe to job-specific notifications
-        this.notificationService.subscribeToAllNotifications
-        this.notificationService.notifications$
+        // No need to prepend '/user/' - the notification service will handle that
+        const jobTopic = "jobs/" + jobUuid;
+        console.log(`Job detail component subscribing to topic: ${jobTopic}`);
+        
+        this.notificationService.subscribeTo(jobTopic)
           .pipe(takeUntil(this.destroy$))
-          .subscribe(notification => {
-            console.log('Job notification received:', notification);
-            // Refresh job details when a notification is received
-            this.loadJobDetails(jobUuid);
+          .subscribe({
+            next: (notification) => {
+              console.log('Job notification received:', notification);
+              // Refresh job details when a notification is received
+              this.loadJobDetails(jobUuid);
+            },
+            error: (error) => {
+              console.error('Error in job notification subscription:', error);
+            }
           });
       } else {
         this.error = true;

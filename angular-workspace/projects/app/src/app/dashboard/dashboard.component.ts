@@ -40,8 +40,6 @@ export class DashboardComponent implements OnInit, OnDestroy {
         this.isAuthenticated = isAuthenticated;
         if (isAuthenticated) {
           this.notificationService.connect();
-          // Subscribe to all notifications
-          this.notificationService.subscribeToAllNotifications();
         }
       });
   }
