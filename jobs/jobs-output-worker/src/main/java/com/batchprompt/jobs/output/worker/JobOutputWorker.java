@@ -34,6 +34,7 @@ import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
+import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
@@ -58,6 +59,7 @@ public class JobOutputWorker {
     private final FileClient fileClient;
     private final PromptClient promptClient;
     private final ObjectMapper objectMapper;
+    private final JobService jobService;
 
     @Value("${job.output.task.batch.size:100}")
     private int taskBatchSize;
@@ -81,15 +83,13 @@ public class JobOutputWorker {
 
             PromptDto prompt = promptClient.getPrompt(job.getPromptUuid(), null);
             if (prompt == null) {
-                log.error("Prompt not found for job: {}", jobUuid);
-                failJob(job);
+                jobService.failJob(job, "Prompt not found");
                 return;
             }
 
             FileDto inputFile = fileClient.getFile(job.getFileUuid(), null);
             if (inputFile == null) {
-                log.error("File not found for job: {}", jobUuid);
-                failJob(job);
+                jobService.failJob(job, "Input file not found");
                 return;
             }
 
@@ -122,29 +122,24 @@ public class JobOutputWorker {
             if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
                 String jsonSchema = prompt.getResponseJsonSchema();
                 if (jsonSchema == null) {
-                    log.error("No JSON schema found for job: {}", jobUuid);
-                    failJob(job);
+                    jobService.failJob(job, "Missing JSON schema");
                     return;
                 }
                 JsonNode jsonSchemaNode = objectMapper.readTree(jsonSchema);
                 if (jsonSchemaNode == null || !jsonSchemaNode.has("properties")) {
-                    log.error("Invalid JSON schema for job: {}", jobUuid);
-                    failJob(job);
+                    jobService.failJob(job, "Invalid JSON schema");
                     return;
                 }
                 jsonSchemaNode.get("properties").fieldNames().forEachRemaining(structuredFields::add);
             }
 
             // Update job status to GENERATING_OUTPUT
-            job.setStatus(JobStatus.GENERATING_OUTPUT);
-            job.setUpdatedAt(LocalDateTime.now());
-            jobRepository.save(job);
+            job = jobService.updateJobStatus(job, JobStatus.GENERATING_OUTPUT);
             
             // Generate Excel file
             tempFile = generateExcelFile(job, prompt, outputFileFields, structuredFields);
             if (tempFile == null) {
-                log.error("Failed to generate Excel file for job: {}", jobUuid);
-                failJob(job);
+                jobService.failJob(job, "Failed to generate Excel file");
                 return;
             }
             
@@ -164,25 +159,21 @@ public class JobOutputWorker {
                 );
                 
                 if (resultFileDto == null) {
-                    log.error("Failed to upload Excel file for job: {}", jobUuid);
-                    failJob(job);
+                    jobService.failJob(job, "Failed to upload result file");
                     return;
                 }
                 
                 // Validate the uploaded file
                 boolean validationSuccess = fileClient.validateFile(resultFileDto.getFileUuid(), null);
                 if (!validationSuccess) {
-                    log.error("File validation failed for job: {}", jobUuid);
-                    failJob(job);
+                    jobService.failJob(job, "File validation failed");
                     return;
                 }
                 
                 // Update job status to COMPLETED or COMPLETED_WITH_ERRORS
                 JobStatus finalStatus = hasErrors ? JobStatus.COMPLETED_WITH_ERRORS : JobStatus.COMPLETED;
                 job.setResultFileUuid(resultFileDto.getFileUuid());
-                job.setStatus(finalStatus);
-                job.setUpdatedAt(LocalDateTime.now());
-                jobRepository.save(job);
+                job = jobService.updateJobStatus(job, finalStatus);
                 
                 log.info("Job output processing completed for job {}. Status: {}", jobUuid, finalStatus);
             }
@@ -192,7 +183,7 @@ public class JobOutputWorker {
             try {
                 Job job = jobRepository.findById(jobUuid).orElse(null);
                 if (job != null) {
-                    failJob(job);
+                    jobService.failJob(job, "Error processing job output: " + e.getMessage());
                 }
             } catch (Exception ex) {
                 log.error("Failed to update job status to FAILED for job: {}", jobUuid, ex);
@@ -490,15 +481,4 @@ public class JobOutputWorker {
         return value;
     }
 
-    /**
-     * Update job status to FAILED
-     * 
-     * @param job The job
-     */
-    private void failJob(Job job) {
-        job.setStatus(JobStatus.FAILED);
-        job.setUpdatedAt(LocalDateTime.now());
-        jobRepository.save(job);
-        log.error("Job {} failed", job.getJobUuid());
-    }
 }

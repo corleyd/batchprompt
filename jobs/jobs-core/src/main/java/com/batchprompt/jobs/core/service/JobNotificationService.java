@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JobNotificationService {
     private final NotificationSender notificationSender;
-    private final JobMapper jobMapper = new JobMapper();
+    private final JobMapper jobMapper;
 
     /**
      * Sends a notification for a job status change.

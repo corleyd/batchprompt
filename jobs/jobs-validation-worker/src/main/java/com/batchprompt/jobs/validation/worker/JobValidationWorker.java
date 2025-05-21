@@ -164,7 +164,7 @@ public class JobValidationWorker {
                 );
 
                 totalEstimatedCost += estimatedCost;
-
+                totalEstimatedCredits += estimatedCredits;
 
                 JobTask task = JobTask.builder()
                         .jobTaskUuid(jobTaskUuid)

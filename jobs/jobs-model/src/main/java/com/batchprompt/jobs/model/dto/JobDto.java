@@ -39,4 +39,6 @@ public class JobDto {
     private Double creditUsage;
     private Double costEstimate;
     private Double creditEstimate;
+
+    private String errorMessage;
 }

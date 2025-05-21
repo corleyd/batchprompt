@@ -31,7 +31,7 @@
         <div class="empty-state" *ngIf="recentFiles.length === 0">
           <p>No recently uploaded files</p>
         </div>
-        <div class="file-item" *ngFor="let file of recentFiles">
+        <div class="file-item" *ngFor="let file of recentFiles" (click)="router.navigate(['/dashboard/files', file.fileUuid])">
           <div class="file-info">
             <div class="file-name">{{file.fileName}}</div>
             <div class="file-meta">
@@ -56,7 +56,7 @@
         <div class="empty-state" *ngIf="recentJobs.length === 0">
           <p>No recently created jobs</p>
         </div>
-        <div class="job-item" *ngFor="let job of recentJobs">
+        <div class="job-item" *ngFor="let job of recentJobs" (click)="router.navigate(['/dashboard/jobs', job.jobUuid])">
           <div class="job-info">
             <div class="job-name">{{job.fileName}} <span class="with-prompt">with {{job.promptName}}</span></div>
             <div class="job-meta">

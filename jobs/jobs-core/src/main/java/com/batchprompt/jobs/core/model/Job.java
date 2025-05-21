@@ -84,6 +84,9 @@ public class Job {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
+    @Column(name = "error_message")
+    private String errorMessage;
+ 
     @Version
     @Column(name = "version")
     private Integer version;

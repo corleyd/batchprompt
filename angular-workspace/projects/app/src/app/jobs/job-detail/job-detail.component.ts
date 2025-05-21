@@ -47,8 +47,8 @@ export class JobDetailComponent implements OnInit, OnDestroy {
           .subscribe({
             next: (notification) => {
               console.log('Job notification received:', notification);
-              // Refresh job details when a notification is received
-              this.loadJobDetails(jobUuid);
+              this.loading = false;
+              this.job = notification.payload;
             },
             error: (error) => {
               console.error('Error in job notification subscription:', error);
@@ -73,8 +73,14 @@ export class JobDetailComponent implements OnInit, OnDestroy {
     
     this.jobService.getJobById(jobUuid).subscribe({
       next: (response) => {
-        this.job = response;
-        this.loading = false;
+
+        // Only set the job if it hasn't been set yet (on the chance that a 
+        // notification comes in before the initial load)
+
+        if (!this.job) {
+          this.job = response;
+          this.loading = false;
+        }
       },
       error: (err) => {
         console.error('Error loading job details', err);

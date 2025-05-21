@@ -187,6 +187,10 @@ table {
   cursor: pointer;
   font-family: inherit;
   border: none;
+
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.5;
   
   /* Button Sizes */
   &.btn-sm {

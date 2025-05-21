@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
-import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
+import { catchError, of } from 'rxjs';
 import { FileService } from '../files/file.service';
-import { JobService } from '../services/job.service';
-import { catchError, switchMap, tap, of } from 'rxjs';
 import { IconsModule } from '../icons/icons.module';
+import { JobService } from '../services/job.service';
 
 @Component({
   selector: 'app-home',
@@ -23,7 +23,8 @@ export class HomeComponent implements OnInit {
   constructor(
     public auth: AuthService, 
     private fileService: FileService,
-    private jobService: JobService
+    private jobService: JobService,
+    public router: Router
   ) {}
 
   ngOnInit(): void {

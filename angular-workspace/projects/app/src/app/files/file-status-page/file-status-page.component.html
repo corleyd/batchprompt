@@ -1,7 +1,7 @@
 <div class="file-status-page">
   <div class="header">
     <h2>File Status</h2>
-    <button mat-stroked-button (click)="goToFiles()">Back to Files</button>
+    <button (click)="goToFiles()" class="btn btn-primary">Back to Files</button>
   </div>
 
   <div class="loading-container" *ngIf="loading">
@@ -95,7 +95,7 @@
       </div>
       
       <div class="actions">
-        <button mat-raised-button color="primary" (click)="createJob()">Create Job with this File</button>
+        <button (click)="createJob()" class="btn btn-primary">Create Job</button>
       </div>
     </div>
   </div>

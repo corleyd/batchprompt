@@ -62,7 +62,7 @@ public class JobsController {
         Page<Job> jobPage = jobService.getJobsPaginated(userId, modelId, status, pageable);
         
         // Convert to DTOs and preserve pagination metadata
-        Page<JobDto> jobDtoPage = jobPage.map(job -> jobService.convertToDto(job));
+        Page<JobDto> jobDtoPage = jobPage.map(job -> jobMapper.toDto(job));
         
         return ResponseEntity.ok(jobDtoPage);
     }
@@ -73,14 +73,28 @@ public class JobsController {
         if (job == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(jobService.convertToDto(job));
+        return ResponseEntity.ok(jobMapper.toDto(job));
     }
 
     @PostMapping("/{jobUuid}/submit")
     public ResponseEntity<JobDto> submitJob(@PathVariable UUID jobUuid) {
         // Submit the job for processing
         Job job = jobService.submitJob(jobUuid);
-        return ResponseEntity.ok(jobService.convertToDto(job));
+        return ResponseEntity.ok(jobMapper.toDto(job));
+    }
+
+    @PostMapping("/{jobUuid}/cancel")
+    public ResponseEntity<JobDto> cancelJob(@PathVariable UUID jobUuid) {
+        // Submit the job for processing
+        Job job = jobService.cancelJob(jobUuid);
+        return ResponseEntity.ok(jobMapper.toDto(job));
+    }    
+
+    @PostMapping("/{jobUuid}/continue")
+    public ResponseEntity<JobDto> continueJob(@PathVariable UUID jobUuid) {
+        // Submit the job for processing
+        Job job = jobService.continueJob(jobUuid);
+        return ResponseEntity.ok(jobMapper.toDto(job));
     }
 
     @GetMapping("/user")
@@ -122,7 +136,7 @@ public class JobsController {
         
         // Get jobs for the specified user
         Page<Job> jobsPage = jobService.getJobsByUserIdPaginated(userId, pageable);
-        Page<JobDto> dtoPage = jobsPage.map(job -> jobService.convertToDto(job));
+        Page<JobDto> dtoPage = jobMapper.toDtoPage(jobsPage);
         
         return ResponseEntity.ok(dtoPage);
     }    
@@ -185,6 +199,6 @@ public class JobsController {
                 "Bearer " + authToken
         );
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(jobService.convertToDto(job));
+        return ResponseEntity.status(HttpStatus.CREATED).body(jobMapper.toDto(job));
     }
 }

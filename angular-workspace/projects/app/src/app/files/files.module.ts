@@ -7,7 +7,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { FilesRoutingModule } from './files-routing.module';
 import { FilesComponent } from './files.component';
-import { FileStatusComponent } from './file-status/file-status.component';
 import { DownloadButtonComponent } from '../shared/components';
 import { FileService } from './file.service';
 import { IconsModule } from '../icons/icons.module';
@@ -15,8 +14,7 @@ import { GenericTableModule } from '../shared/components/generic-table/generic-t
 
 @NgModule({
   declarations: [
-    FilesComponent,
-    FileStatusComponent
+    FilesComponent
   ],
   imports: [
     CommonModule,

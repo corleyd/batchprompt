@@ -29,7 +29,6 @@ import com.batchprompt.jobs.core.specification.JobSpecification;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobDefinitionDto;
-import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.jobs.model.dto.JobValidationMessage;
@@ -258,7 +257,6 @@ public class JobService {
         }
         
         // Retrieve the tasks for the job
-
         List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
 
         // Update the job status to SUBMITTED
@@ -266,35 +264,36 @@ public class JobService {
         job.setUpdatedAt(LocalDateTime.now());
         jobRepository.save(job);
         jobNotificationService.sendJobUpdateNotification(job);
-        List<JobTaskMessage> messagesToSend = new ArrayList<>();
+        
+        // Submit all tasks (no status filter)
+        int tasksSubmitted = submitJobTasks(job, tasks, null);
+        
+        log.info("Job {} submitted for processing with {} tasks", jobUuid, tasksSubmitted);
+        return job;
+    }
 
-        for (JobTask task : tasks) {
-                // Create the message but don't send it yet
-            JobTaskMessage message = JobTaskMessage.builder()
-                    .jobTaskUuid(task.getJobTaskUuid())
-                    .jobUuid(task.getJobUuid())
-                    .userId(job.getUserId())
-                    .fileRecordUuid(task.getFileRecordUuid())
-                    .modelId(task.getModelId())
-                    .promptUuid(job.getPromptUuid())
-                    .maxTokens(job.getMaxTokens())
-                    .temperature(job.getTemperature())
-                    .build();
-                            
-                    messagesToSend.add(message);
+    /**
+     * Cancel a job
+     * 
+     * @param jobUuid The UUID of the job to cancel
+     * @return The updated job
+     */
+    @Transactional
+    public Job cancelJob(UUID jobUuid) {
+        Job job = jobRepository.findById(jobUuid).orElse(null);
+        if (job == null) {
+            throw new JobSubmissionException("Job not found: " + jobUuid);
         }
-
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                // Now that the transaction has committed, send all messages
-                for (JobTaskMessage message : messagesToSend) {
-                    messageProducer.sendJobTask(message);
-                }
-                log.info("Sent {} job task messages for job {} after transaction commit", messagesToSend.size(), jobUuid);
-            }
-        });   
-        log.info("Job {} submitted for processing", jobUuid);
+        
+        // Check if the job is already cancelled
+        if (job.getStatus() == JobStatus.CANCELLED) {
+            throw new JobSubmissionException("Job is already cancelled: " + job.getStatus());
+        }
+        
+        // Update the job status to CANCELLED
+        job = updateJobStatus(job, JobStatus.CANCELLED);
+        
+        log.info("Job {} cancelled", jobUuid);
         return job;
     }
     
@@ -437,26 +436,111 @@ public class JobService {
         }
     }
 
-    public JobDto convertToDto(Job job) {
-        var builder = JobDto.builder()
-                .jobUuid(job.getJobUuid())
-                .userId(job.getUserId())
-                .fileUuid(job.getFileUuid())
-                .fileName(job.getFileName())
-                .resultFileUuid(job.getResultFileUuid())
-                .promptUuid(job.getPromptUuid())
-                .modelId(job.getModelId())
-                .status(job.getStatus())
-                .taskCount(job.getTaskCount())
-                .completedTaskCount(job.getCompletedTaskCount())
-                .createdAt(job.getCreatedAt())
-                .updatedAt(job.getUpdatedAt());
-
-        PromptDto prompt = promptClient.getPrompt(job.getPromptUuid(), null);
-        if (prompt != null) {
-            builder.promptName(prompt.getName());
-        }
-        return builder.build();
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Job updateJobStatus(Job job, JobStatus status) {
+        job.setStatus(status);
+        job.setUpdatedAt(LocalDateTime.now());
+        job = jobRepository.save(job);
+        jobNotificationService.sendJobUpdateNotification(job);
+        return job;
     }
 
+    public void failJob(Job job, String errorMessage) {
+        job.setErrorMessage(errorMessage);
+        job = updateJobStatus(job, JobStatus.FAILED);
+        log.error("Job {} failed: {}", job.getJobUuid(), errorMessage);
+    }
+
+    /**
+     * Continue a job that was previously cancelled or has insufficient credits
+     * 
+     * @param jobUuid The UUID of the job to continue
+     * @return The updated job
+     */
+    @Transactional
+    public Job continueJob(UUID jobUuid) {
+        Job job = jobRepository.findById(jobUuid).orElse(null);
+        if (job == null) {
+            throw new JobSubmissionException("Job not found: " + jobUuid);
+        }
+        
+        // Check if the job is in a state that can be continued
+        if (job.getStatus() != JobStatus.CANCELLED && job.getStatus() != JobStatus.INSUFFICIENT_CREDITS) {
+            throw new JobSubmissionException("Job is not in CANCELLED or INSUFFICIENT_CREDITS status: " + job.getStatus());
+        }
+        
+        // Retrieve the tasks for the job
+        List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
+
+        // Update the job status to SUBMITTED
+        job.setStatus(JobStatus.SUBMITTED);
+        job.setUpdatedAt(LocalDateTime.now());
+        jobRepository.save(job);
+        jobNotificationService.sendJobUpdateNotification(job);
+        
+        // Create a list of task statuses to resubmit
+        List<TaskStatus> statusesToResubmit = List.of(TaskStatus.CANCELLED, TaskStatus.SUBMITTED, TaskStatus.INSUFFICIENT_CREDITS);
+        
+        // Submit the job tasks that match the statuses to be resubmitted
+        int tasksSubmitted = submitJobTasks(job, tasks, statusesToResubmit);
+        
+        log.info("Job {} continued and submitted for processing with {} tasks resubmitted", jobUuid, tasksSubmitted);
+        return job;
+    }
+    
+    /**
+     * Private helper method to submit tasks for a job
+     * 
+     * @param job The job to submit tasks for
+     * @param tasks The list of all tasks for the job
+     * @param statuses The list of task statuses to consider for submission (null or empty list for all)
+     * @return The number of tasks submitted
+     */
+    private int submitJobTasks(Job job, List<JobTask> tasks, List<TaskStatus> statuses) {
+        List<JobTaskMessage> messagesToSend = new ArrayList<>();
+
+        for (JobTask task : tasks) {
+            // Skip tasks that don't match the status filter (if provided)
+            if (statuses != null && !statuses.isEmpty() && !statuses.contains(task.getStatus())) {
+                continue;
+            }
+            
+            // Create the message but don't send it yet
+            JobTaskMessage message = JobTaskMessage.builder()
+                    .jobTaskUuid(task.getJobTaskUuid())
+                    .jobUuid(task.getJobUuid())
+                    .userId(job.getUserId())
+                    .fileRecordUuid(task.getFileRecordUuid())
+                    .modelId(task.getModelId())
+                    .promptUuid(job.getPromptUuid())
+                    .maxTokens(job.getMaxTokens())
+                    .temperature(job.getTemperature())
+                    .build();
+                    
+            messagesToSend.add(message);
+            
+            // Update task status to SUBMITTED
+            if (task.getStatus() != TaskStatus.SUBMITTED) {
+                task.setStatus(TaskStatus.SUBMITTED);
+                jobTaskRepository.save(task);
+            }
+        }
+
+        // Register a callback to be executed after the transaction is successfully committed
+        final int messageCount = messagesToSend.size();
+        if (messageCount > 0) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    // Now that the transaction has committed, send all messages
+                    for (JobTaskMessage message : messagesToSend) {
+                        messageProducer.sendJobTask(message);
+                    }
+                    log.info("Sent {} job task messages for job {} after transaction commit", messageCount, job.getJobUuid());
+                }
+            });
+        }
+        
+        return messageCount;
+    }
 }

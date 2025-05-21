@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
+import com.batchprompt.jobs.core.model.Job;
 import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.service.AbstractChatModel;
@@ -16,6 +17,7 @@ import com.batchprompt.jobs.core.service.JobCreditService;
 import com.batchprompt.jobs.core.service.JobPricingService;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.core.service.ModelService;
+import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.prompts.client.PromptClient;
@@ -47,7 +49,7 @@ public class JobTaskWorker {
     public void processJobTask(JobTaskMessage message) {
         UUID jobTaskUuid = message.getJobTaskUuid();
         UUID jobUuid = message.getJobUuid();
-        
+       
         log.info("Processing job task: {} for model: {}", jobTaskUuid, message.getModelId());
         
         JobTask jobTask = null;
@@ -121,6 +123,19 @@ public class JobTaskWorker {
         JobTask jobTask = jobTaskRepository.findById(jobTaskUuid).orElse(null);
         if (jobTask == null) {
             log.error("Job task not found: {}", jobTaskUuid);
+            return null;
+        }
+
+        Job job = jobService.getJobById(jobTask.getJobUuid());
+        if (job == null) {
+            log.error("Job not found for task {}: {}", jobTaskUuid, jobTask.getJobUuid());
+            return null;
+        }
+
+        if (job.getStatus() == JobStatus.CANCELLED) {
+            log.info("Job task {} cancelled due to job status: {}", jobTaskUuid, job.getStatus());
+            jobTask.setStatus(TaskStatus.CANCELLED);
+            jobTaskRepository.save(jobTask);
             return null;
         }
         
