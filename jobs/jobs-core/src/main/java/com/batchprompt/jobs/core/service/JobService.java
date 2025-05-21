@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.domain.Page;
@@ -25,6 +26,7 @@ import com.batchprompt.jobs.core.model.JobTask;
 import com.batchprompt.jobs.core.repository.JobOutputFieldRepository;
 import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
+import com.batchprompt.jobs.core.repository.dto.TaskStatusCount;
 import com.batchprompt.jobs.core.specification.JobSpecification;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.TaskStatus;
@@ -280,18 +282,14 @@ public class JobService {
      */
     @Transactional
     public Job cancelJob(UUID jobUuid) {
-        Job job = jobRepository.findById(jobUuid).orElse(null);
-        if (job == null) {
-            throw new JobSubmissionException("Job not found: " + jobUuid);
-        }
-        
-        // Check if the job is already cancelled
-        if (job.getStatus() == JobStatus.CANCELLED) {
-            throw new JobSubmissionException("Job is already cancelled: " + job.getStatus());
-        }
         
         // Update the job status to CANCELLED
-        job = updateJobStatus(job, JobStatus.CANCELLED);
+        Job job = updateJobStatus(jobUuid, JobStatus.CANCELLED, j -> {
+            // Check if the job is already cancelled
+            if (j.getStatus() == JobStatus.CANCELLED) {
+                throw new JobSubmissionException("Job is already cancelled: " + j.getStatus());
+            }
+        });
         
         log.info("Job {} cancelled", jobUuid);
         return job;
@@ -326,11 +324,15 @@ public class JobService {
                     log.info("Optimistic locking conflict detected for job {}, retrying update ({}/{})", 
                         jobUuid, retryCount + 1, MAX_RETRIES);
                     
-                    // Small delay before retry to reduce contention
+                    // Exponential backoff to reduce contention
                     try {
-                        Thread.sleep(50 * (retryCount + 1));
+                        // Base delay of 50ms with exponential increase and some randomness
+                        long delay = (long) (50 * Math.pow(1.5, retryCount) + Math.random() * 50);
+                        Thread.sleep(delay);
                     } catch (InterruptedException ie) {
                         Thread.currentThread().interrupt();
+                        log.warn("Thread interrupted during retry delay for job {}", jobUuid);
+                        return; // Exit on interruption
                     }
                     
                     retryCount++;
@@ -352,45 +354,66 @@ public class JobService {
             return;
         }
         
-        List<JobTask> tasks = jobTaskRepository.findByJobUuid(jobUuid);
-        if (tasks.isEmpty()) {
+        // Get the total number of tasks for this job
+        Long totalTaskCount = jobTaskRepository.countByJobUuid(jobUuid);
+        if (totalTaskCount == null || totalTaskCount == 0) {
             log.error("No tasks found for job: {}", jobUuid);
             return;
         }
+        
+        // Get the counts by status in a single query instead of loading all tasks
+        List<TaskStatusCount> statusCounts = jobTaskRepository.countTasksByStatus(jobUuid);
         
         int completedCount = 0;
         int failedCount = 0;
         int insufficientCreditsCount = 0;
         
-        for (JobTask task : tasks) {
-            if (task.getStatus() == TaskStatus.COMPLETED) {
-                completedCount++;
-            } else if (task.getStatus() == TaskStatus.FAILED) {
-                failedCount++;
-            } else if (task.getStatus() == TaskStatus.INSUFFICIENT_CREDITS) {
-                insufficientCreditsCount++;
+        // Process the counts from the query results
+        for (TaskStatusCount statusCount : statusCounts) {
+            if (statusCount.getStatus() == TaskStatus.COMPLETED) {
+                completedCount = statusCount.getCount().intValue();
+            } else if (statusCount.getStatus() == TaskStatus.FAILED) {
+                failedCount = statusCount.getCount().intValue();
+            } else if (statusCount.getStatus() == TaskStatus.INSUFFICIENT_CREDITS) {
+                insufficientCreditsCount = statusCount.getCount().intValue();
             }
         }
             
         // We only update the count if it has changed
-        boolean countsChanged = job.getCompletedTaskCount() != (completedCount + failedCount + insufficientCreditsCount); 
+        int completedTaskCount = completedCount + failedCount + insufficientCreditsCount;
+        boolean countsChanged = job.getCompletedTaskCount() != completedTaskCount; 
         if (countsChanged) {
-            job.setCompletedTaskCount(completedCount + failedCount + insufficientCreditsCount);
+            job.setCompletedTaskCount(completedTaskCount);
         }
+        
+        // Re-read job status to ensure we're working with the most current state
+        // This helps prevent race conditions where another process changed the status
+        // since we loaded the job
+        JobStatus currentStatus = job.getStatus();
         
         JobStatus newStatus = null;
         
-        // Check for insufficient credits first - if any task has insufficient credits, mark the whole job
-        if (insufficientCreditsCount > 0) {
-            newStatus = JobStatus.INSUFFICIENT_CREDITS;
-        }
-        // If no insufficient credits but all tasks are done, mark as pending output
-        else if (completedCount + failedCount + insufficientCreditsCount == tasks.size()) {
-            // All tasks are completed or failed, update to PENDING_OUTPUT
-            newStatus = JobStatus.PENDING_OUTPUT;
-        } else if (job.getStatus() == JobStatus.SUBMITTED) {
-            // First task started processing
-            newStatus = JobStatus.PROCESSING;
+        // Only change status if in a legal state for automatic transitions
+        // This prevents overriding manual status changes like CANCELLED
+        boolean isEligibleForAutoUpdate = 
+            currentStatus == JobStatus.SUBMITTED || 
+            currentStatus == JobStatus.PROCESSING || 
+            currentStatus == JobStatus.VALIDATING || 
+            currentStatus == JobStatus.PENDING_VALIDATION;
+            
+        if (isEligibleForAutoUpdate) {
+            // Check for insufficient credits first - if any task has insufficient credits, mark the whole job
+            if (insufficientCreditsCount > 0) {
+                newStatus = JobStatus.INSUFFICIENT_CREDITS;
+            }
+            // If no insufficient credits but all tasks are done, mark as pending output
+            else if (completedTaskCount == totalTaskCount) {
+                // All tasks are completed or failed, update to PENDING_OUTPUT
+                newStatus = JobStatus.PENDING_OUTPUT;
+            } else if (currentStatus == JobStatus.SUBMITTED) {
+                // First task started processing
+                newStatus = JobStatus.PROCESSING;
+            }
         }
         
         // Only save if there are actual changes to make
@@ -399,56 +422,76 @@ public class JobService {
                 job.setStatus(newStatus);
             }
             job.setUpdatedAt(LocalDateTime.now());
-            jobRepository.save(job);
-            jobNotificationService.sendJobUpdateNotification(job);
             
-            // If all tasks completed and we're not in INSUFFICIENT_CREDITS, queue for output processing
-            if (newStatus == JobStatus.PENDING_OUTPUT) {
-                log.info("All tasks completed for job {}. Setting status to {} and queueing for output processing", 
-                            jobUuid, newStatus);
-                            
-                // Queue the job for output processing after the transaction is committed
-                final UUID finalJobUuid = job.getJobUuid();
-                final String userId = job.getUserId();
-                final boolean hasErrors = failedCount > 0;
+            try {
+                jobRepository.save(job);
+                jobNotificationService.sendJobUpdateNotification(job);
                 
-                TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-                    @Override
-                    public void afterCommit() {
-                        // Send job output processing message
-                        JobOutputMessage outputMessage = JobOutputMessage.builder()
-                                .jobUuid(finalJobUuid)
-                                .userId(userId)
-                                .hasErrors(hasErrors)
-                                .build();
-                        
-                        messageProducer.sendJobOutput(outputMessage);
-                        log.info("Sent job output message for job {} after transaction commit", finalJobUuid);
-                    }
-                });
-            } else if (newStatus == JobStatus.INSUFFICIENT_CREDITS) {
-                log.warn("Job {} marked as INSUFFICIENT_CREDITS ({} tasks with insufficient credits)", 
-                        jobUuid, insufficientCreditsCount);
-            } else if (countsChanged || newStatus != null) {
-                log.info("Updated job {} status to {}, completed tasks: {}/{}", 
-                    jobUuid, job.getStatus(), job.getCompletedTaskCount(), tasks.size());
+                // If all tasks completed and we're not in INSUFFICIENT_CREDITS, queue for output processing
+                if (newStatus == JobStatus.PENDING_OUTPUT) {
+                    log.info("All tasks completed for job {}. Setting status to {} and queueing for output processing", 
+                                jobUuid, newStatus);
+                                
+                    // Queue the job for output processing after the transaction is committed
+                    final UUID finalJobUuid = job.getJobUuid();
+                    final String userId = job.getUserId();
+                    final boolean hasErrors = failedCount > 0;
+                    
+                    TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                        @Override
+                        public void afterCommit() {
+                            // Send job output processing message
+                            JobOutputMessage outputMessage = JobOutputMessage.builder()
+                                    .jobUuid(finalJobUuid)
+                                    .userId(userId)
+                                    .hasErrors(hasErrors)
+                                    .build();
+                            
+                            messageProducer.sendJobOutput(outputMessage);
+                            log.info("Sent job output message for job {} after transaction commit", finalJobUuid);
+                        }
+                    });
+                } else if (newStatus == JobStatus.INSUFFICIENT_CREDITS) {
+                    log.warn("Job {} marked as INSUFFICIENT_CREDITS ({} tasks with insufficient credits)", 
+                            jobUuid, insufficientCreditsCount);
+                } else if (countsChanged || newStatus != null) {
+                    log.info("Updated job {} status to {}, completed tasks: {}/{}", 
+                        jobUuid, job.getStatus(), job.getCompletedTaskCount(), totalTaskCount);
+                }
+            } catch (ObjectOptimisticLockingFailureException e) {
+                // Explicitly throw this to be handled by the retry mechanism in updateJobStatus
+                log.debug("Optimistic locking failure while saving job {}", jobUuid);
+                throw e;
             }
+        } else {
+            log.debug("No changes to save for job {}", jobUuid);
         }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public Job updateJobStatus(Job job, JobStatus status) {
+    public Job updateJobStatus(UUID jobUuid, JobStatus status, Consumer<Job> jobMutator) {
+        Job job = jobRepository.findById(jobUuid).orElseThrow(() -> new IllegalArgumentException("Job not found: " + jobUuid));
         job.setStatus(status);
         job.setUpdatedAt(LocalDateTime.now());
+        if (jobMutator != null) {
+            jobMutator.accept(job);
+        }
         job = jobRepository.save(job);
         jobNotificationService.sendJobUpdateNotification(job);
         return job;
     }
 
-    public void failJob(Job job, String errorMessage) {
-        job.setErrorMessage(errorMessage);
-        job = updateJobStatus(job, JobStatus.FAILED);
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public Job updateJobStatus(UUID jobUuid, JobStatus status) {
+        return updateJobStatus(jobUuid, status, null);
+    }
+
+    public void failJob(UUID jobUuid, String errorMessage) {
+        Job job = updateJobStatus(jobUuid, JobStatus.FAILED, j -> {
+            j.setErrorMessage(errorMessage);
+        });
         log.error("Job {} failed: {}", job.getJobUuid(), errorMessage);
+
     }
 
     /**

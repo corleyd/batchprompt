@@ -201,6 +201,10 @@
         <mat-progress-bar [value]="(job.completedTaskCount / job.taskCount) * 100" mode="determinate"></mat-progress-bar>
         <div class="progress-text">{{ Math.round((job.completedTaskCount / job.taskCount) * 100) }}% Complete</div>
       </div>
+
+      <div class="action-buttons">
+        <button class="btn btn-secondary" (click)="cancelJob()">Cancel Job</button>
+      </div>
     </div>
   </div>
 </div>

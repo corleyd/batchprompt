@@ -59,7 +59,7 @@ export class CreditDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     this.form = this.fb.group({
-      amount: [100, [Validators.required, Validators.min(1)]],
+      amount: [100, [Validators.required] ],
       reason: ['Admin credit adjustment', Validators.required]
     });
   }

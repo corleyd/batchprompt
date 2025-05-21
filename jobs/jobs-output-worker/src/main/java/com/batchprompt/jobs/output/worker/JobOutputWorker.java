@@ -83,13 +83,13 @@ public class JobOutputWorker {
 
             PromptDto prompt = promptClient.getPrompt(job.getPromptUuid(), null);
             if (prompt == null) {
-                jobService.failJob(job, "Prompt not found");
+                jobService.failJob(job.getJobUuid(), "Prompt not found");
                 return;
             }
 
             FileDto inputFile = fileClient.getFile(job.getFileUuid(), null);
             if (inputFile == null) {
-                jobService.failJob(job, "Input file not found");
+                jobService.failJob(job.getJobUuid(), "Input file not found");
                 return;
             }
 
@@ -122,24 +122,24 @@ public class JobOutputWorker {
             if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
                 String jsonSchema = prompt.getResponseJsonSchema();
                 if (jsonSchema == null) {
-                    jobService.failJob(job, "Missing JSON schema");
+                    jobService.failJob(job.getJobUuid(), "Missing JSON schema");
                     return;
                 }
                 JsonNode jsonSchemaNode = objectMapper.readTree(jsonSchema);
                 if (jsonSchemaNode == null || !jsonSchemaNode.has("properties")) {
-                    jobService.failJob(job, "Invalid JSON schema");
+                    jobService.failJob(job.getJobUuid(), "Invalid JSON schema");
                     return;
                 }
                 jsonSchemaNode.get("properties").fieldNames().forEachRemaining(structuredFields::add);
             }
 
             // Update job status to GENERATING_OUTPUT
-            job = jobService.updateJobStatus(job, JobStatus.GENERATING_OUTPUT);
+            job = jobService.updateJobStatus(job.getJobUuid(), JobStatus.GENERATING_OUTPUT);
             
             // Generate Excel file
             tempFile = generateExcelFile(job, prompt, outputFileFields, structuredFields);
             if (tempFile == null) {
-                jobService.failJob(job, "Failed to generate Excel file");
+                jobService.failJob(job.getJobUuid(), "Failed to generate Excel file");
                 return;
             }
             
@@ -159,21 +159,22 @@ public class JobOutputWorker {
                 );
                 
                 if (resultFileDto == null) {
-                    jobService.failJob(job, "Failed to upload result file");
+                    jobService.failJob(job.getJobUuid(), "Failed to upload result file");
                     return;
                 }
                 
                 // Validate the uploaded file
                 boolean validationSuccess = fileClient.validateFile(resultFileDto.getFileUuid(), null);
                 if (!validationSuccess) {
-                    jobService.failJob(job, "File validation failed");
+                    jobService.failJob(job.getJobUuid(), "File validation failed");
                     return;
                 }
                 
                 // Update job status to COMPLETED or COMPLETED_WITH_ERRORS
                 JobStatus finalStatus = hasErrors ? JobStatus.COMPLETED_WITH_ERRORS : JobStatus.COMPLETED;
-                job.setResultFileUuid(resultFileDto.getFileUuid());
-                job = jobService.updateJobStatus(job, finalStatus);
+                job = jobService.updateJobStatus(job.getJobUuid(), finalStatus, j -> {
+                    j.setResultFileUuid(resultFileDto.getFileUuid());
+                });
                 
                 log.info("Job output processing completed for job {}. Status: {}", jobUuid, finalStatus);
             }
@@ -183,7 +184,7 @@ public class JobOutputWorker {
             try {
                 Job job = jobRepository.findById(jobUuid).orElse(null);
                 if (job != null) {
-                    jobService.failJob(job, "Error processing job output: " + e.getMessage());
+                    jobService.failJob(job.getJobUuid(), "Error processing job output: " + e.getMessage());
                 }
             } catch (Exception ex) {
                 log.error("Failed to update job status to FAILED for job: {}", jobUuid, ex);

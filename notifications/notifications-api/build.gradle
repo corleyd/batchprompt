@@ -18,6 +18,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     
+    // Jackson dependencies for proper date serialization
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+    
     
     // Auth0 dependencies
     implementation 'com.auth0:auth0-spring-security-api:1.5.1'
@@ -27,6 +30,9 @@ dependencies {
     // Spring Security
     implementation 'org.springframework.security:spring-security-oauth2-resource-server'
     implementation 'org.springframework.security:spring-security-oauth2-jose'
+    
+    // Jackson for date/time handling
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
