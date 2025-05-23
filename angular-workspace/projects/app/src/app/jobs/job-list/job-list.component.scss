@@ -110,33 +110,7 @@ $info-color: #17a2b8;
   }
 }
 
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 50px;
-  font-size: 0.8rem;
-  font-weight: 500;
-
-  &.status-queued {
-    background-color: rgba($info-color, 0.1);
-    color: $info-color;
-  }
-
-  &.status-processing {
-    background-color: rgba($warning-color, 0.1);
-    color: darken($warning-color, 15%);
-  }
-
-  &.status-completed {
-    background-color: rgba($success-color, 0.1);
-    color: $success-color;
-  }
-
-  &.status-failed {
-    background-color: rgba($danger-color, 0.1);
-    color: $danger-color;
-  }
-}
+// Status badge styles have been moved to the global styles.scss
 
 .job-actions {
   white-space: nowrap;

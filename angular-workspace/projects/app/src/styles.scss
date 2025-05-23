@@ -304,3 +304,86 @@ table {
     pointer-events: none;
   }
 }
+
+/* Status Badges
+ * A unified set of status badges that can be used across the application
+ * for indicating various statuses such as ready, processing, completed, failed, etc.
+ */
+.status-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 1rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: capitalize;
+  
+  /* Basic statuses */
+  &.ready {
+    background-color: #e3f2fd;
+    color: #1976d2;
+  }
+  
+  &.processing {
+    background-color: #e3f2fd;
+    color: #1565c0;
+  }
+  
+  &.completed {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+  }
+  
+  &.failed {
+    background-color: #ffebee;
+    color: #c62828;
+  }
+  
+  &.validation {
+    background-color: #fff8e1;
+    color: #f57f17;
+  }
+  
+  /* Additional status variations */
+  &.submitted, 
+  &.pending_output,
+  &.status-pending {
+    background-color: #fff8e1;
+    color: #ff8f00;
+  }
+  
+  &.status-completed {
+    background-color: #e6f7ed;
+    color: #0d6832;
+  }
+  
+  &.status-completed-with-errors {
+    background-color: #fff3e6;
+    color: #cc6600;
+  }
+  
+  &.status-failed, 
+  &.status-validation-failed {
+    background-color: #feecec;
+    color: #ca1515;
+  }
+  
+  &.status-processing {
+    background-color: #e6f1ff;
+    color: #0055cc;
+  }
+  
+  &.status-queued {
+    background-color: rgba(33, 150, 243, 0.1);
+    color: #2196f3;
+  }
+  
+  &.status-validated {
+    background-color: #e6f7ed;
+    color: #0d6832;
+  }
+  
+  &.status-insufficient-credits {
+    background-color: #fff3e6;
+    color: #cc6600;
+  }
+}

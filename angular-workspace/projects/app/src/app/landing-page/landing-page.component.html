@@ -82,6 +82,43 @@
         </div>
       </div>
     </div>
+
+    <!-- Supported Models Section -->
+    <div class="supported-models-section">
+      <div class="container">
+        <h2>Supported AI Models</h2>
+        <p class="section-description">Access a variety of cutting-edge AI models through a simple interface</p>
+        
+        <div *ngIf="isLoadingModels" class="loading-models">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading available models...</p>
+        </div>
+        
+        <div *ngIf="modelLoadError" class="model-error">
+          <i class="fas fa-exclamation-triangle"></i>
+          <p>Unable to load models. Please try again later.</p>
+        </div>
+        
+        <div *ngIf="!isLoadingModels && !modelLoadError && supportedModels.length === 0" class="no-models">
+          <p>No AI models are currently available.</p>
+        </div>
+        
+        <div *ngIf="supportedModels.length > 0" class="models-grid">
+          <div *ngFor="let provider of getUniqueProviders()" class="model-card">
+            <div class="model-header">
+              <h3 class="model-name">{{ provider }}</h3>
+            </div>
+            <div class="model-details">
+              <ul class="model-list">
+                <li *ngFor="let model of getModelsByProvider(provider)" class="model-item">
+                  {{ model.displayName }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- Use Cases Section -->
     <div class="use-cases-section">

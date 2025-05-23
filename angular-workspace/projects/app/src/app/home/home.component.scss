@@ -184,7 +184,7 @@
 .recent-files-list, .recent-jobs-list {
   margin-bottom: 1rem;
   flex-grow: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
   max-height: 400px;
 }
 
@@ -273,40 +273,6 @@
     &.job-btn:hover {
       color: #2196f3; /* Updated to match blue theme */
     }
-  }
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 0.25rem 0.5rem;
-  border-radius: 1rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  
-  &.ready {
-    background-color: #e3f2fd;
-    color: #1976d2;
-  }
-  
-  &.processing, &.status-processing, &.validation {
-    background-color: #fff8e1;
-    color: #f57f17;
-  }
-  
-  &.status-completed, &.completed {
-    background-color: #e8f5e9;
-    color: #2e7d32;
-  }
-  
-  &.failed, &.status-failed {
-    background-color: #ffebee;
-    color: #c62828;
-  }
-  
-  &.status-pending {
-    background-color: #e1f5fe;
-    color: #01579b;
   }
 }
 

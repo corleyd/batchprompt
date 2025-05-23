@@ -63,28 +63,6 @@
         font-size: 20px;
         word-break: break-all;
       }
-      
-      .status-badge {
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-weight: 500;
-        font-size: 14px;
-        
-        &.ready {
-          background-color: #e6f4ea;
-          color: #137333;
-        }
-        
-        &.validation, &.processing {
-          background-color: #e8f0fe;
-          color: #1a73e8;
-        }
-        
-        &.failed {
-          background-color: #fdeded;
-          color: #d32f2f;
-        }
-      }
     }
     
     .file-info {

@@ -150,34 +150,6 @@
         border-radius: 3px;
         font-size: 0.9em;
       }
-      
-      .status-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 0.85em;
-        font-weight: 500;
-        
-        &.status-completed {
-          background-color: #e8f5e9;
-          color: #2e7d32;
-        }
-        
-        &.status-failed {
-          background-color: #ffebee;
-          color: #c62828;
-        }
-        
-        &.status-processing {
-          background-color: #e3f2fd;
-          color: #1565c0;
-        }
-        
-        &.status-pending {
-          background-color: #fff8e1;
-          color: #f57f17;
-        }
-      }
     }
   }
   

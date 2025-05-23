@@ -19,6 +19,7 @@ public class ModelDto {
     private String displayName;
     private String modelProviderId;
     private String modelProviderModelId;
+    private String modelProviderDisplayName;
     private JsonNode modelProviderProperties;
     private Integer modelProviderDisplayOrder;
     private String taskQueueName;

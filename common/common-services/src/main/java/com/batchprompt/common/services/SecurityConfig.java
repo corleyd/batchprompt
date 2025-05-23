@@ -53,7 +53,7 @@ public class SecurityConfig {
         });
         
         http.authorizeHttpRequests(authz -> authz
-            .requestMatchers("/api/public/**", "/test/**", "/ws/**").permitAll()
+            .requestMatchers("/api/public/**", "/test/**", "/ws/**", "/api/model-management/models").permitAll()
             .requestMatchers(RegexRequestMatcher.regexMatcher("^/api/files/[a-f0-9\\-]+/download/[a-f0-9\\-]+$")).permitAll()
             .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2

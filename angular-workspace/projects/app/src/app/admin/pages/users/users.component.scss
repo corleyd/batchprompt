@@ -181,31 +181,29 @@
 }
 
 .action-btn {
-  padding: 6px 12px;
-  border: none;
+  padding: 6px;
   border-radius: 4px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-right: 8px;
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  background-color: transparent;
+  margin-right: 5px;
+}
+
+.action-btn.edit {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
   
-  &.edit {
-    background-color: #ebf8ff;
-    color: #2b6cb0;
-    
-    &:hover {
-      background-color: #bee3f8;
-    }
+  &:hover {
+    background-color: #bee3f8;
   }
+}
+
+.action-btn.delete {
+  background-color: #fff5f5;
+  color: #c53030;
   
-  &.delete {
-    background-color: #fff5f5;
-    color: #c53030;
-    
-    &:hover {
-      background-color: #fed7d7;
-    }
+  &:hover {
+    background-color: #fed7d7;
   }
 }
 
@@ -493,58 +491,6 @@
 
 .resource-table tr:hover {
   background-color: #f5f5f5;
-}
-
-.status-badge {
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-  font-weight: 500;
-  display: inline-block;
-}
-
-.status-badge.ready {
-  background-color: #e3f2fd;
-  color: #1976d2;
-}
-
-.status-badge.processing,
-.status-badge.submitted,
-.status-badge.pending_output {
-  background-color: #fff8e1;
-  color: #ff8f00;
-}
-
-.status-badge.completed {
-  background-color: #e8f5e9;
-  color: #388e3c;
-}
-
-.status-badge.failed,
-.status-badge.validation {
-  background-color: #ffebee;
-  color: #d32f2f;
-}
-
-.action-btn {
-  padding: 6px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  background-color: transparent;
-  margin-right: 5px;
-}
-
-.action-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.action-btn.view-btn i {
-  color: #1976d2;
-}
-
-.action-btn.download-btn i {
-  color: #388e3c;
 }
 
 .loading-spinner {
