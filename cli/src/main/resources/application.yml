@@ -1,0 +1,14 @@
+# Application configuration
+spring:
+  main:
+    banner-mode: OFF
+  application:
+    name: batchprompt-cli
+  config:
+    import:
+      - ${HOME}/.batchprompt/local.yml
+      
+# Logging
+logging:
+  level:
+    root: OFF

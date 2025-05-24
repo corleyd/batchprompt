@@ -2,6 +2,8 @@ spring:
   config:
     import:
       - ${HOME}/.batchprompt/local.yml
+      - ${HOME}/.batchprompt/logging.yml
+
   datasource:
     url: jdbc:postgresql://localhost:5432/batchprompt
     username: batchprompt
@@ -30,14 +32,6 @@ common:
   security:
     service-name: jobs-service
 
-services:
-  files:
-    url: ${FILES_SERVICE_URL:http://localhost:8083}
-  prompts:
-    url: ${PROMPTS_SERVICE_URL:http://localhost:8082}
-  notifications:
-    url: ${NOTIFICATIONS_SERVICE_URL:http://localhost:8086}
-
 rabbitmq:
   exchange:
     name: batchprompt-exchange
@@ -49,10 +43,7 @@ rabbitmq:
       name: job-validation-queue
       routing-key: job-validation-queue
 
-users-api:
-  url: ${USERS_API_URL:http://localhost:8085}
-users-account-api:
-  url: ${USERS_API_URL:http://localhost:8085}
+
   
 # Model configuration
 openai:

@@ -3,7 +3,7 @@ package com.batchprompt.users.client.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.batchprompt.common.services.ServiceAuthenticationService;
+import com.batchprompt.common.client.ClientAuthenticationService;
 
 import feign.RequestInterceptor;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FeignClientConfig {
     
-    private final ServiceAuthenticationService authService;
+    private final ClientAuthenticationService authService;
     
     @Bean
     public RequestInterceptor serviceAuthRequestInterceptor() {

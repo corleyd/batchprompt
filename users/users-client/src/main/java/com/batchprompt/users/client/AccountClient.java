@@ -16,8 +16,8 @@ import com.batchprompt.users.model.dto.AccountCreditTransactionDto;
 import com.batchprompt.users.model.dto.AccountDto;
 
 @FeignClient(
-    name = "users-account-api", 
-    url = "${users-account-api.url}", 
+    name = "account-api", 
+    url = "${services.account.url}", 
     path = "/api/accounts",
     configuration = FeignClientConfig.class
 )

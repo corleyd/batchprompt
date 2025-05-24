@@ -8,7 +8,7 @@ version = '0.0.1-SNAPSHOT'
 
 dependencies {
     implementation project(':common:common-core')
-    implementation project(':common:common-services')
+    implementation project(':common:common-client')
     api project(':notifications:notifications-model')
 
     implementation 'org.springframework:spring-context'

@@ -1,0 +1,30 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.4'
+    id 'java-library'
+}
+
+group = 'com.batchprompt'
+version = '0.0.1-SNAPSHOT'
+
+
+dependencies {
+    implementation project(':common:common-core')
+    implementation project(':common:common-client')
+    api project(':jobs:jobs-model')
+
+    implementation 'org.springframework.data:spring-data-jpa'
+    implementation 'org.springframework:spring-web'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+test {
+    useJUnitPlatform()
+}

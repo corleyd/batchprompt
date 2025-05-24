@@ -74,6 +74,19 @@
             "request": "launch",
             "mainClass": "com.batchprompt.notifications.api.NotificationsApiApplication",
             "projectName": "notifications-api"
-        }
+        },
+        {
+            "type": "java",
+            "name": "cli",
+            "request": "launch",
+            "mainClass": "com.batchprompt.cli.CommandLineApplication",
+            "projectName": "cli",
+            "args": [
+                "prompt",
+                "get",
+                "-i",
+                "f28f4a62-1cac-46f1-bfab-bf1922d60dfc",
+            ]
+        }        
     ]
 }

@@ -1,0 +1,7 @@
+{ 
+    "name": "test-prompt",
+    "description": "A test prompt for testing purposes.",
+    "promptText": "Define the following: {{term}}",
+    "outputMethod": "TEXT"
+}
+

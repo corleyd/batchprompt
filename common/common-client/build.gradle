@@ -1,0 +1,46 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.4'
+    id 'java-library'
+}
+
+group = 'com.batchprompt'
+version = '0.0.1-SNAPSHOT'
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+
+dependencies {
+    implementation project(':common:common-core')
+
+    implementation 'org.springframework:spring-web'
+    implementation 'org.springframework.data:spring-data-jpa'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+        
+    // Jackson dependencies for proper date serialization
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
+
+    // Auth0 dependencies
+    implementation 'com.auth0:auth0-spring-security-api:1.5.1'
+    implementation 'com.auth0:java-jwt:4.4.0'
+    implementation 'com.auth0:jwks-rsa:0.22.0'
+    implementation 'com.auth0:auth0:1.42.0'  // Added Auth0 Java SDK
+    
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    
+    // Auth0
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+
+}
+
+test {
+    useJUnitPlatform()
+}

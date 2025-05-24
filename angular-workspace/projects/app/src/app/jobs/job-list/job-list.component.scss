@@ -40,47 +40,6 @@ $info-color: #17a2b8;
   margin-bottom: 2rem;
 }
 
-// These styles are only kept because they're needed for the custom templates
-
-.primary-btn {
-  background-color: white;
-  color: $text-dark;
-  border: 1px solid $text-dark;
-  border-radius: 0;
-  padding: 0.5rem 1.25rem;
-  font-size: 0.9rem;
-  font-weight: normal;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: #f8f9fa;
-  }
-
-  &:active {
-    transform: translateY(1px);
-  }
-}
-
-.secondary-btn {
-  background-color: white;
-  color: $primary-blue;
-  border: 1px solid $primary-blue;
-  border-radius: 4px;
-  padding: 0.5rem 1.25rem;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: rgba($primary-blue, 0.05);
-  }
-
-  &:active {
-    transform: translateY(1px);
-  }
-}
 
 .empty-state {
   text-align: center;

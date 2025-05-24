@@ -11,7 +11,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.client.RestTemplate;
 
-import com.batchprompt.common.services.ServiceAuthenticationService;
+import com.batchprompt.common.client.ClientAuthenticationService;
 import com.batchprompt.notifications.model.Notification;
 
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +27,10 @@ public class RestNotificationSender implements NotificationSender {
 
     private final RestTemplate restTemplate;
     private final String notificationServiceUrl;
-    private final ServiceAuthenticationService authService;
+    private final ClientAuthenticationService authService;
     
     public RestNotificationSender(
-            ServiceAuthenticationService authService,
+            ClientAuthenticationService authService,
             @Value("${services.notifications.url}") String notificationServiceUrl) {
         this.restTemplate = new RestTemplate();
         this.notificationServiceUrl = notificationServiceUrl;

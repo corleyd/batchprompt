@@ -18,7 +18,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import com.batchprompt.common.services.ServiceAuthenticationService;
+import com.batchprompt.common.client.ClientAuthenticationService;
 import com.batchprompt.files.model.dto.FileDto;
 import com.batchprompt.files.model.dto.FileFieldDto;
 import com.batchprompt.files.model.dto.FileRecordDto;
@@ -32,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 public class FileClient {
 
     private final RestTemplate restTemplate;
-    private final ServiceAuthenticationService authService;
+    private final ClientAuthenticationService authService;
     
     @Value("${services.files.url}")
     private String filesServiceUrl;

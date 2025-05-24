@@ -1,4 +1,4 @@
-package com.batchprompt.common.services;
+package com.batchprompt.common.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -22,6 +22,9 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+
 
 @Configuration
 public class RestTemplateConfig {
@@ -32,6 +35,7 @@ public class RestTemplateConfig {
         SimpleModule pageModule = new SimpleModule();
         pageModule.addDeserializer(Page.class, new PageDeserializer());
         objectMapper.registerModule(pageModule);
+        objectMapper.registerModule(new JavaTimeModule());
         
         // Create message converter with our configured ObjectMapper
         MappingJackson2HttpMessageConverter jacksonConverter = new MappingJackson2HttpMessageConverter(objectMapper);

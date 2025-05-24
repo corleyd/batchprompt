@@ -23,6 +23,9 @@ dependencies {
     implementation 'org.springframework.data:spring-data-jpa'
     implementation 'org.flywaydb:flyway-core'
 
+    // Jackson dependencies for proper date serialization
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
     
     // Add autoconfiguration support
     implementation 'org.springframework.boot:spring-boot-autoconfigure'

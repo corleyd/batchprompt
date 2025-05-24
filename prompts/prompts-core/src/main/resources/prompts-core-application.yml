@@ -2,6 +2,7 @@ spring:
   config:
     import:
       - ${HOME}/.batchprompt/local.yml
+      - ${HOME}/.batchprompt/logging.yml
   datasource:
     url: jdbc:postgresql://localhost:5432/batchprompt
     username: batchprompt

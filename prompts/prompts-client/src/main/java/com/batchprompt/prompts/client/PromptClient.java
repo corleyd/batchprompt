@@ -10,7 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import com.batchprompt.common.services.ServiceAuthenticationService;
+import com.batchprompt.common.client.ClientAuthenticationService;
 import com.batchprompt.prompts.model.dto.PromptDto;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class PromptClient {
 
     private final RestTemplate restTemplate;
-    private final ServiceAuthenticationService authService;
+    private final ClientAuthenticationService authService;
     
     @Value("${services.prompts.url}")
     private String promptsServiceUrl;

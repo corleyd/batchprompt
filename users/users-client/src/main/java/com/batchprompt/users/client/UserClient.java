@@ -15,7 +15,7 @@ import com.batchprompt.users.model.dto.UserDto;
 
 @FeignClient(
     name = "users-api", 
-    url = "${users-api.url}", 
+    url = "${services.users.url}", 
     path = "/api/users",
     configuration = FeignClientConfig.class
 )

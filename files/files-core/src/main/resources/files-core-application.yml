@@ -2,6 +2,8 @@ spring:
   config:
     import:
       - ${HOME}/.batchprompt/local.yml
+      - ${HOME}/.batchprompt/logging.yml
+
   datasource:
     url: jdbc:postgresql://localhost:5432/batchprompt
     username: batchprompt
@@ -29,10 +31,6 @@ minio:
   access-key: batchprompt
   secret-key: batchprompt
   bucket: batchprompt
-
-services:
-  notifications:
-    url: ${NOTIFICATIONS_SERVICE_URL:http://localhost:8086}
 
 common:
   security:
