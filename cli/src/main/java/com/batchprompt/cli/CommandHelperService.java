@@ -1,9 +1,13 @@
 package com.batchprompt.cli;
 
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 
 import com.batchprompt.files.client.FileClient;
 import com.batchprompt.jobs.client.JobClient;
+import com.batchprompt.jobs.model.JobStatus;
+import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.prompts.client.PromptClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,5 +38,23 @@ public class CommandHelperService {
         } catch (Exception e) {
             throw new RuntimeException("Error serializing output", e);
         }
+    }
+    public JobDto waitForJobStatus(UUID jobUuid, JobStatus desiredStatus) {
+        do {
+            JobDto jobDto = jobClient.getJob(jobUuid, null);
+            if (jobDto == null) {
+                throw new IllegalArgumentException("Job not found with the provided UUID: " + jobUuid);
+            }
+            if (jobDto.getStatus() == desiredStatus) {
+                return jobDto;
+            }
+            if (jobDto.getStatus().isTerminal()) {
+                throw new IllegalStateException("Job reached unexpected terminal status: " + jobDto.getStatus());
+            }
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+            }
+        } while (true);
     }
 }
