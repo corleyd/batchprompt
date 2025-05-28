@@ -46,7 +46,6 @@ public class GeminiChatModel extends AbstractChatModel {
         try {
             // Check if API key is available
             if (apiKey == null || apiKey.isEmpty()) {
-                log.error("Google API key not found in configuration");
                 return ChatModelResponse.of("Error: Google API key not found");
             }
             
@@ -131,41 +130,37 @@ public class GeminiChatModel extends AbstractChatModel {
                     totalTokens = (totalTokens != null ? totalTokens : 0) + thinkingTokens;
                 }
             }
+
+            if (responseText == null) {
+                return handleError("No valid response text found in Gemini API response");
+            }
             
             return ChatModelResponse.of(responseText, promptTokens, completionTokens, thinkingTokens, totalTokens);
             
         } catch (Exception e) {
-            log.error("Error generating response from Gemini", e);
-            return ChatModelResponse.of("Error: " + e.getMessage());
+            return handleError(e);
         }
     }
     
     /**
      * Extract text from Gemini API response JSON
      */
-    private String extractResponseText(JsonNode responseJson) {
-        try {
-            if (responseJson.has("candidates") && responseJson.get("candidates").isArray()) {
-                JsonNode candidates = responseJson.get("candidates");
-                if (candidates.size() > 0) {
-                    JsonNode firstCandidate = candidates.get(0);
-                    if (firstCandidate.has("content") && 
-                        firstCandidate.get("content").has("parts") && 
-                        firstCandidate.get("content").get("parts").isArray()) {
-                        
-                        JsonNode parts = firstCandidate.get("content").get("parts");
-                        if (parts.size() > 0 && parts.get(0).has("text")) {
-                            return parts.get(0).get("text").asText();
-                        }
+    private String extractResponseText(JsonNode responseJson) throws Exception {
+        if (responseJson.has("candidates") && responseJson.get("candidates").isArray()) {
+            JsonNode candidates = responseJson.get("candidates");
+            if (candidates.size() > 0) {
+                JsonNode firstCandidate = candidates.get(0);
+                if (firstCandidate.has("content") && 
+                    firstCandidate.get("content").has("parts") && 
+                    firstCandidate.get("content").get("parts").isArray()) {
+                    
+                    JsonNode parts = firstCandidate.get("content").get("parts");
+                    if (parts.size() > 0 && parts.get(0).has("text")) {
+                        return parts.get(0).get("text").asText();
                     }
                 }
             }
-            
-            log.warn("Could not extract text from Gemini API response structure");
-            return "Error: Unable to extract text from model response";
-        } catch (Exception e) {
-            log.error("Error extracting text from Gemini response", e);
-            return "Error: " + e.getMessage();
         }
+        return null;
     }
 }

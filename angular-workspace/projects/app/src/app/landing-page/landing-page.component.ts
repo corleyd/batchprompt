@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { Title, Meta } from '@angular/platform-browser';
-import { ModelService, ModelDto } from '../services/model.service';
+import { ModelService, ModelDto, ModelProviderDto } from '../services/model.service';
 import { HttpClientModule } from '@angular/common/http';
 
 @Component({
@@ -14,7 +14,7 @@ import { HttpClientModule } from '@angular/common/http';
   styleUrl: './landing-page.component.scss'
 })
 export class LandingPageComponent implements OnInit {
-  supportedModels: ModelDto[] = [];
+  modelProviders: ModelProviderDto[] = [];
   isLoadingModels = false;
   modelLoadError = false;
 
@@ -56,9 +56,9 @@ export class LandingPageComponent implements OnInit {
     this.isLoadingModels = true;
     this.modelLoadError = false;
     
-    this.modelService.getModels().subscribe({
-      next: (models) => {
-        this.supportedModels = models;
+    this.modelService.getProviders().subscribe({
+      next: (providers) => {
+        this.modelProviders = providers;
         this.isLoadingModels = false;
       },
       error: (error) => {
@@ -97,32 +97,4 @@ export class LandingPageComponent implements OnInit {
     return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
   }
   
-  /**
-   * Helper method to get object keys for template iteration
-   * @param obj The object to get keys from
-   * @returns Array of object keys
-   */
-  getObjectKeys(obj: any): string[] {
-    return obj ? Object.keys(obj) : [];
-  }
-
-  /**
-   * Get unique provider display names from the list of models
-   * @returns Array of unique provider display names
-   */
-  getUniqueProviders(): string[] {
-    const providers = this.supportedModels.map(model => model.modelProviderDisplayName);
-    return [...new Set(providers)].sort();
-  }
-
-  /**
-   * Get models filtered by provider display name
-   * @param providerName The provider display name to filter by
-   * @returns Array of models belonging to the specified provider
-   */
-  getModelsByProvider(providerName: string): ModelDto[] {
-    return this.supportedModels.filter(model => 
-      model.modelProviderDisplayName === providerName
-    ).sort((a, b) => a.displayName.localeCompare(b.displayName));
-  }
 }

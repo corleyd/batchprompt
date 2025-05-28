@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatModelResponse {
     private String responseText;
+    private String errorMessage;
     private Integer promptTokens;
     private Integer completionTokens;
     private Integer thinkingTokens;
@@ -23,6 +24,12 @@ public class ChatModelResponse {
     public static ChatModelResponse of(String responseText) {
         return ChatModelResponse.builder()
                 .responseText(responseText)
+                .build();
+    }
+
+    public static ChatModelResponse ofError(String errorMessage) {
+        return ChatModelResponse.builder()
+                .errorMessage(errorMessage)
                 .build();
     }
     

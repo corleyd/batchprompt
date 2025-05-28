@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 dependencies {
     implementation project(':common:common-core')
-    implementation project(':common:common-client')
+    api project(':common:common-client')
     api project(':users:users-model')
 
     implementation 'org.springframework.data:spring-data-jpa'

@@ -105,7 +105,6 @@ public class JobTaskWorker {
             // Step 4: If successful, update status to Completed in a separate transaction
             completeTaskWithTokens(jobTask, message.getUserId(), chatResponse);
             
-            log.info("Job task {} completed successfully", jobTaskUuid);
         } catch (Exception e) {
             // Step 5: If failed, update status to Failed in a separate transaction
             log.error("Error processing job task: {}", jobTaskUuid, e);
@@ -153,9 +152,10 @@ public class JobTaskWorker {
 
     private void completeTaskWithTokens(JobTask jobTask, String userId, ChatModelResponse chatResponse) {
         UUID jobTaskUuid = jobTask.getJobTaskUuid();        
-        jobTask.setStatus(TaskStatus.COMPLETED);
         jobTask.setResponseText(chatResponse.getResponseText());
+        jobTask.setErrorMessage(chatResponse.getErrorMessage()); // Clear any previous error message
         jobTask.setEndTimestamp(LocalDateTime.now());
+        jobTask.setStatus(chatResponse.getErrorMessage() != null ? TaskStatus.FAILED : TaskStatus.COMPLETED);
         
         // Set token usage information
         jobTask.setPromptTokens(chatResponse.getPromptTokens());
@@ -218,8 +218,9 @@ public class JobTaskWorker {
         }
         
         if (chatResponse.getTotalTokens() != null) {
-            log.info("Job task {} completed with {} tokens (prompt: {}, completion: {})", 
+            log.info("Job task {} completed with status {}, {} tokens (prompt: {}, completion: {})", 
                 jobTaskUuid, 
+                jobTask.getStatus(),
                 chatResponse.getTotalTokens(),
                 chatResponse.getPromptTokens(),
                 chatResponse.getCompletionTokens());

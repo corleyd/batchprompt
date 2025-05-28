@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 dependencies {
     implementation project(':common:common-core')
-    implementation project(':common:common-client')
+    api project(':common:common-client')
     api project(':prompts:prompts-model')
 
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'

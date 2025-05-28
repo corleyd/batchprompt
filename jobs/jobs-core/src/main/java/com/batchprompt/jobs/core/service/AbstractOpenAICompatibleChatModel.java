@@ -1,5 +1,11 @@
 package com.batchprompt.jobs.core.service;
 
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
+
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.Model;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -9,12 +15,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import jakarta.annotation.Nullable;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * Abstract base class for OpenAI compatible chat models
@@ -53,8 +53,7 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
         try {
             // Check if API key is available
             if (apiKey == null || apiKey.isEmpty()) {
-                log.error("API key not found in configuration");
-                return ChatModelResponse.of("Error: API key not found");
+                return handleError("Error: API key not found");
             }
             
             // Create headers
@@ -70,8 +69,16 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
             ArrayNode messages = requestBody.putArray("messages");
             
             // Set parameters with defaults if not provided
-            requestBody.put("temperature", temperature != null ? temperature : DEFAULT_TEMPERATURE);
-            requestBody.put("max_tokens", maxTokens != null ? maxTokens : DEFAULT_MAX_TOKENS);
+            if (getPropertyValueBoolean("supportsTemperature", true)) {
+                requestBody.put("temperature", temperature != null ? temperature : DEFAULT_TEMPERATURE);
+            }
+
+            String maxTokensProperty = "max_tokens";
+            if (getPropertyValueBoolean("useMaxCompletionTokens", false)) {
+                maxTokensProperty = "max_completion_tokens";
+            }
+
+            requestBody.put(maxTokensProperty, maxTokens != null ? maxTokens : DEFAULT_MAX_TOKENS);
             
             if (outputSchema != null) {
                 if (getModel().isSimulateStructuredOutput()) {
@@ -108,7 +115,7 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
             // Process response
             JsonNode responseJson = objectMapper.readTree(response.getBody());
             JsonNode choices = responseJson.get("choices");
-            String responseText = "Error: Could not extract response content";
+            String responseText = null;
             
             if (choices != null && choices.isArray() && choices.size() > 0) {
                 JsonNode firstChoice = choices.get(0);
@@ -134,12 +141,15 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
                     totalTokens = usage.get("total_tokens").asInt();
                 }
             }
+
+            if (responseText == null) {
+                return handleError("Error: No valid response received from API");
+            }
             
             return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens);
             
         } catch (Exception e) {
-            log.error("Error generating response from API", e);
-            return ChatModelResponse.of("Error: " + e.getMessage());
+            return handleError(e);
         }
     }
 }

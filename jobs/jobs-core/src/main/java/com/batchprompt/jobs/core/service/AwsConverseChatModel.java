@@ -99,11 +99,6 @@ public class AwsConverseChatModel extends AbstractChatModel {
                 }
             }
             
-            if (responseText == null) {
-                log.warn("Could not extract text from Converse API response");
-                responseText = "Error: Unable to extract text from model response";
-            }
-            
             // Extract token usage information - advantage of using the Converse API
             Integer promptTokens = null;
             Integer completionTokens = null;
@@ -114,12 +109,15 @@ public class AwsConverseChatModel extends AbstractChatModel {
                 completionTokens = response.usage().outputTokens();
                 totalTokens = response.usage().totalTokens();
             }
+
+            if (responseText == null) {
+                return handleError("Could not extract response text from AWS Bedrock Converse API response");
+            }
             
             return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens);
             
         } catch (Exception e) {
-            log.error("Error generating response from AWS Bedrock Converse API", e);
-            return ChatModelResponse.of("Error: " + e.getMessage());
+            return handleError(e);
         }
     }
 }

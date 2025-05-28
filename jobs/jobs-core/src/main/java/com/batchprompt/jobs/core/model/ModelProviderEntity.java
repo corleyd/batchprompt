@@ -27,4 +27,7 @@ public class ModelProviderEntity {
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
+    @Column(name = "display_order")
+    private Integer displayOrder;
+
 }

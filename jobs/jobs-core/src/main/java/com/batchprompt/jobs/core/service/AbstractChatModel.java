@@ -5,7 +5,10 @@ import com.batchprompt.jobs.core.model.Model;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.annotation.Nullable;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 public abstract class AbstractChatModel {
     private final Model model;
 
@@ -39,5 +42,34 @@ public abstract class AbstractChatModel {
                 "Remember: Your entire response must be ONLY valid JSON that matches this schema. " +
                 "Do not repeat the schema or include explanations.\n";
     }
-    
+
+    protected ChatModelResponse handleError(String errorMessage) {
+        log.error("Error generating chat response: {}", errorMessage);
+        return ChatModelResponse.ofError(errorMessage);
+    }
+
+    protected ChatModelResponse handleError(Exception e) {
+        String errorMessage = "Error generating chat response: " + e.getMessage();
+        log.error(errorMessage, e);
+        return ChatModelResponse.ofError(errorMessage);
+    }
+
+    protected boolean getPropertyValueBoolean(String propertyName, boolean defaultValue) {
+        if (model.getModelProviderProperties() == null) {
+            log.debug("Model provider properties are null, returning default value for '{}': {}", propertyName, defaultValue);
+            return defaultValue;
+        }
+        JsonNode value = model.getModelProviderProperties().get(propertyName);
+        if (value == null) {
+            return defaultValue;
+        }
+        if (value.isBoolean()) {
+            return value.asBoolean(defaultValue);
+        }
+        if (value.isTextual()) {
+            return Boolean.parseBoolean(value.asText());
+        }
+        log.debug("Property '{}' is not a boolean or text value, returning default: {}", propertyName, defaultValue);
+        return defaultValue;
+    }
 }

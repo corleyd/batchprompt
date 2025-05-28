@@ -22,7 +22,8 @@ export class DownloadButtonComponent {
 
   constructor(private fileService: FileService) {}
 
-  onClick(): void {
+  onClick(event: any): void {
+    event.stopPropagation();
     if (!this.disabled && this.fileUuid) {
       this.download.emit();
       

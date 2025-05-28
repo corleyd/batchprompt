@@ -53,6 +53,9 @@ public class Model {
 
     @Column(name = "task_queue_name")
     private String taskQueueName;
+
+    @Column(name = "required_role")
+    private String requiredRole;
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "model_provider_id", referencedColumnName = "model_provider_id", insertable = false, updatable = false)

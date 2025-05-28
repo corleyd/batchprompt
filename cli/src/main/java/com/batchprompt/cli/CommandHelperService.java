@@ -4,8 +4,10 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.batchprompt.common.client.ClientException;
 import com.batchprompt.files.client.FileClient;
 import com.batchprompt.jobs.client.JobClient;
+import com.batchprompt.jobs.client.ModelManagementClient;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.prompts.client.PromptClient;
@@ -19,6 +21,7 @@ public class CommandHelperService {
     private final PromptClient promptClient;
     private final JobClient jobClient;
     private final FileClient fileClient;
+    private final ModelManagementClient modelManagementClient;
     private final ObjectMapper objectMapper;
    
     protected PromptClient getPromptClient() {
@@ -30,6 +33,9 @@ public class CommandHelperService {
     protected FileClient getFileClient() {
         return fileClient;
     }
+    protected ModelManagementClient getModelManagementClient() {
+        return modelManagementClient;
+    }
 
     public void output(Object object) {
         try {
@@ -39,7 +45,7 @@ public class CommandHelperService {
             throw new RuntimeException("Error serializing output", e);
         }
     }
-    public JobDto waitForJobStatus(UUID jobUuid, JobStatus desiredStatus) {
+    public JobDto waitForJobStatus(UUID jobUuid, JobStatus desiredStatus) throws ClientException {
         do {
             JobDto jobDto = jobClient.getJob(jobUuid, null);
             if (jobDto == null) {

@@ -14,12 +14,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.batchprompt.common.client.ClientAuthenticationService;
+import com.batchprompt.common.client.ClientException;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.dto.JobDefinitionDto;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobTaskDto;
 import com.batchprompt.jobs.model.dto.ModelDto;
-import com.batchprompt.common.client.ClientAuthenticationService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,7 +57,7 @@ public class JobClient {
             int size, 
             String sort, 
             String direction,
-            String authToken) {
+            String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -88,7 +89,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error retrieving jobs", e);
-            return null;
+            throw new ClientException("Error retrieving jobs", e);
         }
     }
     
@@ -99,7 +100,7 @@ public class JobClient {
      * @param authToken The user's auth token, or null for service-to-service call
      * @return The job DTO
      */
-    public JobDto getJob(UUID jobUuid, String authToken) {
+    public JobDto getJob(UUID jobUuid, String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -112,8 +113,7 @@ public class JobClient {
             );
             return response.getBody();
         } catch (Exception e) {
-            log.error("Error retrieving job {}", jobUuid, e);
-            return null;
+            throw new ClientException("Error retrieving job with UUID " + jobUuid, e);
         }
     }
     
@@ -134,7 +134,7 @@ public class JobClient {
             int size, 
             String sort, 
             String direction, 
-            String authToken) {
+            String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -155,7 +155,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error retrieving jobs for user {}", userId, e);
-            return null;
+            throw new ClientException("Error retrieving jobs for user", e);
         }
     }
     
@@ -176,7 +176,7 @@ public class JobClient {
             int size, 
             String sort, 
             String direction, 
-            String authToken) {
+            String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -197,7 +197,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error retrieving tasks for job {}", jobUuid, e);
-            return null;
+            throw new ClientException("Error retrieving job tasks", e);
         }
     }
     
@@ -207,7 +207,7 @@ public class JobClient {
      * @param authToken User auth token or null for service-to-service call
      * @return List of ModelDto objects
      */
-    public List<ModelDto> getSupportedModels(String authToken) {
+    public List<ModelDto> getSupportedModels(String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -221,10 +221,10 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error retrieving supported models", e);
-            return null;
+            throw new ClientException("Error retrieving supported models", e);
         }
     }
-    
+
     /**
      * Validate a new job
      * 
@@ -232,7 +232,7 @@ public class JobClient {
      * @param authToken User auth token (required)
      * @return The created job DTO
      */
-    public JobDto validateJob(JobDefinitionDto jobDefinitionDto, String authToken) {
+    public JobDto validateJob(JobDefinitionDto jobDefinitionDto, String authToken) throws ClientException {
         try {
            
             HttpHeaders headers = authService.createAuthHeaders(authToken);
@@ -247,7 +247,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error validating job", e);
-            return null;
+            throw new ClientException("Error validating job", e);
         }
     }
     
@@ -258,7 +258,7 @@ public class JobClient {
      * @param authToken User auth token or null for service-to-service call
      * @return The updated job DTO
      */
-    public JobDto submitJob(UUID jobUuid, String authToken) {
+    public JobDto submitJob(UUID jobUuid, String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -272,7 +272,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error submitting job {}", jobUuid, e);
-            return null;
+            throw new ClientException("Error submitting job", e);
         }
     }
     
@@ -283,7 +283,7 @@ public class JobClient {
      * @param authToken User auth token or null for service-to-service call
      * @return The updated job DTO
      */
-    public JobDto cancelJob(UUID jobUuid, String authToken) {
+    public JobDto cancelJob(UUID jobUuid, String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -297,7 +297,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error cancelling job {}", jobUuid, e);
-            return null;
+            throw new ClientException("Error cancelling job", e);
         }
     }
     
@@ -308,7 +308,7 @@ public class JobClient {
      * @param authToken User auth token or null for service-to-service call
      * @return The updated job DTO
      */
-    public JobDto continueJob(UUID jobUuid, String authToken) {
+    public JobDto continueJob(UUID jobUuid, String authToken) throws ClientException {
         try {
             HttpHeaders headers = authService.createAuthHeaders(authToken);
             HttpEntity<?> requestEntity = new HttpEntity<>(headers);
@@ -322,7 +322,7 @@ public class JobClient {
             return response.getBody();
         } catch (Exception e) {
             log.error("Error continuing job {}", jobUuid, e);
-            return null;
+            throw new ClientException("Error continuing job", e);
         }
     }
 }

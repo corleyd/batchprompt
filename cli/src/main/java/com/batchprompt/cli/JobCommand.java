@@ -1,9 +1,12 @@
 package com.batchprompt.cli;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.batchprompt.common.client.ClientException;
 import com.batchprompt.jobs.model.JobStatus;
 import com.batchprompt.jobs.model.dto.JobDefinitionDto;
 import com.batchprompt.jobs.model.dto.JobDto;
@@ -40,27 +43,74 @@ public class JobCommand implements Runnable {
         @Option(names = { "-m", "--model" }, description = "ID of the model to use for the job", required = true)
         private String modelId;
 
+        @Option(names = { "-r", "--max-records" }, description = "Maximum number of records to process in the job")
+        private Integer maxRecords;
+
+        @Option(names = { "-t", "--max-tokens" }, description = "Maximum number of tokens to generate in the job")
+        private Integer maxTokens;
+
         @Override
         public void run() {
 
+            List<String> modelArray;
+            if (modelId.toLowerCase().equals("all")) {
+                try {
+                    modelArray = commandHelperService.getJobClient()
+                        .getSupportedModels(null)
+                        .stream()
+                        .map(model -> model.getModelId())
+                        .toList();
+                } catch (ClientException e) {
+                    throw new RuntimeException("Failed to retrieve supported models", e);
+                }
+            } else {
+                modelArray = List.of(modelId.split(","));
+            } 
+
             PromptDto promptDto = commandHelperService.getPromptClient().getPrompt(promptUuid, null);
+            List<Thread> threads = new ArrayList<>();
 
-            JobDefinitionDto jobDefinition = JobDefinitionDto.builder()
-                    .targetUserId(promptDto.getUserId())
-                    .promptUuid(promptUuid)
-                    .fileUuid(fileUuid)
-                    .modelId(modelId)
-                    .build();
+            for (String model : modelArray) {
+                Thread thread = new Thread(() -> runJob(promptDto, fileUuid, model.trim(), maxRecords, maxTokens));
+                thread.start();
+                threads.add(thread);
+            }
 
-            JobDto jobDto = commandHelperService.getJobClient().validateJob(jobDefinition, null);
+            // Wait for all threads to complete
+            for (Thread thread : threads) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt(); // Restore interrupted status
+                    throw new RuntimeException("Job execution interrupted", e);
+                }
+            }
+        }
 
-            jobDto = commandHelperService.waitForJobStatus(jobDto.getJobUuid(), JobStatus.VALIDATED);
+        private void runJob(PromptDto promptDto, UUID fileUuid, String modelId, Integer maxRecords, Integer maxTokens) {
+            try {
 
-            commandHelperService.getJobClient().submitJob(jobDto.getJobUuid(), null);
+                JobDefinitionDto jobDefinition = JobDefinitionDto.builder()
+                        .targetUserId(promptDto.getUserId())
+                        .promptUuid(promptUuid)
+                        .fileUuid(fileUuid)
+                        .modelId(modelId)
+                        .maxRecords(maxRecords)
+                        .maxTokens(maxTokens)
+                        .build();
 
-            jobDto = commandHelperService.waitForJobStatus(jobDto.getJobUuid(), JobStatus.COMPLETED);
+                JobDto jobDto = commandHelperService.getJobClient().validateJob(jobDefinition, null);
 
-            this.commandHelperService.output(jobDto);
+                jobDto = commandHelperService.waitForJobStatus(jobDto.getJobUuid(), JobStatus.VALIDATED);
+
+                commandHelperService.getJobClient().submitJob(jobDto.getJobUuid(), null);
+
+                jobDto = commandHelperService.waitForJobStatus(jobDto.getJobUuid(), JobStatus.COMPLETED);
+
+                this.commandHelperService.output(jobDto);
+            } catch (Exception e) {
+                System.err.println("Error running job: " + e.getMessage());
+            }
         }
 
     }

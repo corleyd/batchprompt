@@ -9,7 +9,7 @@ version = '0.0.1-SNAPSHOT'
 
 dependencies {
     api project(':files:files-model')
-    implementation project(':common:common-client')
+    api project(':common:common-client')
 
     implementation 'org.springframework.data:spring-data-jpa'
     implementation 'com.fasterxml.jackson.core:jackson-databind'

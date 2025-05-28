@@ -14,11 +14,13 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import com.batchprompt.jobs.core.QueueHelper;
+import com.batchprompt.jobs.core.mapper.ModelMapper;
 import com.batchprompt.jobs.core.model.Model;
 import com.batchprompt.jobs.core.model.ModelProviderEntity;
 import com.batchprompt.jobs.core.repository.ModelProviderRepository;
 import com.batchprompt.jobs.core.repository.ModelRepository;
 import com.batchprompt.jobs.model.dto.ModelDto;
+import com.batchprompt.jobs.model.dto.ModelProviderDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +44,8 @@ public class ModelService {
     private final String openaiApiKey;
     private final String googleApiKey;
     private final String xaiApiKey;
-    
+    private final ModelMapper modelMapper;
+
     /**
      * Constructor to initialize dependencies
      */
@@ -50,6 +53,7 @@ public class ModelService {
             ModelRepository modelRepository,
             ModelProviderRepository providerRepository,
             QueueHelper queueHelper,
+            ModelMapper modelMapper,
             ObjectMapper objectMapper,
             @Value("${openai.api-key}") String openaiApiKey,
             @Value("${google.api-key:#{null}}") String googleApiKey,
@@ -58,6 +62,7 @@ public class ModelService {
         this.modelRepository = modelRepository;
         this.providerRepository = providerRepository;
         this.queueHelper = queueHelper;
+        this.modelMapper = modelMapper;
         this.openaiApiKey = openaiApiKey;
         this.googleApiKey = googleApiKey;
         this.xaiApiKey = xaiApiKey;
@@ -107,6 +112,10 @@ public class ModelService {
                     case "XAI":
                         model = new XaiChatModel(modelDef, xaiApiKey);
                         break;
+
+                    case "BATCHPROMPT":
+                        model = new BatchPromptChatModel(modelDef);
+                        break;
                         
                     default:
                         log.warn("Unsupported model provider: {}", modelProviderId);
@@ -154,16 +163,8 @@ public class ModelService {
      */
     public List<ModelDto> getSupportedModelDetails() {
         return modelDefinitions.stream()
-            .map(modelDef -> ModelDto.builder()
-                .modelId(modelDef.getModelId())
-                .modelProviderId(modelDef.getProvider().getModelProviderId())
-                .displayName(modelDef.getDisplayName())
-                .modelProviderDisplayName(modelDef.getProvider().getDisplayName())
-                .taskQueueName(modelDef.getTaskQueueName())
-                .modelProviderProperties(modelDef.getModelProviderProperties())
-                .build()
-            )
-            .sorted(Comparator.comparing(ModelDto::getModelId))
+            .map(modelMapper::toModelDto)
+            .sorted(Comparator.comparing(ModelDto::getDisplayName))
             .collect(Collectors.toList());
     }
 
@@ -200,8 +201,8 @@ public class ModelService {
      * 
      * @return List of all model providers
      */
-    public List<ModelProviderEntity> getAllProviders() {
-        return providerRepository.findAll();
+    public List<ModelProviderDto> getAllProviders() {
+        return modelMapper.toModelProviderDtoList(modelDefinitions);
     }
     
     /**
@@ -209,8 +210,8 @@ public class ModelService {
      * 
      * @return List of enabled model providers
      */
-    public List<ModelProviderEntity> getEnabledProviders() {
-        return providerRepository.findAll();
+    public List<ModelProviderDto> getEnabledProviders() {
+        return getAllProviders();
     }
     
     /**

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+
 export interface ModelDto {
   modelId: string;
   displayName: string;
@@ -13,6 +14,13 @@ export interface ModelDto {
   modelProviderDisplayOrder: number;
   taskQueueName: string;
 }
+
+export interface ModelProviderDto {
+  modelProviderId: string;
+  displayName: string;
+  displayOrder: number;
+  models: ModelDto[];
+};
 
 @Injectable({
   providedIn: 'root'
