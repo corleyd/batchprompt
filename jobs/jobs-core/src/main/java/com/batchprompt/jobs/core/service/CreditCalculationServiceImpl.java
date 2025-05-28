@@ -18,7 +18,14 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class CreditCalculationServiceImpl implements CreditCalculationService {
-    private static final Double DEFAULT_CREDITS_PER_USD = 1000.0;
+    /*
+     * Default credits per USD rate. This is used when no specific rate is found for a model at a given timestamp.
+     * 
+     * Generally, this value should be set so that 1 credit is equal to a typical completion (500 prompt tokens, 750 output tokens) 
+     * for the baseline model (openai-gpt-3.5-turbo). 
+     */
+
+    private static final Double DEFAULT_CREDITS_PER_USD = 727.27;
 
     private final ModelCreditRateRepository modelCreditRateRepository;
     

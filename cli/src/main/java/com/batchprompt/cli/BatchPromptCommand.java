@@ -10,7 +10,8 @@ import picocli.CommandLine.Command;
          mixinStandardHelpOptions = true,
          subcommands = { PromptCommand.class, 
                          JobCommand.class,
-                         FileCommand.class })
+                         FileCommand.class,
+                         ModelsCommand.class })
 public class BatchPromptCommand implements Runnable {
 
     @Override

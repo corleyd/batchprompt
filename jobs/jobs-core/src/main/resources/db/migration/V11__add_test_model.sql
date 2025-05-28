@@ -113,3 +113,30 @@ set model_provider_properties = jsonb_set(
     'false'::jsonb
 )
 where model_id in ('openai-o3', 'openai-o4-mini');
+
+update jobs.model
+set display_name = regexp_replace(display_name, '^([^ ]+ )','');
+
+
+update model
+set display_name =
+case
+when model_id = 'openai-o3' then 'o3'
+when model_id = 'openai-o4-mini' then 'o4 mini'
+when model_id = 'openai-gpt-4o' then 'GPT 4o'
+when model_id = 'aws-deepseek-r1' then 'DeepSeek R1'
+when model_id = 'google-gemini-2.0-flash' then 'Gemini 2.0 Flash'
+when model_id = 'google-gemini-2.0-flash-lite' then 'Gemini 2.0 Flash Lite'
+when model_id = 'google-gemini-2.5-pro' then 'Gemini 2.5 Pro'
+when model_id = 'google-gemini-2.5-flash' then 'Gemini 2.5 Flash'
+when model_id = 'google-gemini-1.5-flash' then 'Gemini 1.5 Flash'
+when model_id = 'google-gemini-1.5-pro' then 'Gemini 1.5 Pro'
+when model_id = 'xai-grok-3' then 'Grok 3'
+when model_id = 'xai-grok-3-fast' then 'Grok 3 Fast'
+when model_id = 'xai-grok-3-mini' then 'Grok 3 Mini'
+when model_id = 'xai-grok-3-mini-fast' then 'Grok 3 Mini Fast'
+when model_id = 'openai-gpt-4' then 'GPT 4'
+when model_id = 'openai-gpt-3.5-turbo' then 'GPT 3.5 Turbo'
+when model_id = 'batchprompt-test-echo' then 'Echo'
+when model_id = 'batchprompt-test-random' then 'Random'
+end;

@@ -57,6 +57,10 @@
         <div class="validation-error" *ngIf="promptForm.get('promptText')?.invalid && promptForm.get('promptText')?.touched">
           <span *ngIf="promptForm.get('promptText')?.errors?.['required']">Prompt text is required.</span>
         </div>
+        <div class="form-hint">
+          <p><strong>💡Use column names with double curly braces <code>{{'{'+'{columnName}'+'}'}}</code> to reference columns from your dataset.</strong>
+          During processing, these variables will be automatically replaced with actual values from matching column names in your dataset.</p>
+        </div>
       </div>
 
       <!-- Output Format Selection -->

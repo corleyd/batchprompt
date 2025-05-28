@@ -58,7 +58,7 @@ export class LandingPageComponent implements OnInit {
     
     this.modelService.getProviders().subscribe({
       next: (providers) => {
-        this.modelProviders = providers;
+        this.modelProviders = providers.filter(provider => provider.modelProviderId != 'BATCHPROMPT');
         this.isLoadingModels = false;
       },
       error: (error) => {
