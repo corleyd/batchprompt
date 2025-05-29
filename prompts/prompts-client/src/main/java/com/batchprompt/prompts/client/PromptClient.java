@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.batchprompt.common.client.ClientAuthenticationService;
 import com.batchprompt.prompts.model.dto.PromptDto;
+import com.batchprompt.prompts.model.dto.PromptJobInfoDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,4 +53,20 @@ public class PromptClient {
         }
     }
 
+    public PromptDto updateJobInfo(UUID promptUuid, PromptJobInfoDto jobInfo, String authToken) {
+        try {
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
+            HttpEntity<PromptJobInfoDto> requestEntity = new HttpEntity<>(jobInfo, headers);
+            
+            ResponseEntity<PromptDto> response = restTemplate.exchange(
+                promptsServiceUrl + "/api/prompts/" + promptUuid + "/job-info",
+                HttpMethod.PUT,
+                requestEntity,
+                PromptDto.class);
+            return response.getBody();
+        } catch (Exception e) {
+            log.error("Error updating job info for prompt {}", promptUuid, e);
+            return null;
+        }
+    }
 }

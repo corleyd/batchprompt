@@ -9,4 +9,6 @@ export interface Prompt {
   responseJsonSchema: string;
   createTimestamp?: Date;
   updateTimestamp?: Date;
+  lastJobRunTimestamp?: Date;
+  jobRunCount?: number;
 }

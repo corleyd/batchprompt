@@ -1,18 +1,20 @@
 package com.batchprompt.prompts.core;
 
-import com.batchprompt.prompts.core.model.Prompt;
-import com.batchprompt.prompts.core.repository.PromptRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.batchprompt.prompts.core.model.Prompt;
+import com.batchprompt.prompts.core.repository.PromptRepository;
+import com.batchprompt.prompts.model.dto.PromptJobInfoDto;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -109,5 +111,20 @@ public class PromptService {
                 
         // Save the new prompt
         return promptRepository.save(newPrompt);
+    }
+
+    public Prompt updateJobInfo(UUID promptUuid, PromptJobInfoDto promptJobInfo) {
+        Prompt prompt = promptRepository.findById(promptUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Prompt not found with UUID: " + promptUuid));
+
+        if (promptJobInfo.getJobRunCountIncrement() != null) {
+            Integer currentJobRunCount = prompt.getJobRunCount() != null ? prompt.getJobRunCount() : 0;
+            prompt.setJobRunCount(currentJobRunCount + promptJobInfo.getJobRunCountIncrement());
+        }
+        if (promptJobInfo.getLastJobRunTimestamp() != null && (prompt.getLastJobRunTimestamp() == null || promptJobInfo.getLastJobRunTimestamp().isAfter(prompt.getLastJobRunTimestamp()))) {
+            prompt.setLastJobRunTimestamp(promptJobInfo.getLastJobRunTimestamp());
+        }
+        prompt.setUpdateTimestamp(LocalDateTime.now());
+        return promptRepository.save(prompt);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.batchprompt.notifications.client.NotificationSender;
 import com.batchprompt.users.core.model.Account;
 import com.batchprompt.users.core.model.AccountCreditTransaction;
 import com.batchprompt.users.core.model.AccountUser;
@@ -29,6 +30,7 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountUserRepository accountUserRepository;
     private final AccountCreditTransactionRepository accountCreditTransactionRepository;
+    private final NotificationSender notificationSender;
     
     private static final double DEFAULT_INITIAL_CREDITS = 100.0;
     private static final String DEFAULT_CREDIT_REASON = "Initial account credits";
@@ -132,15 +134,19 @@ public class AccountService {
         transaction.setReason(reason);
         transaction.setReferenceId(referenceId);
         transaction.setCreateTimestamp(LocalDateTime.now());
+
+        transaction = accountCreditTransactionRepository.save(transaction);
+        notificationSender.send("account/" + accountUuid.toString() + "/balance", 
+            new AccountBalanceDto(accountUuid, getAccountBalance(accountUuid)), null);
         
-        return accountCreditTransactionRepository.save(transaction);
+        return transaction;
     }
     
     /**
      * Get account balance
      */
-    public Integer getAccountBalance(UUID accountUuid) {
-        Integer balance = accountCreditTransactionRepository.getAccountBalance(accountUuid);
+    public Double getAccountBalance(UUID accountUuid) {
+        Double balance = accountCreditTransactionRepository.getAccountBalance(accountUuid);
         return balance != null ? balance : 0;
     }
     
@@ -173,4 +179,6 @@ public class AccountService {
                     return accountRepository.save(account);
                 });
     }
+
+    public record AccountBalanceDto(UUID accountUuid, Double balance) {}
 }

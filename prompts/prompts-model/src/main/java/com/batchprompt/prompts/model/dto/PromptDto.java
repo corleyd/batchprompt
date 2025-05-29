@@ -25,4 +25,7 @@ public class PromptDto {
     private String responseTextColumnName;
     private LocalDateTime createTimestamp;
     private LocalDateTime updateTimestamp;
+    private Integer jobRunCount;
+    private LocalDateTime lastJobRunTimestamp;
+    private LocalDateTime deleteTimestamp;    
 }

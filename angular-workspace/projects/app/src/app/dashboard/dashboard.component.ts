@@ -18,7 +18,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   dashboardLinks: NavigationLink[] = [
     { path: 'home', label: 'Home', icon: 'Home' },
     { path: 'files/upload', label: 'Upload New File', icon: 'Upload' },
-    { path: 'files', label: 'My Files', exactMatch: true, icon: 'file-text' },
+    { path: 'files', label: 'Files', exactMatch: true, icon: 'file-text' },
     { path: 'jobs', label: 'Jobs', icon: 'Briefcase' },
     { path: 'prompts', label: 'Prompts', icon: 'message-square' }
   ];

@@ -140,3 +140,4 @@ when model_id = 'openai-gpt-3.5-turbo' then 'GPT 3.5 Turbo'
 when model_id = 'batchprompt-test-echo' then 'Echo'
 when model_id = 'batchprompt-test-random' then 'Random'
 end;
+

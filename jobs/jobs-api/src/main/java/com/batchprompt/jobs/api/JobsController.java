@@ -48,6 +48,7 @@ public class JobsController {
     public ResponseEntity<?> getAllJobs(
             @RequestParam(required = false) String userId,
             @RequestParam(required = false) String modelId,
+            @RequestParam(required = false) UUID promptUuid,
             @RequestParam(required = false) JobStatus status,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size,
@@ -59,7 +60,7 @@ public class JobsController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sort));
         
         // Get paginated and filtered jobs
-        Page<Job> jobPage = jobService.getJobsPaginated(userId, modelId, status, pageable);
+        Page<Job> jobPage = jobService.getJobsPaginated(userId, modelId, promptUuid, status, pageable);
         
         // Convert to DTOs and preserve pagination metadata
         Page<JobDto> jobDtoPage = jobPage.map(job -> jobMapper.toDto(job));
@@ -100,13 +101,15 @@ public class JobsController {
     @GetMapping("/user")
     public ResponseEntity<?> getJobsByUser(
             @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) UUID promptUuid,
+            @RequestParam(required = false) JobStatus status,            
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "updatedAt") String sort,
             @RequestParam(required = false, defaultValue = "desc") String direction) 
     {
         String userId = jwt.getSubject();
-        return getJobsByUserId(userId, jwt, page, size, sort, direction);
+        return getJobsByUserId(userId, promptUuid, status, jwt, page, size, sort, direction);
     }
 
     /**
@@ -115,6 +118,8 @@ public class JobsController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getJobsByUserId(
             @PathVariable String userId,
+            @RequestParam(required = false) UUID promptUuid,
+            @RequestParam(required = false) JobStatus status,
             @AuthenticationPrincipal Jwt jwt,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -134,8 +139,8 @@ public class JobsController {
             page, size, Sort.by(sortDirection, sort)
         );
         
-        // Get jobs for the specified user
-        Page<Job> jobsPage = jobService.getJobsByUserIdPaginated(userId, pageable);
+        Page<Job> jobsPage = jobService.getJobsPaginated(userId, null, promptUuid, status, pageable);
+
         Page<JobDto> dtoPage = jobMapper.toDtoPage(jobsPage);
         
         return ResponseEntity.ok(dtoPage);

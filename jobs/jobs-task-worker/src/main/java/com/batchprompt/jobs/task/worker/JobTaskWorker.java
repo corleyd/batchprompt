@@ -87,7 +87,6 @@ public class JobTaskWorker {
                 throw new Exception("Prompt not found: " + message.getPromptUuid());
             }
             
-            
             // Convert output schema to JsonNode if it exists
             JsonNode outputSchema = null;
             if (promptDto.getResponseJsonSchema() != null && !promptDto.getResponseJsonSchema().isBlank()) {

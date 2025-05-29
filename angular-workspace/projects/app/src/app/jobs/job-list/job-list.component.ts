@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { JobService } from '../../services/job.service';
 import { TableConfig, TableColumn, TableSortEvent, TablePageEvent } from '../../shared/components/generic-table/table-models';
 
@@ -22,6 +22,8 @@ export class JobListComponent implements OnInit {
   // Sorting
   sortField = 'updatedAt';
   sortDirection : ('desc' | 'asc' ) = 'desc';
+
+  promptUuid?: string;
   
   // Table configuration
   tableConfig: TableConfig<any> = {
@@ -45,18 +47,23 @@ export class JobListComponent implements OnInit {
 
   constructor(
     private jobService: JobService,
-    private router: Router
-  ) {}
+    private router: Router,
+    private route: ActivatedRoute,
+  ) {
+  }
 
   ngOnInit(): void {
-    this.loadJobs();
+      this.route.queryParamMap.subscribe(params => {
+        this.promptUuid = params.get('promptUuid') || undefined;
+        this.loadJobs();
+      });
   }
 
   loadJobs(): void {
     this.loading = true;
     this.error = false;
     
-    this.jobService.getUserJobs(undefined, this.currentPage, this.pageSize, this.sortField, this.sortDirection).subscribe({
+    this.jobService.getUserJobs(undefined, this.promptUuid, this.currentPage, this.pageSize, this.sortField, this.sortDirection).subscribe({
       next: (response) => {
         this.jobs = response.content;
         this.totalItems = response.totalElements;

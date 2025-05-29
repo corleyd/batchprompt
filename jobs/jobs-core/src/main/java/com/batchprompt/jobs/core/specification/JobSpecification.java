@@ -2,6 +2,7 @@ package com.batchprompt.jobs.core.specification;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
@@ -24,7 +25,7 @@ public class JobSpecification {
      * @param status Optional job status to filter by
      * @return A Specification for the provided filter criteria
      */
-    public static Specification<Job> withFilters(String userId, String modelId, JobStatus status) {
+    public static Specification<Job> withFilters(String userId, String modelId, UUID promptUuid, JobStatus status) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             
@@ -38,6 +39,10 @@ public class JobSpecification {
             
             if (status != null) {
                 predicates.add(criteriaBuilder.equal(root.get("status"), status));
+            }
+
+            if (promptUuid != null) {
+                predicates.add(criteriaBuilder.equal(root.get("promptUuid"), promptUuid));
             }
             
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

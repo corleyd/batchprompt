@@ -115,7 +115,7 @@ public class FileService {
                     .fileName(file.getOriginalFilename())
                     .contentType(file.getContentType())
                     .fileSize(file.getSize())
-                    .status(FileStatus.VALIDATION)
+                    .status(FileStatus.VALIDATING)
                     .createdAt(now)
                     .updatedAt(now)
                     .build();
@@ -165,7 +165,7 @@ public class FileService {
                 FileEntity file = optionalFile.get();
                 
                 // Set status to Validation
-                file.setStatus(FileStatus.VALIDATION);
+                file.setStatus(FileStatus.VALIDATING);
                 file.setUpdatedAt(LocalDateTime.now());
                 fileRepository.save(file);
                 
@@ -201,7 +201,7 @@ public class FileService {
                         fileRepository.save(file);
                     } else {
                         // Update the file with validation errors
-                        file.setStatus(FileStatus.VALIDATION);
+                        file.setStatus(FileStatus.VALIDATING);
                         file.setValidationErrors(validationResult.getErrors());
                         file.setUpdatedAt(LocalDateTime.now());
                         fileRepository.save(file);

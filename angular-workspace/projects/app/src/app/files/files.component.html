@@ -1,6 +1,6 @@
 <div class="file-list-container">
   <div class="file-list-header">
-    <h1>My Files</h1>
+    <h1>Files</h1>
     <a routerLink="files/upload" class="btn primary-btn">Upload New File</a>
   </div>
 
@@ -9,24 +9,19 @@
       <span>Filter by:</span>
       <div class="filter-selectors">
         <div class="filter-group">
-          <select id="fileType" [(ngModel)]="fileTypeFilter" class="filter-select">
+          <select id="fileType" [(ngModel)]="fileTypeFilter" class="filter-select" (change)="applyFilters()">
             <option [ngValue]="undefined">All Types</option>
-            <option *ngFor="let type of fileTypes" [value]="type">{{type}}</option>
+            <option *ngFor="let type of fileTypes" [value]="type.value">{{type.label}}</option>
           </select>
         </div>
         
         <div class="filter-group">
-          <select id="status" [(ngModel)]="statusFilter" class="filter-select">
+          <select id="status" [(ngModel)]="statusFilter" class="filter-select" (change)="applyFilters()">
             <option [ngValue]="undefined">All Statuses</option>
-            <option *ngFor="let status of statusTypes" [value]="status">{{status}}</option>
+            <option *ngFor="let status of statusTypes" [value]="status.value">{{status.label}}</option>
           </select>
         </div>
       </div>
-    </div>
-    
-    <div class="filter-actions">
-      <button (click)="applyFilters()" class="btn btn-sm outline-btn">Apply Filters</button>
-      <button (click)="clearFilters()" class="btn btn-sm outline-btn">Clear</button>
     </div>
   </div>
 
@@ -81,10 +76,6 @@
     (refresh)="refreshFiles()"
     (rowClick)="onRowClick($event)"
   ></app-generic-table>
-
-  <div class="back-link">
-    <a routerLink="home" class="btn btn-md primary-btn">Back to Home</a>
-  </div>
 
   <!-- Global context menu -->
   <div class="context-menu" *ngIf="activeContextMenuFile && menuPosition" 

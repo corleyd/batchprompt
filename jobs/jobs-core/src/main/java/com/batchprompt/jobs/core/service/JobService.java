@@ -36,6 +36,7 @@ import com.batchprompt.jobs.model.dto.JobTaskMessage;
 import com.batchprompt.jobs.model.dto.JobValidationMessage;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
+import com.batchprompt.prompts.model.dto.PromptJobInfoDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -104,8 +105,8 @@ public class JobService {
      * @param pageable Pageable object containing pagination and sorting information
      * @return Page of filtered jobs
      */
-    public Page<Job> getJobsPaginated(String userId, String modelId, JobStatus status, Pageable pageable) {
-        return jobRepository.findAll(JobSpecification.withFilters(userId, modelId, status), pageable);
+    public Page<Job> getJobsPaginated(String userId, String modelId, UUID promptUuid, JobStatus status, Pageable pageable) {
+        return jobRepository.findAll(JobSpecification.withFilters(userId, modelId, promptUuid, status), pageable);
     }
     
     /**
@@ -269,6 +270,18 @@ public class JobService {
         
         // Submit all tasks (no status filter)
         int tasksSubmitted = submitJobTasks(job, tasks, null);
+
+        PromptJobInfoDto promptJobInfo = PromptJobInfoDto.builder()
+                .jobRunCountIncrement(1)
+                .lastJobRunTimestamp(job.getUpdatedAt())
+                .build();
+
+        try {
+            promptClient.updateJobInfo(job.getPromptUuid(), promptJobInfo, null);
+        } catch (Exception e) {
+            log.error("Failed to update job info for prompt {}: {}", job.getPromptUuid(), e.getMessage());
+            // We can still continue processing the job even if updating prompt info fails
+        }
         
         log.info("Job {} submitted for processing with {} tasks", jobUuid, tasksSubmitted);
         return job;

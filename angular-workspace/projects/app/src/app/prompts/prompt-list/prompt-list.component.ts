@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { switchMap } from 'rxjs';
+import { IconsModule } from '../../icons/icons.module';
 import { Prompt } from '../../models/prompt.model';
 import { PromptService } from '../../services/prompt.service';
-import { AuthService } from '@auth0/auth0-angular';
-import { Observable, switchMap } from 'rxjs';
 
 @Component({
   selector: 'app-prompt-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, IconsModule],
   templateUrl: './prompt-list.component.html',
   styleUrls: ['./prompt-list.component.scss']
 })
@@ -33,12 +34,14 @@ export class PromptListComponent implements OnInit {
   sortOptions = [
     { value: 'name', label: 'Name' },
     { value: 'createTimestamp', label: 'Created Date' },
-    { value: 'updateTimestamp', label: 'Updated Date' }
+    { value: 'lastJobRunTimestamp', label: 'Last Job Run' },
+    { value: 'jobRunCount', label: 'Job Runs' }
   ];
 
   constructor(
     private promptService: PromptService,
-    public auth: AuthService
+    public auth: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -134,4 +137,11 @@ export class PromptListComponent implements OnInit {
     }
     return this.sortDirection === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
   }
+
+  viewJobs(prompt: Prompt): void {
+    if (prompt && prompt.promptUuid) {
+      this.router.navigate(['/dashboard/jobs'], { queryParams: { promptUuid: prompt.promptUuid } });
+    }    
+  }
+
 }

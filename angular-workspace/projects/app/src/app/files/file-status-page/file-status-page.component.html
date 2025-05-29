@@ -39,9 +39,9 @@
     </div>
     
     <!-- Processing state with progress indicator -->
-    <div *ngIf="file.status === 'VALIDATION' || file.status === 'PROCESSING'" class="processing-container">
+    <div *ngIf="file.status === 'VALIDATING' || file.status === 'PROCESSING'" class="processing-container">
       <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-      <p>{{ file.status === 'VALIDATION' ? 'Validating file...' : 'Processing file...' }}</p>
+      <p>{{ file.status === 'VALIDATING' ? 'Validating file...' : 'Processing file...' }}</p>
       <p class="processing-note">This may take a few moments depending on the file size.</p>
     </div>
     

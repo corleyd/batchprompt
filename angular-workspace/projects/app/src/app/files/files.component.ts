@@ -28,8 +28,17 @@ export class FilesComponent implements OnInit {
   statusFilter?: string;
   
   // Options for dropdowns
-  fileTypes = ['UPLOAD', 'RESULT'];
-  statusTypes = ['READY', 'VALIDATION', 'PROCESSING', 'FAILED'];
+  fileTypes = [ 
+    { value: 'UPLOAD', label: 'Uploaded Files' },
+    { value: 'RESULT', label: 'Job Result Files' }
+  ];
+  
+  statusTypes = [ 
+    { value: 'READY', label: 'Available for Jobs' },
+    { value: 'VALIDATING', label: 'Pending Validation' },
+    { value: 'PROCESSING', label: 'Processing' },
+    { value: 'FAILED', label: 'Failed' }
+  ];
   
   // Context menu control
   activeContextMenuFile: string | null = null;

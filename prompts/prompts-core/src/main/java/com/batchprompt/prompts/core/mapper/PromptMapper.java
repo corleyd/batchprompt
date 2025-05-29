@@ -27,6 +27,9 @@ public class PromptMapper {
                 .responseJsonSchema(responseJsonSchema)
                 .createTimestamp(prompt.getCreateTimestamp())
                 .updateTimestamp(prompt.getUpdateTimestamp())
+                .jobRunCount(prompt.getJobRunCount())
+                .lastJobRunTimestamp(prompt.getLastJobRunTimestamp())
+                .deleteTimestamp(prompt.getDeleteTimestamp())                
                 .build();
     }
 
@@ -49,6 +52,9 @@ public class PromptMapper {
                 .responseJsonSchema(responseJsonSchema)
                 .createTimestamp(promptDto.getCreateTimestamp())
                 .updateTimestamp(promptDto.getUpdateTimestamp())
+                .jobRunCount(promptDto.getJobRunCount())
+                .lastJobRunTimestamp(promptDto.getLastJobRunTimestamp())
+                .deleteTimestamp(promptDto.getDeleteTimestamp())                
                 .build();
     }
 

@@ -60,4 +60,15 @@ public class Prompt {
 
     @Column(name = "update_timestamp", nullable = false)
     private LocalDateTime updateTimestamp;
+
+    @Column(name = "job_run_count", nullable = false)
+    private Integer jobRunCount;
+
+    @Column(name = "last_job_run_timestamp")
+    private LocalDateTime lastJobRunTimestamp;
+
+    @Column(name = "delete_timestamp")
+    private LocalDateTime deleteTimestamp;
+ 
+
 }

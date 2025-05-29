@@ -21,6 +21,7 @@
           <option *ngFor="let file of files" [value]="file.fileUuid">
             {{ file.fileName }}
           </option>
+          <option value="files">Go to files...</option>
         </select>
         <div *ngIf="jobForm.get('fileUuid')?.invalid && jobForm.get('fileUuid')?.touched" class="error-message">
           Please select a file

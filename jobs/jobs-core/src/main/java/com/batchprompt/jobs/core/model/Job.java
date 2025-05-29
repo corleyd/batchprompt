@@ -86,7 +86,7 @@ public class Job {
     
     @Column(name = "error_message")
     private String errorMessage;
- 
+
     @Version
     @Column(name = "version")
     private Integer version;

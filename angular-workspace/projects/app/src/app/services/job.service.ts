@@ -47,6 +47,7 @@ export class JobService {
   // Get jobs for current user with pagination and sorting
   getUserJobs(
     userId?: string,
+    promptUuid?: string,
     page: number = 0, 
     size: number = 20, 
     sort: string = 'updatedAt', 
@@ -57,6 +58,11 @@ export class JobService {
       .set('size', size.toString())
       .set('sort', sort)
       .set('direction', direction);
+
+    if (promptUuid) {
+      params = params.set('promptUuid', promptUuid);
+    }
+
     let url = `${this.apiUrl}/user`;
     if (userId) {
       url += `/${userId}`;

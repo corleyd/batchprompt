@@ -73,7 +73,7 @@ public class AccountController {
     }
     
     @GetMapping("/{accountUuid}/balance")
-    public ResponseEntity<Integer> getAccountBalance(@PathVariable UUID accountUuid) {
+    public ResponseEntity<Double> getAccountBalance(@PathVariable UUID accountUuid) {
         return accountService.getAccountById(accountUuid)
                 .map(account -> ResponseEntity.ok(accountService.getAccountBalance(account.getAccountUuid())))
                 .orElse(ResponseEntity.notFound().build());

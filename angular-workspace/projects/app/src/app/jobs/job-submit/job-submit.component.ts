@@ -51,7 +51,11 @@ export class JobSubmitComponent implements OnInit {
     // React to file selection changes
     this.jobForm.get('fileUuid')?.valueChanges.subscribe(fileUuid => {
       if (fileUuid) {
-        this.loadFileFields(fileUuid);
+        if (fileUuid === 'files') {
+          router.navigate(['/dashboard/files']);
+        } else {
+          this.loadFileFields(fileUuid);
+        }
       } else {
         this.fileFields = [];
         this.resetOutputFieldUuids();
@@ -228,4 +232,5 @@ export class JobSubmitComponent implements OnInit {
       }
     });
   }
+
 }

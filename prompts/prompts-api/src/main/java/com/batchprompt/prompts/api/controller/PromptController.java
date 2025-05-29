@@ -4,13 +4,13 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +26,7 @@ import com.batchprompt.prompts.core.PromptService;
 import com.batchprompt.prompts.core.mapper.PromptMapper;
 import com.batchprompt.prompts.core.model.Prompt;
 import com.batchprompt.prompts.model.dto.PromptDto;
+import com.batchprompt.prompts.model.dto.PromptJobInfoDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -152,5 +153,23 @@ public class PromptController {
                     return ResponseEntity.status(HttpStatus.CREATED).body(promptMapper.toDto(copiedPrompt));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{promptUuid}/job-info") 
+    public ResponseEntity<PromptDto> updateJobInfo(
+        @RequestBody PromptJobInfoDto promptJobInfo,
+        @PathVariable UUID promptUuid,
+        @AuthenticationPrincipal Jwt jwt) {
+        
+        if (!serviceAuthenticationService.isValidServiceJwt(jwt)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        PromptDto promptDto =promptMapper.toDto(promptService.updateJobInfo(promptUuid, promptJobInfo));
+        if (promptDto == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        return ResponseEntity.ok(promptDto);
     }
 }

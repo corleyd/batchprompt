@@ -71,8 +71,8 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
         if (this.file.status === 'READY') {
           this.loadFileFields();
         } 
-        // If file is in VALIDATION or PROCESSING state, start polling
-        else if (this.file.status === 'VALIDATION' || this.file.status === 'PROCESSING') {
+        // If file is in VALIDATING or PROCESSING state, start polling
+        else if (this.file.status === 'VALIDATING' || this.file.status === 'PROCESSING') {
           this.startPolling();
         }
       },
@@ -214,7 +214,7 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
     this.statusPolling = interval(3000)
       .pipe(
         switchMap(() => this.fileService.getFileStatus(this.fileId!)),
-        takeWhile((response) => response.status === 'VALIDATION' || response.status === 'PROCESSING', true)
+        takeWhile((response) => response.status === 'VALIDATING' || response.status === 'PROCESSING', true)
       )
       .subscribe({
         next: (statusData) => {
@@ -241,7 +241,7 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
     if (!this.file) return '';
     
     switch (this.file.status) {
-      case 'VALIDATION': return 'File is being validated...';
+      case 'VALIDATING': return 'File is being validated...';
       case 'PROCESSING': return 'File is being processed...';
       case 'READY': return 'File is ready';
       case 'FAILED': return 'File processing failed';

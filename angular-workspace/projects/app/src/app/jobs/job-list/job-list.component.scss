@@ -1,11 +1,11 @@
+@import 'variables';
+
 /* Job List Component Styles */
 
 // Colors from the landing page
 $primary-blue: #3498db;
 $primary-blue-dark: #2980b9;
 $light-bg: #f8f9fa;
-$text-dark: #333;
-$text-muted: #6c757d;
 $border-color: #dee2e6;
 $success-color: #28a745;
 $warning-color: #ffc107;
@@ -16,20 +16,6 @@ $info-color: #17a2b8;
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1rem;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-
-  h1 {
-    font-size: 2rem;
-    font-weight: 600;
-    color: $text-dark;
-    margin: 0;
-  }
 }
 
 .content-box {

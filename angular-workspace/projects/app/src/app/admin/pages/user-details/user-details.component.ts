@@ -269,7 +269,7 @@ export class UserDetailsComponent implements OnInit {
     if (!this.userId) return;
     
     this.loadingJobs = true;
-    this.jobService.getUserJobs(this.userId, this.jobsPage, this.jobsPageSize,
+    this.jobService.getUserJobs(this.userId, undefined, this.jobsPage, this.jobsPageSize,
                                this.jobsSortField, this.jobsSortDirection).subscribe({
       next: (response) => {
         this.userJobs = response.content || [];

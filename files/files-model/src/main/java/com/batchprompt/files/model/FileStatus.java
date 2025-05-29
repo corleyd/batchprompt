@@ -1,7 +1,8 @@
 package com.batchprompt.files.model;
 
 public enum FileStatus {
-    VALIDATION,
+    VALIDATING,
     PROCESSING,
-    READY
+    READY,
+    FAILED
 }

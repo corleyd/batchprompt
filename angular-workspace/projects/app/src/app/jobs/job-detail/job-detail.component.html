@@ -79,7 +79,7 @@
         </div>
         <div class="info-item">
           <span class="label">Estimated Credits:</span>
-          <span class="value">{{ job.creditEstimate || 'Unknown' }}</span>
+          <span class="value">{{ job.creditEstimate }}</span>
         </div>
       </div>
 
@@ -103,7 +103,6 @@
       </div>
 
       <div class="action-buttons">
-        <button class="btn btn-primary" (click)="goBack()">Return to Jobs</button>
       </div>
     </div>
 
@@ -121,7 +120,6 @@
       </div>
 
       <div class="action-buttons">
-        <button class="btn btn-primary" (click)="goBack()">Return to Jobs</button>
       </div>
     </div>
 
@@ -139,9 +137,9 @@
           <span class="label">Processed Records:</span>
           <span class="value">{{ job.completedTaskCount }}/{{ job.taskCount }}</span>
         </div>
-        <div *ngIf="job.creditUsage" class="info-item">
+        <div class="info-item">
           <span class="label">Credits Used:</span>
-          <span class="value">{{ job.creditUsage }}</span>
+          <span class="value">{{ job.creditUsage || 0 }}</span>
         </div>
       </div>
 
@@ -153,7 +151,6 @@
           [buttonText]="'Download Results'"
           buttonClass="btn btn-primary"
         ></app-download-button>
-        <button class="btn btn-secondary" (click)="goBack()">Return to Jobs</button>
       </div>
     </div>
 
@@ -178,7 +175,6 @@
 
       <div class="action-buttons">
         <button class="btn btn-primary" (click)="continueProcessing()">Continue Processing</button>
-        <button class="btn btn-secondary" (click)="goBack()">Return to Jobs</button>
       </div>
     </div>
 

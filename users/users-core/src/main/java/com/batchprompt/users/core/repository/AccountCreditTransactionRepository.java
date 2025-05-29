@@ -14,5 +14,5 @@ public interface AccountCreditTransactionRepository extends JpaRepository<Accoun
     List<AccountCreditTransaction> findByAccountUuid(UUID accountUuid);
     
     @Query("SELECT SUM(t.changeAmount) FROM AccountCreditTransaction t WHERE t.accountUuid = :accountUuid")
-    Integer getAccountBalance(UUID accountUuid);
+    Double getAccountBalance(UUID accountUuid);
 }
