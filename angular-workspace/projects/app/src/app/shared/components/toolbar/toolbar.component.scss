@@ -69,6 +69,7 @@
 .nav-actions {
     display: flex;
     gap: 1rem;
+    margin-left: auto;
 }
   
 .btn {
@@ -204,4 +205,95 @@
     li:hover & {
         color: #4285f4;
     }
+}
+
+.nav-link {
+  color: #333;
+  text-decoration: none;
+  font-size: 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #4285f4;
+    text-decoration: none;
+  }
+}
+
+/* Group nav links (Supported Models, Examples) and align them to the right, but before nav-actions */
+.nav-links-group {
+  display: flex;
+  align-items: center;
+  gap: 2.5rem; /* More space between Supported Models and Examples */
+  margin-left: auto;
+  margin-right: 2.5rem; /* Push group toward the right, but leave space before user menu */
+}
+
+.top-nav > .nav-link:last-of-type {
+  margin-right: 0;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  color: #333;
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 120%;
+  left: 0;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  z-index: 1000;
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  color: #333;
+  text-decoration: none;
+  padding: 10px 18px;
+  font-size: 0.97rem;
+  font-weight: 400;
+  background: none;
+  border: none;
+  text-align: left;
+  transition: background 0.2s, color 0.2s;
+  cursor: pointer;
+  width: 100%;
+  display: block;
+}
+
+.dropdown-item:hover {
+  background: #f8fbff;
+  color: #4285f4;
+}
+
+/* Align nav links and dropdowns horizontally */
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }

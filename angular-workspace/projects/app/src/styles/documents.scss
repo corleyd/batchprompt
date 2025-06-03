@@ -1,0 +1,107 @@
+h1, h2 {
+    color: #1a1a1a;
+}
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.5em;
+}
+h2 {
+    font-size: 1.5em;
+    margin-top: 1.5em;
+}
+p {
+    margin-bottom: 1em;
+}
+
+.document-content {
+    max-width: 800px;
+    margin: auto;
+}
+
+.document-title {
+  font-size: 2.2em;
+  font-weight: 700;
+  margin-bottom: 0.5em;
+  margin-top: 0.5em;
+}
+
+.document-date {
+  font-size: 1em;
+  margin-bottom: 1.2em;
+}
+
+.document-intro, .document-agree {
+  font-size: 1.08em;
+  margin-bottom: 1.2em;
+}
+
+.document-section {
+  background: #fff;
+  border-radius: 10px;
+}
+
+.document-section h2 {
+  font-size: 1.35em;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 0.7em;
+}
+
+.document-section h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  color: #223a5e;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+}
+
+.document-list {
+  margin-bottom: 1.2em;
+  padding-left: 1.2em;
+}
+
+.document-list li {
+  margin-bottom: 0.4em;
+  font-size: 1em;
+}
+
+.document-highlight {
+  color: #b22222;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+}
+
+.document-warning {
+  color: #b22222;
+  font-weight: 500;
+}
+
+.document-contact {
+  font-size: 1em;
+  margin-top: 0.5em;
+}
+
+.document-bg {
+  background: #f7f8fa;
+  min-height: 100vh;
+  padding-top: 2em;
+  padding-bottom: 2em;
+}
+
+.document-card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  padding: 2.5em 2.5em 2em 2.5em;
+  margin: auto;
+  max-width: 900px;
+}
+
+@media (max-width: 600px) {
+  .document-card, .document-section {
+    padding: 1em !important;
+  }
+  .document-card {
+    max-width: 100%;
+  }
+}

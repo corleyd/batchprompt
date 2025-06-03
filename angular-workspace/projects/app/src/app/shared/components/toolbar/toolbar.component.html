@@ -4,6 +4,26 @@
       BatchPrompt
     </a>
     
+    <div class="nav-links-group">
+      <a class="nav-link" [routerLink]="['/models']">Supported Models</a>
+
+      <!-- New Examples dropdown -->
+      <div class="nav-link dropdown"
+           (mouseenter)="showExamplesDropdown = true"
+           (mouseleave)="setDropdownCloseTimeout()">
+        <span class="dropdown-toggle">
+          Examples <i-feather name="chevron-down" class="dropdown-icon"></i-feather>
+        </span>
+        <div class="dropdown-menu"
+             *ngIf="showExamplesDropdown"
+             (mouseenter)="clearDropdownCloseTimeout()"
+             (mouseleave)="setDropdownCloseTimeout()">
+          <a class="dropdown-item" [routerLink]="['/examples/1']">Example 1</a>
+          <a class="dropdown-item" [routerLink]="['/examples/2']">Example 2</a>
+        </div>
+      </div>
+    </div>
+    
     <div class="nav-actions">
       <ng-container *ngIf="!(auth.isAuthenticated$ | async)">
         <button class="btn login-btn" (click)="login()">LOG IN</button>

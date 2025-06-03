@@ -17,7 +17,9 @@ import { UserService } from '../../../services/user.service';
 export class ToolbarComponent implements OnInit {
   title = 'BatchPrompt';
   showUserMenu = false;
+  showExamplesDropdown = false;
   isAdmin$: Observable<boolean>;
+  dropdownCloseTimeout: any;
 
   constructor(
     public auth: AuthService, 
@@ -97,6 +99,19 @@ export class ToolbarComponent implements OnInit {
     if (names.length === 1) return names[0].charAt(0).toUpperCase();
     
     return (names[0].charAt(0) + names[names.length - 1].charAt(0)).toUpperCase();
+  }
+
+  setDropdownCloseTimeout() {
+    this.dropdownCloseTimeout = setTimeout(() => {
+      this.showExamplesDropdown = false;
+    }, 180);
+  }
+
+  clearDropdownCloseTimeout() {
+    if (this.dropdownCloseTimeout) {
+      clearTimeout(this.dropdownCloseTimeout);
+      this.dropdownCloseTimeout = null;
+    }
   }
 }
 
