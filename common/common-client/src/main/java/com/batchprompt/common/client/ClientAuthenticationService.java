@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import com.auth0.client.auth.AuthAPI;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.auth.TokenHolder;
+import com.auth0.net.Response;
 import com.auth0.net.TokenRequest;
 
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,10 @@ public class ClientAuthenticationService {
             @Value("${auth0.service.client-id:}") String clientId,
             @Value("${auth0.service.client-secret:}") String clientSecret,
             @Value("${auth0.audience:}") String audience) {
-        this.authAPI = new AuthAPI(domain, clientId, clientSecret);
         this.audience = audience;
+        // Use the non-deprecated constructor (remove "https://" from domain)
+        String cleanDomain = domain.startsWith("https://") ? domain.substring(8) : domain;
+        this.authAPI = AuthAPI.newBuilder(cleanDomain, clientId, clientSecret).build();
     }
 
     /**
@@ -48,7 +51,8 @@ public class ClientAuthenticationService {
         try {
             // Use Auth0 SDK to get token with client credentials grant
             TokenRequest request = authAPI.requestToken(audience);
-            TokenHolder holder = request.execute();
+            Response<TokenHolder> response = request.execute();
+            TokenHolder holder = response.getBody();
             
             // Get token and handle caching
             String accessToken = holder.getAccessToken();

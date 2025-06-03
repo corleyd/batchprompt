@@ -31,6 +31,9 @@
         </a>
       </ng-container>
     </div>
+    <div *ngIf="!!footerTemplate && !isSidebarCollapsed" class="nav-footer">
+      <ng-container *ngTemplateOutlet="footerTemplate"></ng-container>
+    </div>
   </div>
 
   <!-- Main Content Area -->

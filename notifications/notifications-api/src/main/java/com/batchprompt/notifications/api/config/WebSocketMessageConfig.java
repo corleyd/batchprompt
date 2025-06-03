@@ -5,10 +5,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 /**
  * Configuration for WebSocket message conversion to ensure consistent date serialization.
@@ -18,30 +15,6 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @Configuration
 public class WebSocketMessageConfig {
 
-    /**
-     * Creates a customized ObjectMapper for WebSocket message conversion
-     * that properly handles Java 8 date/time types like LocalDateTime
-     */
-    @Bean
-    @Primary
-    public ObjectMapper webSocketObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        
-        // Register JavaTimeModule to properly handle Java 8 date/time types
-        objectMapper.registerModule(new JavaTimeModule());
-        
-        // Disable timestamp serialization, use ISO-8601 format instead
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        
-        // Ensure that time zone information is included
-        objectMapper.configure(SerializationFeature.WRITE_DATES_WITH_ZONE_ID, false);
-        
-        // Be lenient when deserializing unknown properties
-        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        
-        return objectMapper;
-    }
-    
     /**
      * Creates a customized message converter that uses our configured ObjectMapper
      */

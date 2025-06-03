@@ -8,6 +8,7 @@ import { MatTableModule } from '@angular/material/table';
 import { FileService } from '../file.service';
 import { Observable, Subscription, interval } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
+import { IconsModule } from '../../icons/icons.module';
 
 @Component({
   selector: 'app-file-status-page',
@@ -20,7 +21,8 @@ import { switchMap, takeWhile } from 'rxjs/operators';
     MatProgressBarModule,
     MatButtonModule,
     MatIconModule,
-    MatTableModule
+    MatTableModule,
+    IconsModule
   ]
 })
 export class FileStatusPageComponent implements OnInit, OnDestroy {
@@ -238,15 +240,10 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
   }
   
   getStatusText(): string {
-    if (!this.file) return '';
-    
-    switch (this.file.status) {
-      case 'VALIDATING': return 'File is being validated...';
-      case 'PROCESSING': return 'File is being processed...';
-      case 'READY': return 'File is ready';
-      case 'FAILED': return 'File processing failed';
-      default: return `Status: ${this.file.status}`;
+    if (!this.file) {
+      return '';
     }
+    return this.file.status;
   }
   
   createJob(): void {
@@ -255,7 +252,7 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
     }
   }
   
-  goToFiles(): void {
-    this.router.navigate(['files']);
+  goBack(): void {
+    this.router.navigate(['/dashboard/files']);
   }
 }

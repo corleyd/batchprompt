@@ -123,7 +123,7 @@ export class JobDetailComponent implements OnInit, OnDestroy {
     if (this.job && this.job.jobUuid) {
       this.jobService.cancelJob(this.job.jobUuid).subscribe({
         next: () => {
-          this.router.navigate(['/dashboard/jobs']);
+          console.log('Job canceled successfully');
         },
         error: (err) => {
           console.error('Error canceling job', err);
@@ -191,6 +191,10 @@ export class JobDetailComponent implements OnInit, OnDestroy {
   isProcessing(): boolean {
     return this.job?.status?.toUpperCase() === 'PROCESSING';
   }
+
+  isCancelled(): boolean {
+    return this.job?.status?.toUpperCase() === 'CANCELLED';
+  }  
 
   goBack(): void {
     this.router.navigate(['/dashboard/jobs']);

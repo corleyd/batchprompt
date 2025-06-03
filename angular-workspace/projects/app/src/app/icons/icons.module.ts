@@ -30,7 +30,9 @@ import {
   Zap,
   CheckSquare,
   List,
-  CheckCircle
+  CheckCircle,
+  Clock,
+  XCircle
 } from 'angular-feather/icons';
 
 // Select some icons (use an object, not an array)
@@ -63,7 +65,9 @@ const icons = {
   Zap,
   CheckSquare,
   List,
-  CheckCircle
+  CheckCircle,
+  Clock,
+  XCircle
 };
 
 @NgModule({

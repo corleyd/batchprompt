@@ -8,6 +8,12 @@ version = '0.0.1-SNAPSHOT'
 
 
 dependencies {
+    implementation 'org.springframework.data:spring-data-jpa'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+        
+    // Jackson dependencies for proper date serialization
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
+
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework:spring-web'
 }

@@ -2,7 +2,14 @@
   [links]="dashboardLinks"
   [collapsible]="true"
   (sidebarToggled)="onSidebarToggled($event)">
-  <div class="notification-container">
-    <app-notification-indicator *ngIf="isAuthenticated"></app-notification-indicator>
-  </div>
+  <ng-template #footerTemplate>
+    <ng-container *ngIf="userService.creditBalance$ | async as creditBalance">
+      <ng-container *ngIf="creditBalance != null">
+        <div class="credits-footer">
+          <div>Credits Available</div>
+          <div [ngClass]="{ 'credit-warn': creditBalance <= 0  }">{{creditBalance | number:".2"}}</div>
+        </div>
+      </ng-container>
+    </ng-container>
+  </ng-template>
 </app-navigation-layout>

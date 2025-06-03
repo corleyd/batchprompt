@@ -1,9 +1,11 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { AuthService } from '@auth0/auth0-angular';
+import { Observable, of, ReplaySubject } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { AuthService } from '@auth0/auth0-angular';
+import { AccountService } from './account.service';
+import { NotificationService } from './notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -13,9 +15,14 @@ export class UserService {
   private userValidated = false;
   private currentUser: any = null;
 
+  private creditBalanceSubject: ReplaySubject<number> = new ReplaySubject(1);
+  public creditBalance$: Observable<number> = this.creditBalanceSubject.asObservable();
+
   constructor(
     private http: HttpClient,
-    private auth: AuthService
+    private auth: AuthService,
+    private accountService: AccountService,
+    private notificationService: NotificationService
   ) {
     this.apiUrl = `${environment.apiBaseUrl}/api/users`;
     
@@ -42,6 +49,29 @@ export class UserService {
         this.userValidated = true;
         this.currentUser = user;
         console.log('User validated on login:', user);
+
+
+        // Fetch accounts for the user and update credit balance
+        if (user && user.userId) {
+          this.accountService.getUserAccounts(user.userId).subscribe(accounts => {
+            if (accounts && accounts.length > 0) {
+              const firstAccount = accounts[0];
+              this.accountService.getAccountBalance(firstAccount.accountUuid).subscribe(balance => {
+                this.creditBalanceSubject.next(balance);
+              });
+            }
+          });
+        }
+
+        this.notificationService.subscribeTo("account/balance")
+          .subscribe((data: any) => {
+          console.log('Balance update received:', data);
+          let payload = data.payload;
+          if (payload && payload.accountUuid) {
+              this.creditBalanceSubject.next(payload.balance);
+          }
+        });
+
       }),
       catchError(error => {
         console.error('Error validating user on login:', error);

@@ -41,8 +41,7 @@ ALTER TABLE job_task DROP CONSTRAINT IF EXISTS job_task_model_id_fkey;
 update job set model_id =
 case 
 when model_id = 'gpt-4o' then 'openai-gpt-4o'
-when model_id = 'gpt-3.5-turbo' then 'openai-gpt-3.5-turbo'
-when model_id = 'openai-gpt-3-5-turbo' then 'openai-gpt-3.5-turbo'
+when model_id = 'gpt-3.5-turbo' then 'openai-gpt-3-5-turbo'
 when model_id = 'deepseek-r1' then 'aws-deepseek-1'
 else model_id
 end;
@@ -50,8 +49,7 @@ end;
 update job_task set model_id =
 case 
 when model_id = 'gpt-4o' then 'openai-gpt-4o'
-when model_id = 'gpt-3.5-turbo' then 'openai-gpt-3.5-turbo'
-when model_id = 'openai-gpt-3-5-turbo' then 'openai-gpt-3.5-turbo'
+when model_id = 'gpt-3.5-turbo' then 'openai-gpt-3-5-turbo'
 when model_id = 'deepseek-r1' then 'aws-deepseek-1'
 else model_id
 end;

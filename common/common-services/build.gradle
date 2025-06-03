@@ -35,7 +35,7 @@ dependencies {
     implementation 'com.auth0:auth0-spring-security-api:1.5.1'
     implementation 'com.auth0:java-jwt:4.4.0'
     implementation 'com.auth0:jwks-rsa:0.22.0'
-    implementation 'com.auth0:auth0:1.42.0'  // Added Auth0 Java SDK
+    implementation 'com.auth0:auth0:2.20.0'  // Added Auth0 Java SDK
     
     // Spring Security
     implementation 'org.springframework.boot:spring-boot-starter-security'

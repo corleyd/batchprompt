@@ -11,8 +11,12 @@ import com.batchprompt.prompts.model.dto.PromptDto;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class PromptMapper {
+    private final ObjectMapper objectMapper;
 
     public PromptDto toDto(Prompt prompt) {
         String responseJsonSchema = prompt.getOutputMethod() != PromptOutputMethod.TEXT  ? prompt.getResponseJsonSchema().toString() : null;
@@ -37,7 +41,7 @@ public class PromptMapper {
         JsonNode responseJsonSchema = null;
         if (promptDto.getResponseJsonSchema() != null) {
             try {
-                responseJsonSchema = new ObjectMapper().readTree(promptDto.getResponseJsonSchema());
+                responseJsonSchema = objectMapper.readTree(promptDto.getResponseJsonSchema());
             } catch (Exception e) {
                 throw new RuntimeException("Failed to parse output schema", e);
             }

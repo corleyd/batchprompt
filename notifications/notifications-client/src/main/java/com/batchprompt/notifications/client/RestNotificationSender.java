@@ -1,5 +1,7 @@
 package com.batchprompt.notifications.client;
 
+import java.lang.runtime.ObjectMethods;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;
@@ -13,6 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.batchprompt.common.client.ClientAuthenticationService;
 import com.batchprompt.notifications.model.Notification;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -28,11 +31,15 @@ public class RestNotificationSender implements NotificationSender {
     private final RestTemplate restTemplate;
     private final String notificationServiceUrl;
     private final ClientAuthenticationService authService;
+    private final ObjectMapper objectMapper;
     
     public RestNotificationSender(
             ClientAuthenticationService authService,
+            ObjectMapper objectMapper,
+            RestTemplate restTemplate,
             @Value("${services.notifications.url}") String notificationServiceUrl) {
-        this.restTemplate = new RestTemplate();
+        this.restTemplate = restTemplate;
+        this.objectMapper = objectMapper;
         this.notificationServiceUrl = notificationServiceUrl;
         this.authService = authService;
         log.info("Initialized REST notification sender with service URL: {}", notificationServiceUrl);
@@ -47,7 +54,6 @@ public class RestNotificationSender implements NotificationSender {
     @Override
     public void send(String notificationType, Object payload, String userId) {
 
-        // check to see if a transaction is in progress
 
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             // if so, add the notification to the transaction
@@ -70,7 +76,7 @@ public class RestNotificationSender implements NotificationSender {
             Notification notification = Notification.create(notificationType, payload, userId);
             HttpEntity<Notification> requestEntity = new HttpEntity<>(notification, headers);
 
-            log.debug("Sending notification: {}", notification);
+            log.debug("Sending notification {} payload {}", notification, objectMapper.writeValueAsString(payload));
 
             ResponseEntity<Void> response = restTemplate.exchange(
                 url,

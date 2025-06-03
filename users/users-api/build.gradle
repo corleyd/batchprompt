@@ -22,8 +22,20 @@ dependencies {
     implementation 'org.postgresql:postgresql'
     implementation 'org.flywaydb:flyway-core'
     
+    // Auth0 dependencies
+    implementation 'com.auth0:auth0-spring-security-api:1.5.1'
+    implementation 'com.auth0:java-jwt:4.4.0'
+    implementation 'com.auth0:jwks-rsa:0.22.0'
+    
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    
+    // Auth0
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+
     // Auth0 Java SDK for Management API
-    implementation 'com.auth0:auth0:2.10.0'
+    implementation 'com.auth0:auth0:2.20.0'
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'

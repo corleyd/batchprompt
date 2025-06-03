@@ -1,16 +1,16 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
-import { NavigationLayoutComponent, NavigationLink } from '../shared/components/navigation-layout/navigation-layout.component';
-import { NotificationIndicatorComponent } from '../shared/components/notification-indicator.component';
-import { NotificationService } from '../services/notification.service';
 import { Subject, takeUntil } from 'rxjs';
+import { NotificationService } from '../services/notification.service';
+import { NavigationLayoutComponent, NavigationLink } from '../shared/components/navigation-layout/navigation-layout.component';
+import { UserService } from '../services/user.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, NavigationLayoutComponent, NotificationIndicatorComponent],
+  imports: [CommonModule, RouterModule, NavigationLayoutComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
@@ -29,6 +29,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   constructor(
     public auth: AuthService,
+    public userService: UserService,
     private notificationService: NotificationService
   ) {}
   

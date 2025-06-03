@@ -68,6 +68,15 @@ public class AccountService {
                 .map(Optional::get)
                 .toList();
     }
+
+    private User getUserForAccount(Account account) {
+        List<AccountUser> accountUsers = accountUserRepository.findByAccountUuid(account.getAccountUuid());
+        if (accountUsers.isEmpty()) {
+            return null; // No users associated with this account
+        }
+        // Return the first user (assuming one owner per account)
+        return accountUsers.get(0).getUser();
+    }
     
     /**
      * Create a new account with default credits
@@ -127,6 +136,9 @@ public class AccountService {
             throw new IllegalArgumentException("Account not found");
         }
         
+        Account account = accountRepository.findById(accountUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Account not found"));
+
         AccountCreditTransaction transaction = new AccountCreditTransaction();
         transaction.setTransactionUuid(UUID.randomUUID());
         transaction.setAccountUuid(accountUuid);
@@ -135,9 +147,13 @@ public class AccountService {
         transaction.setReferenceId(referenceId);
         transaction.setCreateTimestamp(LocalDateTime.now());
 
+
         transaction = accountCreditTransactionRepository.save(transaction);
-        notificationSender.send("account/" + accountUuid.toString() + "/balance", 
-            new AccountBalanceDto(accountUuid, getAccountBalance(accountUuid)), null);
+
+        User user = getUserForAccount(account);
+        
+        notificationSender.send("account/balance", 
+            new AccountBalanceDto(accountUuid, getAccountBalance(accountUuid)), user.getUserId());
         
         return transaction;
     }

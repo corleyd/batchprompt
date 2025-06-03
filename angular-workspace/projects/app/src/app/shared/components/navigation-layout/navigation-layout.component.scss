@@ -30,6 +30,8 @@
   }
 
   .sidebar {
+    display: flex;
+    flex-direction: column;
     min-width: 250px;
     width: 250px;
     background-color: #f5f7f9;
@@ -37,6 +39,7 @@
     padding: 20px 0;
     transition: all 0.3s ease;
     position: relative;  /* Add position:relative for better positioning context */
+    height: 100%;
     
     &.collapsed {
       min-width: 70px;
@@ -99,6 +102,8 @@
     }
     
     .nav-links {
+      flex: 1;
+
       display: flex;
       flex-direction: column !important;
       
@@ -242,17 +247,6 @@
     z-index: 1000;
   }
 }
-
-// @media (min-width: 769px) {
-//   /* Adjust layout for desktop only */
-//   .sidebar:not(.collapsed) + .main-content {
-//     margin-left: 250px !important;
-//   }
-  
-//   .sidebar.collapsed + .main-content {
-//     margin-left: 70px !important;
-//   }
-// }
 
 .collapse-toggle.desktop-toggle {
   position: absolute; /* Absolute position relative to container */

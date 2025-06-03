@@ -89,8 +89,7 @@ export class NotificationService implements OnDestroy {
             },
             // Always include token in STOMP headers
             connectHeaders: {
-              'Authorization': `Bearer ${token}`,
-              'client-id': `angular-client-${new Date().getTime()}`
+              'Authorization': `Bearer ${token}`
             },
             debug: (msg) => { 
               console.debug('STOMP debug:', msg); 

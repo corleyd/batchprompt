@@ -1,4 +1,4 @@
-import { Component, Input, HostListener, Output, EventEmitter } from '@angular/core';
+import { Component, Input, HostListener, Output, EventEmitter, TemplateRef, ContentChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
@@ -25,8 +25,12 @@ export class NavigationLayoutComponent {
   @Input() showTitle: boolean = false;
   @Input() containerClass: string = '';
   @Input() collapsible: boolean = true;
+
   @Output() sidebarToggled = new EventEmitter<boolean>();
+
   
+  @ContentChild('footerTemplate') footerTemplate!: TemplateRef<any>;
+
   isMobileView = false;
   isSidebarCollapsed = false;
   

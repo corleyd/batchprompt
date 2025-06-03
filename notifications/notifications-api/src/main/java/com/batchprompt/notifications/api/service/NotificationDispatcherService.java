@@ -19,7 +19,6 @@ public class NotificationDispatcherService {
     
     /**
      * Dispatches a notification to the appropriate topic based on its type.
-     * 
      * @param notification the notification to dispatch
      */
     public void dispatch(Notification notification) {

@@ -8,10 +8,12 @@ import com.batchprompt.jobs.model.TaskStatus;
 public class TaskStatusCount {
     private TaskStatus status;
     private Long count;
+    private Double creditsUsed;
 
-    public TaskStatusCount(TaskStatus status, Long count) {
+    public TaskStatusCount(TaskStatus status, Long count, Double creditsUsed) {
         this.status = status;
         this.count = count;
+        this.creditsUsed = creditsUsed;
     }
 
     public TaskStatus getStatus() {
@@ -20,5 +22,9 @@ public class TaskStatusCount {
 
     public Long getCount() {
         return count;
+    }
+
+    public Double getCreditsUsed() {
+        return creditsUsed;
     }
 }

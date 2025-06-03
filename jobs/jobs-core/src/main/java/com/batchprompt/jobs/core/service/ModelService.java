@@ -164,7 +164,12 @@ public class ModelService {
     public List<ModelDto> getSupportedModelDetails() {
         return modelDefinitions.stream()
             .map(modelMapper::toModelDto)
-            .sorted(Comparator.comparing(ModelDto::getDisplayName))
+            .sorted(new Comparator<ModelDto>() {
+                @Override
+                public int compare(ModelDto o1, ModelDto o2) {
+                    return Integer.compare(o1.getModelProviderDisplayOrder(), o2.getModelProviderDisplayOrder());
+                }
+            })
             .collect(Collectors.toList());
     }
 

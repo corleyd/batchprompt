@@ -1,9 +1,11 @@
 <div class="job-detail-container">
-  <div class="job-detail-header">
-    <button class="back-button" (click)="goBack()">
+  <div class="page-header-container">
+    <button class="btn back-btn" (click)="goBack()">
       <i-feather name="chevron-left"></i-feather> Back to Jobs
     </button>
-    <h1>Job Details</h1>
+    <div class="page-header">
+      <h1>Job Details</h1>
+    </div>
   </div>
 
   <div *ngIf="loading" class="loading-container">
@@ -79,7 +81,7 @@
         </div>
         <div class="info-item">
           <span class="label">Estimated Credits:</span>
-          <span class="value">{{ job.creditEstimate }}</span>
+          <span class="value">{{ job.creditEstimate | number: '.3'}}</span>
         </div>
       </div>
 
@@ -139,7 +141,7 @@
         </div>
         <div class="info-item">
           <span class="label">Credits Used:</span>
-          <span class="value">{{ job.creditUsage || 0 }}</span>
+          <span class="value">{{ (job.creditUsage || 0) | number: '.3' }}</span>
         </div>
       </div>
 
@@ -169,7 +171,7 @@
         </div>
         <div *ngIf="job.creditUsage" class="info-item">
           <span class="label">Credits Used So Far:</span>
-          <span class="value">{{ job.creditUsage }}</span>
+          <span class="value">{{ (job.creditUsage || 0) | number: '.3'}}</span>
         </div>
       </div>
 
@@ -191,6 +193,10 @@
           <span class="label">Progress:</span>
           <span class="value">{{ job.completedTaskCount }}/{{ job.taskCount }} records</span>
         </div>
+        <div class="info-item">
+          <span class="label">Credits Used So Far:</span>
+          <span class="value">{{ (job.creditUsage || 0) | number: '.3'}}</span>
+        </div>        
       </div>
 
       <div class="progress-container">
@@ -202,5 +208,23 @@
         <button class="btn btn-secondary" (click)="cancelJob()">Cancel Job</button>
       </div>
     </div>
+
+    <div *ngIf="isCancelled()" class="job-state-container">
+      <div class="state-header">
+        <i-feather name="x-circle"></i-feather>
+        <h3>Cancelled</h3>
+      </div>
+      <p>Your job has been cancelled.</p>
+      
+      <div class="job-details-info">
+        <div class="info-item">
+          <span class="label">Progress:</span>
+          <span class="value">{{ job.completedTaskCount }}/{{ job.taskCount }} records</span>
+        </div>
+        <div class="info-item">
+          <span class="label">Credits Used Before Cancellation:</span>
+          <span class="value">{{ (job.creditUsage || 0) | number: '.3'}}</span>
+        </div>        
+      </div>    
   </div>
 </div>

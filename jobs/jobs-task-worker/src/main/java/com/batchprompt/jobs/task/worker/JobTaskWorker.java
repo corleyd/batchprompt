@@ -179,14 +179,6 @@ public class JobTaskWorker {
         // Save the task with calculated cost and credit usage
         jobTaskRepository.save(jobTask);
         
-        // Update job-level credit usage by summing all completed tasks
-        try {
-            jobCreditService.updateJobCreditUsage(jobTask.getJobUuid());
-        } catch (Exception e) {
-            log.error("Error updating job credit usage for job {}: {}", 
-                    jobTask.getJobUuid(), e.getMessage(), e);
-        }
-        
         // Debit the credits used from the user's account (if credit usage is calculated)
         if (jobTask.getCreditUsage() != null && userId != null) {
             try {

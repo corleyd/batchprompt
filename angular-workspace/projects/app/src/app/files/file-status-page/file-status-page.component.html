@@ -1,9 +1,12 @@
 <div class="file-status-page">
-  <div class="header">
-    <h2>File Status</h2>
-    <button (click)="goToFiles()" class="btn btn-primary">Back to Files</button>
+  <div class="page-header-container">
+    <button class="btn back-btn" (click)="goBack()">
+      <i-feather name="chevron-left"></i-feather> Back to Files
+    </button>
+    <div class="page-header">
+      <h1>File Detail</h1>
+    </div>
   </div>
-
   <div class="loading-container" *ngIf="loading">
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     <p class="loading-text">Loading file details...</p>
@@ -14,7 +17,6 @@
       <mat-icon>error</mat-icon>
       <p>{{ errorMessage || 'An error occurred while loading the file' }}</p>
     </div>
-    <button mat-stroked-button (click)="goToFiles()">Back to Files</button>
   </div>
 
   <div class="file-details-container" *ngIf="!loading && !error && file">
@@ -55,10 +57,6 @@
     
     <!-- Ready state with fields display -->
     <div *ngIf="file.status === 'READY'" class="ready-container">
-      <div class="section-header">
-        <h4>File is Ready</h4>
-      </div>
-      
       <div class="fields-section">
         <h4>Available Fields</h4>
         <p class="help-text">These fields are available for use in your prompts.</p>

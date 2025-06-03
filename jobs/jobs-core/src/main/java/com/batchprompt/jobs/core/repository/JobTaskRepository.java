@@ -25,7 +25,7 @@ public interface JobTaskRepository extends JpaRepository<JobTask, UUID> {
      * @param jobUuid The job UUID to count tasks for
      * @return List of TaskStatusCount objects containing the status and count
      */
-    @Query("SELECT new com.batchprompt.jobs.core.repository.dto.TaskStatusCount(t.status, COUNT(t)) " +
+    @Query("SELECT new com.batchprompt.jobs.core.repository.dto.TaskStatusCount(t.status, COUNT(t), SUM(t.creditUsage)) " +
            "FROM JobTask t WHERE t.jobUuid = :jobUuid GROUP BY t.status")
     List<TaskStatusCount> countTasksByStatus(@Param("jobUuid") UUID jobUuid);
     

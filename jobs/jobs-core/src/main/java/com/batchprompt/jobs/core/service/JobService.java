@@ -295,14 +295,31 @@ public class JobService {
      */
     @Transactional
     public Job cancelJob(UUID jobUuid) {
+
+        Job job = jobRepository.findById(jobUuid).orElseThrow(() -> new JobSubmissionException("Job not found: " + jobUuid));
+
+        switch (job.getStatus()) {
+            case SUBMITTED:
+            case PROCESSING:
+            case VALIDATING:
+            case PENDING_VALIDATION:
+            case INSUFFICIENT_CREDITS:
+                // These statuses can be cancelled
+                break;
+
+            case CANCELLED:
+            case COMPLETED:
+            case FAILED:
+                // Already in a terminal state, cannot cancel
+                throw new JobSubmissionException("Job is already in terminal state: " + job.getStatus());
+
+            default:
+                // Other statuses cannot be cancelled
+                throw new JobSubmissionException("Job cannot be cancelled from status: " + job.getStatus());
+        }
         
         // Update the job status to CANCELLED
-        Job job = updateJobStatus(jobUuid, JobStatus.CANCELLED, j -> {
-            // Check if the job is already cancelled
-            if (j.getStatus() == JobStatus.CANCELLED) {
-                throw new JobSubmissionException("Job is already cancelled: " + j.getStatus());
-            }
-        });
+        job = updateJobStatus(jobUuid, JobStatus.CANCELLED, null);
         
         log.info("Job {} cancelled", jobUuid);
         return job;
@@ -380,7 +397,7 @@ public class JobService {
         int completedCount = 0;
         int failedCount = 0;
         int insufficientCreditsCount = 0;
-        
+        double creditsUsed = 0.0;
         // Process the counts from the query results
         for (TaskStatusCount statusCount : statusCounts) {
             if (statusCount.getStatus() == TaskStatus.COMPLETED) {
@@ -390,6 +407,9 @@ public class JobService {
             } else if (statusCount.getStatus() == TaskStatus.INSUFFICIENT_CREDITS) {
                 insufficientCreditsCount = statusCount.getCount().intValue();
             }
+            if (statusCount.getCreditsUsed() != null) {
+                creditsUsed += statusCount.getCreditsUsed();
+            }
         }
             
         // We only update the count if it has changed
@@ -398,6 +418,15 @@ public class JobService {
         if (countsChanged) {
             job.setCompletedTaskCount(completedTaskCount);
         }
+
+        boolean creditsChanged = false;
+        if (job.getCreditUsage() == null) {
+            job.setCreditUsage(creditsUsed);
+            creditsChanged = true;
+        } else if (job.getCreditUsage() != creditsUsed) {
+            job.setCreditUsage(creditsUsed);
+            creditsChanged = true;
+        }        
         
         // Re-read job status to ensure we're working with the most current state
         // This helps prevent race conditions where another process changed the status
@@ -430,14 +459,14 @@ public class JobService {
         }
         
         // Only save if there are actual changes to make
-        if (countsChanged || (newStatus != null && job.getStatus() != newStatus)) {
+        if (countsChanged || creditsChanged || (newStatus != null && job.getStatus() != newStatus)) {
             if (newStatus != null) {
                 job.setStatus(newStatus);
             }
             job.setUpdatedAt(LocalDateTime.now());
             
             try {
-                jobRepository.save(job);
+                job = jobRepository.save(job);
                 jobNotificationService.sendJobUpdateNotification(job);
                 
                 // If all tasks completed and we're not in INSUFFICIENT_CREDITS, queue for output processing
