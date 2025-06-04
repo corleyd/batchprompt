@@ -23,4 +23,5 @@ public class ModelDto {
     private JsonNode modelProviderProperties;
     private Integer modelProviderDisplayOrder;
     private String taskQueueName;
+    private boolean simulateStructuredOutput;
 }

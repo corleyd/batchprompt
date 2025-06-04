@@ -46,6 +46,7 @@ public class ModelMapper {
             .modelProviderDisplayName(model.getProvider().getDisplayName())
             .modelProviderProperties(model.getModelProviderProperties())
             .modelProviderDisplayOrder(model.getProvider().getDisplayOrder())
+            .simulateStructuredOutput(model.isSimulateStructuredOutput())
             .taskQueueName(model.getTaskQueueName())
             .build();
     }

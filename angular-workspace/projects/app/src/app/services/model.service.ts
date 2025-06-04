@@ -13,6 +13,7 @@ export interface ModelDto {
   modelProviderProperties: any;
   modelProviderDisplayOrder: number;
   taskQueueName: string;
+  simulateStructuredOutput: boolean;
 }
 
 export interface ModelProviderDto {
@@ -44,8 +45,8 @@ export class ModelService {
    * Get all model providers
    * @returns Observable of provider entities
    */
-  getProviders(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/providers`);
+  getProviders(): Observable<ModelProviderDto[]> {
+    return this.http.get<ModelProviderDto[]>(`${this.apiUrl}/providers`);
   }
 
   /**
