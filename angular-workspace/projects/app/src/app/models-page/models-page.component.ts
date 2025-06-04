@@ -13,12 +13,14 @@ import { CommonModule } from '@angular/common';
 export class ModelsPageComponent {
 
   modelProviders$: Observable<ModelProviderDto[]>;
+  modelCreditUsage$: Observable<{ [key: string]: number }>;
 
   constructor(
     private modelService: ModelService
   ) {
     // Initialize the modelProviders$ observable to fetch model providers
     this.modelProviders$ = this.modelService.getProviders();
+    this.modelCreditUsage$ = this.modelService.getTypicalModelCreditUsage();
   }
   
 }

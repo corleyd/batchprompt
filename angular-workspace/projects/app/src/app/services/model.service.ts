@@ -29,6 +29,12 @@ export interface ModelProviderDto {
 export class ModelService {
   private apiUrl: string;
 
+  public readonly typicalRequestTokens = {
+    inputTokens: 500,
+    outputTokens: 750,
+    thinkingTokens: 250
+  };
+
   constructor(private http: HttpClient) {
     this.apiUrl = `${environment.apiBaseUrl}/api/model-management`;
   }
@@ -55,5 +61,9 @@ export class ModelService {
    */
   getEnabledProviders(): Observable<any[]> {
     return this.http.get<any[]>(`${this.apiUrl}/providers/enabled`);
+  }
+
+  getTypicalModelCreditUsage(): Observable<{ [key: string]: number }> {
+    return this.http.post<{ [key: string]: number }>(`${this.apiUrl}/credit-usage`, this.typicalRequestTokens);
   }
 }

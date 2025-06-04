@@ -152,6 +152,37 @@ public class JobPricingService {
         }
     }
 
+    public Double calculateCreditUsage(String modelId, int inputTokens, int outputTokens, int thinkingTokens) {
+        if (modelId == null || inputTokens <= 0 || outputTokens <= 0) {
+            log.warn("Cannot calculate credit usage: model ID or token counts are invalid");
+            return null;
+        }
+
+        // Find current pricing for the model
+        List<ModelCost> modelCosts = modelCostRepository.findCurrentCostsForModel(modelId);
+        if (modelCosts.isEmpty()) {
+            log.warn("No pricing information found for model: {}", modelId);
+            return null;
+        }
+
+        // Find the applicable model cost based on input token count
+        ModelCost applicableModelCost = findApplicableModelCost(modelCosts, inputTokens);
+        if (applicableModelCost == null) {
+            log.warn("No applicable pricing tier found for model: {} with {} input tokens", 
+                    modelId, inputTokens);
+            return null;
+        }
+
+        // Calculate cost in USD
+        double totalCost = calculateCost(modelId, inputTokens, outputTokens, thinkingTokens);
+        
+        // Convert USD cost to credit usage
+        Double creditUsage = creditCalculationService.calculateCreditUsage(
+                modelId, totalCost, LocalDateTime.now());
+        
+        return creditUsage;
+    }
+
     /**
      * Find the applicable model cost based on the input token count
      * 
