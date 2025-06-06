@@ -11,6 +11,29 @@ spring:
 
   main:
     allow-bean-definition-overriding: true
+    
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          timeout: 8000
+          connectiontimeout: 8000
+          writetimeout: 8000
+
+services:
+  email:
+    enabled: ${EMAIL_ENABLED:false}
+    from: ${EMAIL_FROM:noreply@batchprompt.com}
+    
+app:
+  base-url: ${APP_BASE_URL:https://batchprompt.com}
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

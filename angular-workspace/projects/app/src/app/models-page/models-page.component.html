@@ -1,5 +1,5 @@
 <div class="scrolling-container document-bg">
-  <div *ngIf="(modelProviders$ | async) && modelCreditUsage$ | async" class="content document-card">
+  <div class="content document-card">
 
 <h1>Supported Models</h1>
 <p>This page lists all available AI models grouped by provider, along with the credit cost per typical prompt and structured output support. Provider privacy summaries are included for reference.</p>
@@ -19,7 +19,27 @@
 
 <hr>
 
-<div *ngFor="let modelProvider of modelProviders$ | async" class="model-provider-section">
+<!-- Loading State -->
+<div *ngIf="isLoadingModels" class="loading-models">
+  <i class="fas fa-spinner fa-spin"></i>
+  <p>Loading available models...</p>
+</div>
+
+<!-- Error State -->
+<div *ngIf="modelLoadError" class="model-error">
+  <i class="fas fa-exclamation-triangle"></i>
+  <p>Unable to load models. Please try again later.</p>
+  <button class="retry-btn" (click)="retryLoadModels()">Retry</button>
+</div>
+
+<!-- No Models State -->
+<div *ngIf="!isLoadingModels && !modelLoadError && modelProviders.length === 0" class="no-models">
+  <p>No AI models are currently available.</p>
+</div>
+
+<!-- Models Content -->
+<div *ngIf="!isLoadingModels && !modelLoadError && modelProviders.length > 0">
+<div *ngFor="let modelProvider of modelProviders" class="model-provider-section">
   <h2>{{ modelProvider.displayName }}</h2>
 
   <div [ngSwitch]="modelProvider.modelProviderId">
@@ -67,16 +87,25 @@
         <td>{{ model.displayName }}</td>
         <td>{{ model.modelId }}</td>
         <td>{{ model.simulateStructuredOutput ? 'No' : 'Yes' }}</td>
-        <ng-container *ngIf="modelCreditUsage$ | async as modelCreditUsage">
-            <td class="credits">{{ modelCreditUsage[model.modelId] | number: '.3'}}</td>
-        </ng-container>
+        <td class="credits">
+          <span *ngIf="!isLoadingCreditUsage && !creditUsageLoadError">{{ modelCreditUsage[model.modelId] | number: '.3'}}</span>
+          <span *ngIf="isLoadingCreditUsage" class="loading-text">Loading...</span>
+          <span *ngIf="creditUsageLoadError" class="error-text">Error</span>
+        </td>
     </tr>
   </table>
 
   <hr>
 
 </div>
+</div>
 
+<!-- Credit Usage Error -->
+<div *ngIf="creditUsageLoadError && !isLoadingModels && !modelLoadError" class="credit-error">
+  <i class="fas fa-exclamation-triangle"></i>
+  <p>Unable to load credit usage information.</p>
+  <button class="retry-btn" (click)="retryLoadCreditUsage()">Retry Credit Usage</button>
+</div>
 
 </div>
 </div>

@@ -1,0 +1,27 @@
+plugins {
+    id 'org.springframework.boot' version '3.4.4'
+    id 'java-library'
+}
+
+group = 'com.batchprompt'
+version = '0.0.1-SNAPSHOT'
+
+dependencies {
+    implementation project(':waitlist:waitlist-model')
+    implementation project(':common:common-client')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+}
+
+bootJar {
+    enabled = false
+}
+
+jar {
+    enabled = true
+}
+
+test {
+    useJUnitPlatform()
+}

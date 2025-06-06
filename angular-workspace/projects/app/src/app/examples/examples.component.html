@@ -1,0 +1,159 @@
+<div class="scrolling-container">
+  <div class="scrolling-content">
+
+<h1>Examples</h1>
+
+<div class="description">
+  <p>BatchPrompt allows you to process Excel (.xlsx) files with AI prompts to generate insights, extract information, or transform your data. Upload your Excel file, create a prompt that references column names, and choose between text or structured output formats. Here are two common use cases:</p>
+</div>
+
+<div class="example-card">
+  <h2>Example 1: Structured Output - Presidential Terms</h2>
+  <p class="example-description">
+    This example demonstrates structured output, which extracts specific data points into predefined fields. Ideal for data extraction, categorization, or when you need consistent formatting across all responses.
+  </p>
+  <h3>Sample Dataset (Excel File: presidents.xlsx)</h3>
+  <div class="excel-table">
+    <table>
+      <tr>
+        <th class="column-header">A</th>
+      </tr>
+      <tr>
+        <th>name</th>
+      </tr>
+      <tr>
+        <td>George Washington</td>
+      </tr>
+      <tr>
+        <td>Thomas Jefferson</td>
+      </tr>
+      <tr>
+        <td>Abraham Lincoln</td>
+      </tr>
+    </table>
+  </div>
+  <h3>Sample Prompt</h3>
+  <pre>During what years was {{ '{{' }}name{{ '}}' }} president</pre>
+  <h3>Output Format</h3>
+  <pre>Structured Output with properties:
+- term_start_year (number): The year that the presidential term started
+- term_end_year (number): The year that the presidential term ended</pre>
+  <h3>Sample Output (saved to separate columns)</h3>
+  <div class="excel-table">
+    <table>
+      <tr>
+        <th class="column-header">A</th>
+        <th class="column-header">B</th>
+        <th class="column-header">C</th>
+      </tr>
+      <tr>
+        <th>name</th>
+        <th>term_start_year</th>
+        <th>term_end_year</th>
+      </tr>
+      <tr>
+        <td>George Washington</td>
+        <td>1789</td>
+        <td>1797</td>
+      </tr>
+      <tr>
+        <td>Thomas Jefferson</td>
+        <td>1801</td>
+        <td>1809</td>
+      </tr>
+      <tr>
+        <td>Abraham Lincoln</td>
+        <td>1861</td>
+        <td>1865</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="example-card">
+  <h2>Example 2: Text Output - Presidential Accomplishments</h2>
+  <p class="example-description">
+    This example shows how to generate detailed text responses for each row in your dataset. Perfect for creating summaries, explanations, or detailed analysis based on your data.
+  </p>
+  <h3>Sample Dataset (Excel File: presidents.xlsx)</h3>
+  <div class="excel-table">
+    <table>
+      <tr>
+        <th class="column-header">A</th>
+        <th class="column-header">B</th>
+        <th class="column-header">C</th>
+      </tr>
+      <tr>
+        <th>name</th>
+        <th>term_start_year</th>
+        <th>term_end_year</th>
+      </tr>
+      <tr>
+        <td>George Washington</td>
+        <td>1789</td>
+        <td>1797</td>
+      </tr>
+      <tr>
+        <td>Thomas Jefferson</td>
+        <td>1801</td>
+        <td>1809</td>
+      </tr>
+      <tr>
+        <td>Abraham Lincoln</td>
+        <td>1861</td>
+        <td>1865</td>
+      </tr>
+      <tr>
+        <td>Franklin D. Roosevelt</td>
+        <td>1933</td>
+        <td>1945</td>
+      </tr>
+    </table>
+  </div>
+  <h3>Sample Prompt</h3>
+  <pre>Given the name of a president, list the top 3 notable accomplishments (positive or negative) of the US president {{ '{{' }}name{{ '}}' }} during his term starting in {{ '{{' }}term_start_year{{ '}}' }} and ending in {{ '{{' }}term_end_year{{ '}}' }}.</pre>
+  <h3>Output Format</h3>
+  <pre>Text Only</pre>
+  <h3>Sample Output (saved to response_text column)</h3>
+  <div class="excel-table">
+    <table>
+      <tr>
+        <th class="column-header">A</th>
+        <th class="column-header">B</th>
+        <th class="column-header">C</th>
+        <th class="column-header">D</th>
+      </tr>
+      <tr>
+        <th>name</th>
+        <th>term_start_year</th>
+        <th>term_end_year</th>
+        <th>response_text</th>
+      </tr>
+      <tr>
+        <td>George Washington</td>
+        <td>1789</td>
+        <td>1797</td>
+        <td>1. Established precedents for the presidency including the peaceful transfer of power<br>2. Led the creation of a stable federal government under the Constitution<br>3. Maintained neutrality in foreign conflicts, avoiding entanglement in European wars</td>
+      </tr>
+      <tr>
+        <td>Thomas Jefferson</td>
+        <td>1801</td>
+        <td>1809</td>
+        <td>1. Completed the Louisiana Purchase, doubling the size of the United States<br>2. Commissioned the Lewis and Clark Expedition to explore the western territories<br>3. Reduced federal government size and eliminated internal taxes</td>
+      </tr>
+      <tr>
+        <td>Abraham Lincoln</td>
+        <td>1861</td>
+        <td>1865</td>
+        <td>1. Issued the Emancipation Proclamation in 1863, freeing enslaved people in rebellious states<br>2. Led the Union through the Civil War, preserving the United States as a unified nation<br>3. Delivered the Gettysburg Address, redefining the war as a struggle for democracy and equality</td>
+      </tr>
+      <tr>
+        <td>Franklin D. Roosevelt</td>
+        <td>1933</td>
+        <td>1945</td>
+        <td>1. Implemented the New Deal programs to combat the Great Depression<br>2. Led the United States through World War II, helping defeat fascism<br>3. Established Social Security, providing a safety net for elderly Americans</td>
+      </tr>
+    </table>
+  </div>
+</div>
+</div>

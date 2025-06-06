@@ -46,14 +46,18 @@ public class SecurityConfig {
                 config.setAllowedOrigins(securityProperties.getAllowedOrigins());
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
-                config.setAllowCredentials(true);
+                //config.setAllowCredentials(true);
                 return config;
             };
             cors.configurationSource(corsConfigurationSource);
         });
         
+        // Disable CSRF protection for API endpoints (using JWT tokens instead)
+        http.csrf(csrf -> csrf.disable());
+        
         http.authorizeHttpRequests(authz -> authz
-            .requestMatchers("/api/public/**", "/test/**", "/ws/**", "/api/model-management/models").permitAll()
+            .requestMatchers("/api/public/**", "/test/**", "/ws/**", "/api/model-management/models", "/api/model-management/providers", "/api/model-management/providers/enabled", "/api/model-management/credit-usage").permitAll()
+            .requestMatchers(RegexRequestMatcher.regexMatcher("^/api/[a-z0-9\\-]+/public/.+$")).permitAll()
             .requestMatchers(RegexRequestMatcher.regexMatcher("^/api/files/[a-f0-9\\-]+/download/[a-f0-9\\-]+$")).permitAll()
             .anyRequest().authenticated())
             .oauth2ResourceServer(oauth2 -> oauth2

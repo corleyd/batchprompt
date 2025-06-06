@@ -3,3 +3,56 @@
 .credits {
     text-align: right;
 }
+
+// Loading and error states
+.loading-models, .model-error, .no-models, .credit-error {
+  text-align: center;
+  padding: 30px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+  border: 1px solid #e9ecef;
+  
+  i {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: #3b82f6;
+  }
+  
+  p {
+    font-size: 16px;
+    color: #6c757d;
+    margin-bottom: 15px;
+  }
+}
+
+.model-error i, .credit-error i {
+  color: #dc3545;
+}
+
+.retry-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s;
+  
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+.loading-text {
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.error-text {
+  color: #dc3545;
+  font-weight: 500;
+  font-size: 0.9em;
+}

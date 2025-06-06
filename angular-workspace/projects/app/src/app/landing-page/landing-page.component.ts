@@ -83,6 +83,10 @@ export class LandingPageComponent implements OnInit {
     this.router.navigate(['/dashboard/home']);
   }
 
+  joinWaitlist() {
+    this.router.navigate(['/request-access']);
+  }
+
   /**
    * Gets user's initials from their full name
    * @param name Full name of the user

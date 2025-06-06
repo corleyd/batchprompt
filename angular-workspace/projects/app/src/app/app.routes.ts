@@ -63,6 +63,26 @@ export const routes: Routes = [
     path: 'models',
     loadComponent: () => import('./models-page/models-page.component').then(m => m.ModelsPageComponent),
   },
+  { 
+    path: 'examples',
+    loadComponent: () => import('./examples/examples.component').then(m => m.ExamplesComponent),
+  },
+  { 
+    path: 'request-access',
+    loadComponent: () => import('./waitlist/waitlist-page.component').then(m => m.WaitlistPageComponent),
+  },
+  { 
+    path: 'join-waitlist',
+    redirectTo: 'request-access'
+  },
+  { 
+    path: 'access-status',
+    loadComponent: () => import('./waitlist/waitlist-status.component').then(m => m.WaitlistStatusComponent),
+  },
+  { 
+    path: 'waitlist-status',
+    redirectTo: 'access-status'
+  },
   {
     path: 'admin',
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule),

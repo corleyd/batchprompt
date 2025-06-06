@@ -1,0 +1,38 @@
+spring:
+  config:
+    import:
+      - ${HOME}/.batchprompt/local.yml
+      - ${HOME}/.batchprompt/logging.yml
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/batchprompt}
+    username: ${DATABASE_USERNAME:batchprompt}
+    password: ${DATABASE_PASSWORD:batchprompt}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        default_schema: waitlist
+  flyway:
+    schemas: waitlist
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+  mail:
+    properties:
+      mail:
+        smtp:
+          timeout: 8000
+          connectiontimeout: 8000
+          writetimeout: 8000
+common:
+  security:
+    service-name: waitlist-service
+
+waitlist:
+  email:
+    enabled: ${WAITLIST_EMAIL_ENABLED:true}
+    from: ${WAITLIST_EMAIL_FROM:noreply@batchprompt.ai}
+
+app:
+  base-url: ${APP_BASE_URL:https://batchprompt.ai}

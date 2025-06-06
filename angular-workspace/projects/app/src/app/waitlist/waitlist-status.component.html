@@ -1,0 +1,74 @@
+<div class="waitlist-status-page">
+<div class="waitlist-status-container">
+  <div class="status-card">
+    <div class="header">
+      <h2>Check Your Access Status</h2>
+      <p>Enter your email to see your current status in the access process.</p>
+    </div>
+
+    <form [formGroup]="statusForm" (ngSubmit)="onSubmit()" class="status-form" *ngIf="!waitlistEntry">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="your@email.com"
+          [class.error]="statusForm.get('email')?.invalid && statusForm.get('email')?.touched">
+        <div class="error-message" *ngIf="statusForm.get('email')?.invalid && statusForm.get('email')?.touched">
+          <span *ngIf="statusForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="statusForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+        </div>
+      </div>
+
+      <button 
+        type="submit" 
+        class="submit-button" 
+        [disabled]="statusForm.invalid || isLoading">
+        <span *ngIf="isLoading">Checking...</span>
+        <span *ngIf="!isLoading">Check Status</span>
+      </button>
+    </form>
+
+    <div class="status-result" *ngIf="waitlistEntry">
+      <div class="status-header">
+        <h3>{{ waitlistEntry.name || waitlistEntry.email }}</h3>
+        <span class="status-badge" [class]="'status-' + waitlistEntry.status.toLowerCase()">
+          {{ getStatusText(waitlistEntry.status) }}
+        </span>
+      </div>
+      <div class="status-details">
+        <div class="detail-item">
+          <label>Joined:</label>
+          <span>{{ formatDate(waitlistEntry.createdAt) }}</span>
+        </div>
+        <div class="detail-item" *ngIf="waitlistEntry.invitedAt">
+          <label>Invited:</label>
+          <span>{{ formatDate(waitlistEntry.invitedAt) }}</span>
+        </div>
+        <div class="detail-item" *ngIf="waitlistEntry.registeredAt">
+          <label>Registered:</label>
+          <span>{{ formatDate(waitlistEntry.registeredAt) }}</span>
+        </div>
+      </div>
+      <div class="status-message">
+        <p *ngIf="waitlistEntry.status === 'PENDING'">
+          Your access request is being processed. We'll email you when your account is ready.
+        </p>
+        <p *ngIf="waitlistEntry.status === 'INVITED'">
+          🎉 You've been approved! Check your email for account setup instructions.
+        </p>
+        <p *ngIf="waitlistEntry.status === 'REGISTERED'">
+          ✅ Your account is active and ready to use!
+        </p>
+      </div>
+      <button class="secondary-button" (click)="reset()">Check Another Email</button>
+    </div>
+
+    <div class="not-found" *ngIf="notFound">
+      <p>No access request found for this email address.</p>
+      <button class="primary-button" (click)="reset()">Try another email</button>
+    </div>
+  </div>
+</div>
+</div>

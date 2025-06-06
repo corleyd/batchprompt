@@ -1,0 +1,73 @@
+
+<div class="waitlist-signup-container">
+  <div class="signup-card" *ngIf="!isSubmitted">
+    <div class="header">
+      <h2>Request Access</h2>
+      <p>BatchPrompt is live! We're currently managing capacity by inviting users in batches to ensure the best experience.</p>
+    </div>
+
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+      <div class="form-group">
+        <label for="email">Email Address *</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email" 
+          placeholder="your@email.com"
+          [class.error]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+        <div class="error-message" *ngIf="signupForm.get('email')?.invalid && signupForm.get('email')?.touched">
+          <span *ngIf="signupForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="signupForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Full Name</label>
+        <input 
+          type="text" 
+          id="name" 
+          formControlName="name" 
+          placeholder="Your full name">
+      </div>
+
+      <div class="form-group">
+        <label for="company">Company</label>
+        <input 
+          type="text" 
+          id="company" 
+          formControlName="company" 
+          placeholder="Your company">
+      </div>
+
+      <div class="form-group">
+        <label for="useCase">How do you plan to use BatchPrompt?</label>
+        <textarea 
+          id="useCase" 
+          formControlName="useCase" 
+          placeholder="Tell us about your use case to help us prioritize your access..."
+          rows="3"></textarea>
+      </div>
+
+      <button 
+        type="submit" 
+        class="submit-button" 
+        [disabled]="signupForm.invalid || isLoading">
+        <span *ngIf="isLoading">Submitting...</span>
+        <span *ngIf="!isLoading">Request Access</span>
+      </button>
+    </form>
+  </div>
+
+  <div class="success-card" *ngIf="isSubmitted && waitlistEntry">
+    <h2>Access Request Submitted</h2>
+    <p>Thanks for your interest, {{ waitlistEntry.name || waitlistEntry.email }}!</p>
+    <div class="waitlist-info">
+      <p><strong>Status:</strong> {{ getStatusText(waitlistEntry.status) }}</p>
+      <p>We're processing access requests in order. You'll receive an invitation email when it's your turn.</p>
+    </div>
+    <div class="action-buttons">
+      <button class="secondary-button" (click)="reset()">Submit Another Email</button>
+      <a routerLink="/access-status" class="link-button">Check status</a>
+    </div>
+  </div>
+</div>

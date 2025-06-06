@@ -16,6 +16,7 @@ export class AdminLayoutComponent {
     { path: 'dashboard', label: 'Dashboard', icon: 'BarChart2' },
     { path: 'users', label: 'Users', icon: 'Users' },
     { path: 'jobs', label: 'Jobs', icon: 'Briefcase' },
+    { path: 'waitlist', label: 'Waitlist', icon: 'Clock' },
     { path: 'settings', label: 'Settings', icon: 'Settings' },
     { path: 'reports', label: 'Reports', icon: 'BarChart2' }
   ];

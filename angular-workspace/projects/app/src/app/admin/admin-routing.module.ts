@@ -44,6 +44,10 @@ const routes: Routes = [
         path: 'reports',
         component: ReportsComponent
       },
+      {
+        path: 'waitlist',
+        loadComponent: () => import('./pages/waitlist-management/waitlist-management.component').then(m => m.WaitlistManagementComponent)
+      },
       { 
         path: 'prompts/:id', loadComponent: () => import('../../app/prompts/prompt-edit/prompt-edit.component').then(m => m.PromptEditComponent)
       }

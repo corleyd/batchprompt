@@ -60,6 +60,10 @@ export class ToolbarComponent implements OnInit {
     });
   }
 
+  joinWaitlist() {
+    this.router.navigate(['/request-access']);
+  }
+
   login() {
     this.auth.loginWithRedirect();
   }

@@ -14,7 +14,8 @@
             "jobs-output-worker",
             "jobs-validation-worker",
             "users-api",
-            "notifications-api"
+            "notifications-api",
+            "waitlist-api"
           ]
         }
     ],    
@@ -75,6 +76,13 @@
             "mainClass": "com.batchprompt.notifications.api.NotificationsApiApplication",
             "projectName": "notifications-api"
         },
+        {
+            "type": "java",
+            "name": "waitlist-api",
+            "request": "launch",
+            "mainClass": "com.batchprompt.waitlist.api.WaitlistApiApplication",
+            "projectName": "waitlist-api"
+        },        
         {
             "type": "java",
             "name": "cli",
