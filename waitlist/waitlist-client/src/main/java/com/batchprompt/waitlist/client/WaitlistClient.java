@@ -27,13 +27,13 @@ public class WaitlistClient {
     private String baseUrl;
 
     public WaitlistEntryDto joinWaitlist(WaitlistSignupDto signupDto) {
-        return restTemplate.postForObject(baseUrl + "/join", signupDto, WaitlistEntryDto.class);
+        return restTemplate.postForObject(baseUrl + "/public/join", signupDto, WaitlistEntryDto.class);
     }
 
     public Optional<WaitlistEntryDto> getWaitlistStatus(String email) {
         try {
             ResponseEntity<WaitlistEntryDto> response = restTemplate.getForEntity(
-                baseUrl + "/status?email=" + email, WaitlistEntryDto.class);
+                baseUrl + "/public/status?email=" + email, WaitlistEntryDto.class);
             return Optional.ofNullable(response.getBody());
         } catch (Exception e) {
             return Optional.empty();
@@ -43,7 +43,7 @@ public class WaitlistClient {
     public Optional<Integer> getWaitlistPosition(String email) {
         try {
             ResponseEntity<Integer> response = restTemplate.getForEntity(
-                baseUrl + "/position?email=" + email, Integer.class);
+                baseUrl + "/public/position?email=" + email, Integer.class);
             return Optional.ofNullable(response.getBody());
         } catch (Exception e) {
             return Optional.empty();
@@ -51,13 +51,13 @@ public class WaitlistClient {
     }
 
     public void markAsRegistered(String email) {
-        restTemplate.postForObject(baseUrl + "/register?email=" + email, null, Void.class);
+        restTemplate.postForObject(baseUrl + "/public/register?email=" + email, null, Void.class);
     }
 
     // Admin methods
     public List<WaitlistEntryDto> getAllEntries() {
         ResponseEntity<List<WaitlistEntryDto>> response = restTemplate.exchange(
-            baseUrl + "/api/waitlist/admin/entries",
+            baseUrl + "/admin/entries",
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<WaitlistEntryDto>>() {}
@@ -67,7 +67,7 @@ public class WaitlistClient {
 
     public List<WaitlistEntryDto> getPendingEntries() {
         ResponseEntity<List<WaitlistEntryDto>> response = restTemplate.exchange(
-            baseUrl + "/api/waitlist/admin/pending",
+            baseUrl + "/admin/pending",
             HttpMethod.GET,
             null,
             new ParameterizedTypeReference<List<WaitlistEntryDto>>() {}
@@ -77,7 +77,7 @@ public class WaitlistClient {
 
     public WaitlistEntryDto inviteUser(UUID entryId) {
         return restTemplate.postForObject(
-            baseUrl + "/api/waitlist/admin/invite/" + entryId, 
+            baseUrl + "/admin/invite/" + entryId, 
             null, 
             WaitlistEntryDto.class
         );
@@ -85,7 +85,7 @@ public class WaitlistClient {
 
     public List<WaitlistEntryDto> inviteNextUsers(int count) {
         ResponseEntity<List<WaitlistEntryDto>> response = restTemplate.exchange(
-            baseUrl + "/api/waitlist/admin/invite-next?count=" + count,
+            baseUrl + "/admin/invite-next?count=" + count,
             HttpMethod.POST,
             null,
             new ParameterizedTypeReference<List<WaitlistEntryDto>>() {}

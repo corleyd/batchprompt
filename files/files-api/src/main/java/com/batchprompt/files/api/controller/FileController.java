@@ -61,6 +61,9 @@ public class FileController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection) {
         String userId = jwt.getSubject();
+        if (!serviceAuthenticationService.canAccessUserData(jwt, userId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return getFilesByUserId(jwt, userId, fileType, status, page, size, sortBy, sortDirection);
     }
 
@@ -159,10 +162,16 @@ public class FileController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "recordNumber") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection) {
+            @RequestParam(defaultValue = "asc") String sortDirection,
+            @AuthenticationPrincipal Jwt jwt) {
         
+
+
         return fileService.getFileById(fileUuid)
                 .map(file -> {
+                    if (!serviceAuthenticationService.canAccessUserData(jwt, file.getUserId())) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+                    }                    
                     // If pagination is not requested, return all records as before
                     if (!paginate) {
                         List<FileRecordDto> records = fileMapper.toRecordDtoList(
@@ -193,30 +202,42 @@ public class FileController {
     @GetMapping("/records/{recordUuid}")
     public ResponseEntity<FileRecordDto> getFileRecordById(
             @PathVariable UUID recordUuid,
-            @AuthenticationPrincipal Jwt jwt) {
-        
-        String userId = jwt.getSubject();
+            @AuthenticationPrincipal Jwt jwt) 
+    {
         return fileService.getFileRecordById(recordUuid)
                 .map(fileRecord -> {
-                    // Check if the user owns the file or the request is from a service account
-                    if (!serviceAuthenticationService.isValidServiceJwt(jwt) && !fileRecord.getFile().getUserId().equals(userId)) {
+                    if (!serviceAuthenticationService.canAccessUserData(jwt, fileRecord.getFile().getUserId())) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN).<FileRecordDto>build();
-                    }
+                    }                    
                     return ResponseEntity.ok(FileMapper.toDto(fileRecord));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{fileUuid}")
-    public ResponseEntity<Void> deleteFile(@PathVariable UUID fileUuid) {
+    public ResponseEntity<Void> deleteFile(
+        @PathVariable UUID fileUuid,
+        @AuthenticationPrincipal Jwt jwt) 
+    {
+        FileEntity file = fileService.getFileById(fileUuid).orElseThrow(() -> new IllegalArgumentException("File not found with UUID: " + fileUuid));
+        if (!serviceAuthenticationService.canAccessUserData(jwt, file.getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }                
         boolean deleted = fileService.deleteFile(fileUuid);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     @PostMapping("/{fileUuid}/validate")
-    public ResponseEntity<FileDto> validateFile(@PathVariable UUID fileUuid) {
+    public ResponseEntity<FileDto> validateFile(
+        @PathVariable UUID fileUuid,
+        @AuthenticationPrincipal Jwt jwt)
+    {
         return fileService.getFileById(fileUuid)
                 .map(file -> {
+                    if (!serviceAuthenticationService.canAccessUserData(jwt, file.getUserId())) {
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).<FileDto>build();
+                    }                       
+
                     fileService.validateFile(fileUuid);
                     return fileService.getFileById(fileUuid)
                             .map(updatedFile -> ResponseEntity.ok(FileMapper.toDto(updatedFile)))

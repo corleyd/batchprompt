@@ -172,11 +172,6 @@ public class EmailService {
                 </style>
             </head>
             <body>
-                <div class="header">
-                    <div class="logo">BatchPrompt</div>
-                    <div class="invitation-badge">YOU'RE INVITED!</div>
-                    <p>Your access is ready</p>
-                </div>
                 
                 <div class="content">
                     
@@ -197,8 +192,6 @@ public class EmailService {
                         <div class="feature-item">Process large batches of prompts efficiently</div>
                         <div class="feature-item">Access multiple AI models from one platform</div>
                         <div class="feature-item">Track usage and manage costs effectively</div>
-                        <div class="feature-item">Export results in multiple formats</div>
-                        <div class="feature-item">Collaborate with your team seamlessly</div>
                     </div>
                     
                     <p>If you have any questions or need help getting started, our support team is here to help at support@batchprompt.com.</p>
@@ -234,8 +227,6 @@ public class EmailService {
             • Process large batches of prompts efficiently
             • Access multiple AI models from one platform  
             • Track usage and manage costs effectively
-            • Export results in multiple formats
-            • Collaborate with your team seamlessly
             
             If you have any questions, contact us at support@batchprompt.com.
             

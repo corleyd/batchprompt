@@ -49,6 +49,10 @@ public class PromptController {
     public ResponseEntity<PromptDto> getPromptById(
         @PathVariable UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt) {
+
+        if (!serviceAuthenticationService.isValidServiceJwt(jwt)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         return promptService.getPromptById(promptUuid)
                 .map(promptMapper::toDto)
                 .map(ResponseEntity::ok)
@@ -89,14 +93,21 @@ public class PromptController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<PromptDto>> searchPromptsByName(@RequestParam String name) {
-        List<Prompt> prompts = promptService.searchPromptsByName(name);
+    public ResponseEntity<List<PromptDto>> searchPromptsByName(
+        @RequestParam String name,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        List<Prompt> prompts = promptService.searchPromptsByName(name, jwt.getSubject());
         return ResponseEntity.ok(promptMapper.toDtoList(prompts));
     }
 
     @PostMapping
-    public ResponseEntity<PromptDto> createPrompt(@RequestBody PromptDto promptDto) {
+    public ResponseEntity<PromptDto> createPrompt(
+        @RequestBody PromptDto promptDto,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
         Prompt prompt = promptMapper.toEntity(promptDto);
+        prompt.setUserId(jwt.getSubject());
         Prompt savedPrompt = promptService.createPrompt(prompt);
         return ResponseEntity.status(HttpStatus.CREATED).body(promptMapper.toDto(savedPrompt));
     }
@@ -111,7 +122,13 @@ public class PromptController {
     }
 
     @DeleteMapping("/{promptUuid}")
-    public ResponseEntity<Void> deletePrompt(@PathVariable UUID promptUuid) {
+    public ResponseEntity<Void> deletePrompt(
+        @PathVariable UUID promptUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (!serviceAuthenticationService.isValidServiceJwt(jwt)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
         boolean deleted = promptService.deletePrompt(promptUuid);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }

@@ -11,6 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.batchprompt.users.core.model.User;
 import com.batchprompt.users.core.repository.UserRepository;
 import com.batchprompt.users.model.UserRole;
+import com.batchprompt.waitlist.client.WaitlistClient;
+import com.batchprompt.waitlist.model.WaitlistStatus;
+import com.batchprompt.waitlist.model.dto.WaitlistEntryDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +25,7 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final AccountService accountService;
+    private final WaitlistClient waitlistClient;
 
     public Page<User> getAllUsers(Pageable pageable) {
         return userRepository.findAll(pageable);
@@ -106,6 +110,35 @@ public class UserService {
             throw new IllegalArgumentException("User with this email already exists");
         }
         
+        // Check waitlist status - only allow registration if user is INVITED
+        try {
+            Optional<WaitlistEntryDto> waitlistEntry = waitlistClient.getWaitlistStatus(user.getEmail());
+            if (waitlistEntry.isEmpty()) {
+                log.warn("Registration denied: User {} not found in waitlist", user.getEmail());
+                throw new IllegalArgumentException("User not found in waitlist. Please join the waitlist first.");
+            }
+            
+            if (waitlistEntry.get().getStatus() != WaitlistStatus.INVITED) {
+                log.warn("Registration denied: User {} has waitlist status {} (expected INVITED)", 
+                         user.getEmail(), waitlistEntry.get().getStatus());
+                if (waitlistEntry.get().getStatus() == WaitlistStatus.PENDING) {
+                    throw new IllegalArgumentException("Your account is still pending approval. Please wait for an invitation email.");
+                } else if (waitlistEntry.get().getStatus() == WaitlistStatus.REGISTERED) {
+                    throw new IllegalArgumentException("You have already registered. Please log in instead.");
+                } else {
+                    throw new IllegalArgumentException("Invalid waitlist status. Please contact support.");
+                }
+            }
+            
+            log.info("User {} is INVITED on waitlist, proceeding with registration", user.getEmail());
+        } catch (Exception e) {
+            if (e instanceof IllegalArgumentException) {
+                throw e;
+            }
+            log.error("Failed to check waitlist status for user: {}", user.getEmail(), e);
+            throw new IllegalArgumentException("Unable to verify waitlist status. Please try again later.");
+        }
+        
         // Set defaults for a new user
         LocalDateTime now = LocalDateTime.now();
         user.setCreateTimestamp(now);
@@ -120,6 +153,15 @@ public class UserService {
         user.setEnabled(true);
         
         User savedUser = userRepository.save(user);
+        
+        // Mark user as registered in waitlist
+        try {
+            waitlistClient.markAsRegistered(user.getEmail());
+            log.info("Marked user {} as REGISTERED in waitlist", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to mark user as registered in waitlist: {}", user.getEmail(), e);
+            // Don't fail the registration if waitlist update fails
+        }
         
         // Create a default account for the new user using their email as the account name
         try {

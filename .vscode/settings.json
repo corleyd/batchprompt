@@ -1,7 +1,27 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.configuration.updateBuildConfiguration": "automatic",
     "java.compile.nullAnalysis.mode": "automatic",
     "java.import.maven.enabled": false,
-    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx3G -Xms2G",
-    "java.jdt.ls.java.home": "/usr/lib/jvm/temurin-21-jdk-amd64"
+    "java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx4G -Xms1G -XX:+UseStringDeduplication",
+    "java.autobuild.enabled": false,
+    "java.maxConcurrentBuilds": 1,
+    "java.import.gradle.enabled": true,
+    "java.import.gradle.wrapper.enabled": true,
+    "java.compile.nullAnalysis.nonnull": [],
+    "java.compile.nullAnalysis.nullable": [],
+    "java.eclipse.downloadSources": true,
+    "java.maven.downloadSources": true,
+    "java.gradle.buildServer.enabled": "off",
+    "java.settings.url": ".vscode/org.eclipse.jdt.core.prefs",
+    "java.project.referencedLibraries": [],
+    "files.exclude": {
+        "**/bin": true,
+        "**/.gradle": true,
+        "**/build": false
+    },
+    "files.watcherExclude": {
+        "**/bin/**": true,
+        "**/build/**": true,
+        "**/.gradle/**": true
+    }
 }

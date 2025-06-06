@@ -1,13 +1,13 @@
 package com.batchprompt.waitlist.core.mapper;
 
+import java.time.LocalDateTime;
+
+import org.springframework.stereotype.Component;
+
 import com.batchprompt.waitlist.core.model.WaitlistEntry;
 import com.batchprompt.waitlist.model.WaitlistStatus;
 import com.batchprompt.waitlist.model.dto.WaitlistEntryDto;
 import com.batchprompt.waitlist.model.dto.WaitlistSignupDto;
-import org.springframework.stereotype.Component;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Component
 public class WaitlistEntryMapper {

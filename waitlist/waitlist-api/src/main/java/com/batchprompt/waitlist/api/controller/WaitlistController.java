@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -46,5 +47,41 @@ public class WaitlistController {
     public ResponseEntity<Void> markAsRegistered(@RequestParam String email) {
         waitlistService.markAsRegistered(email);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/validate-signup")
+    public ResponseEntity<Object> validateSignup(@RequestParam String email) {
+        Optional<WaitlistEntryDto> entry = waitlistService.findByEmail(email);
+        
+        if (entry.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                    "error", "not_in_waitlist",
+                    "message", "Email not found in waitlist. Please join the waitlist first at https://batchprompt.ai/request-access"
+                ));
+        }
+        
+        if (entry.get().getStatus() != com.batchprompt.waitlist.model.WaitlistStatus.INVITED) {
+            String message;
+            if (entry.get().getStatus() == com.batchprompt.waitlist.model.WaitlistStatus.PENDING) {
+                message = "Your account is still pending approval. Please wait for an invitation email.";
+            } else if (entry.get().getStatus() == com.batchprompt.waitlist.model.WaitlistStatus.REGISTERED) {
+                message = "You have already registered. Please log in instead.";
+            } else {
+                message = "Invalid waitlist status. Please contact support.";
+            }
+            
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                    "error", "invalid_status",
+                    "message", message,
+                    "status", entry.get().getStatus().toString()
+                ));
+        }
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "User is authorized to register",
+            "status", "INVITED"
+        ));
     }
 }

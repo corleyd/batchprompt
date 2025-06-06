@@ -14,5 +14,5 @@ import java.util.UUID;
 public interface PromptRepository extends JpaRepository<Prompt, UUID> {
     List<Prompt> findByUserId(String userId);
     Page<Prompt> findByUserId(String userId, Pageable pageable);
-    List<Prompt> findByNameContainingIgnoreCase(String name);
+    List<Prompt> findByNameAndUserIdContainingIgnoreCase(String name, String userId);
 }

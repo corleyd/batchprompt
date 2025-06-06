@@ -34,8 +34,8 @@ public class PromptService {
         return promptRepository.findByUserId(userId);
     }
 
-    public List<Prompt> searchPromptsByName(String name) {
-        return promptRepository.findByNameContainingIgnoreCase(name);
+    public List<Prompt> searchPromptsByName(String name, String userId) {
+        return promptRepository.findByNameAndUserIdContainingIgnoreCase(name, userId);
     }
 
     @Transactional

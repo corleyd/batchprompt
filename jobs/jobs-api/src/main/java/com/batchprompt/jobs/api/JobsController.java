@@ -54,6 +54,7 @@ public class JobsController {
             @RequestParam(required = false, defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "updatedAt") String sort,
             @RequestParam(required = false, defaultValue = "desc") String direction) {
+
         
         // Create pageable object with sorting
         Sort.Direction sortDirection = "asc".equalsIgnoreCase(direction) ? Sort.Direction.ASC : Sort.Direction.DESC;
@@ -69,8 +70,11 @@ public class JobsController {
     }
 
     @GetMapping("/{jobUuid}")
-    public ResponseEntity<JobDto> getJobById(@PathVariable UUID jobUuid) {
-        Job job = jobService.getJobById(jobUuid);
+    public ResponseEntity<JobDto> getJobById(
+        @PathVariable UUID jobUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        Job job = getJobIfAllowed(jobUuid, jwt);
         if (job == null) {
             return ResponseEntity.notFound().build();
         }
@@ -78,23 +82,44 @@ public class JobsController {
     }
 
     @PostMapping("/{jobUuid}/submit")
-    public ResponseEntity<JobDto> submitJob(@PathVariable UUID jobUuid) {
+    public ResponseEntity<JobDto> submitJob(
+        @PathVariable UUID jobUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (getJobIfAllowed(jobUuid, jwt) == null) {
+            return ResponseEntity.notFound().build();
+        }
         // Submit the job for processing
         Job job = jobService.submitJob(jobUuid);
         return ResponseEntity.ok(jobMapper.toDto(job));
     }
 
     @PostMapping("/{jobUuid}/cancel")
-    public ResponseEntity<JobDto> cancelJob(@PathVariable UUID jobUuid) {
-        // Submit the job for processing
+    public ResponseEntity<JobDto> cancelJob(
+        @PathVariable UUID jobUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (getJobIfAllowed(jobUuid, jwt) == null) {
+            return ResponseEntity.notFound().build();
+        }
         Job job = jobService.cancelJob(jobUuid);
+        if (job == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(jobMapper.toDto(job));
     }    
 
     @PostMapping("/{jobUuid}/continue")
-    public ResponseEntity<JobDto> continueJob(@PathVariable UUID jobUuid) {
+    public ResponseEntity<JobDto> continueJob(
+        @PathVariable UUID jobUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (getJobIfAllowed(jobUuid, jwt) == null) {
+            return ResponseEntity.notFound().build();
+        }
         // Submit the job for processing
         Job job = jobService.continueJob(jobUuid);
+
         return ResponseEntity.ok(jobMapper.toDto(job));
     }
 
@@ -153,10 +178,11 @@ public class JobsController {
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size,
             @RequestParam(required = false, defaultValue = "createdAt") String sort,
-            @RequestParam(required = false, defaultValue = "desc") String direction) {
-        
-        Job job = jobService.getJobById(jobUuid);
-        if (job == null) {
+            @RequestParam(required = false, defaultValue = "desc") String direction,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+
+        if (getJobIfAllowed(jobUuid, jwt) == null) {
             return ResponseEntity.notFound().build();
         }
         
@@ -205,5 +231,15 @@ public class JobsController {
         );
         
         return ResponseEntity.status(HttpStatus.CREATED).body(jobMapper.toDto(job));
+    }
+
+    private Job getJobIfAllowed(UUID jobUuid, Jwt jwt) {
+        Job job = jobService.getJobById(jobUuid);
+        if (job != null) {
+            if (!serviceAuthenticationService.canAccessUserData(jwt, job.getUserId())) {
+                return null;
+            }
+        }
+        return job;
     }
 }
