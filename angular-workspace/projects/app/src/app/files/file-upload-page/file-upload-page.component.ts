@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { Icons } from 'angular-feather/lib/icons.provider';
 import { IconsModule } from '../../icons/icons.module';
+import { ComingSoonNotificationComponent } from '../../shared/components/coming-soon-notification/coming-soon-notification.component';
 
 @Component({
   selector: 'app-file-upload-page',
@@ -19,7 +20,8 @@ import { IconsModule } from '../../icons/icons.module';
     FileUploadComponent,
     MatIconModule,
     MatButtonModule,
-    IconsModule
+    IconsModule,
+    ComingSoonNotificationComponent
   ]
 })
 export class FileUploadPageComponent {

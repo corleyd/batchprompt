@@ -8,6 +8,7 @@ import { JobSubmitComponent } from './job-submit/job-submit.component';
 import { JobListComponent } from './job-list/job-list.component';
 import { DownloadButtonComponent } from '../shared/components';
 import { GenericTableModule } from '../shared/components/generic-table/generic-table.module';
+import { ComingSoonNotificationComponent } from "../shared/components/coming-soon-notification/coming-soon-notification.component";
 
 @NgModule({
   declarations: [
@@ -21,8 +22,9 @@ import { GenericTableModule } from '../shared/components/generic-table/generic-t
     ReactiveFormsModule,
     JobsRoutingModule,
     DownloadButtonComponent,
-    GenericTableModule
-  ],
+    GenericTableModule,
+    ComingSoonNotificationComponent
+],
   exports: [
     JobSubmitComponent,
     JobListComponent
