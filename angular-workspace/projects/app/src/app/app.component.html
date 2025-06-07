@@ -6,4 +6,12 @@
     <router-outlet></router-outlet>
   </div>
 
+  <!-- Global confirmation dialog -->
+  <app-confirmation-dialog
+    [data]="dialogState.data"
+    [isVisible]="dialogState.isVisible"
+    (confirmed)="onDialogConfirmed()"
+    (cancelled)="onDialogCancelled()">
+  </app-confirmation-dialog>
+
 </div>

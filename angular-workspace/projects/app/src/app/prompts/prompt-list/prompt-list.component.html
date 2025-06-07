@@ -64,7 +64,7 @@
         <div class="prompt-actions">
           <button [routerLink]="[ prompt.promptUuid]" class="btn btn-sm primary-btn">Edit</button>
           <a *ngIf="prompt.lastJobRunTimestamp" (click)="viewJobs(prompt)" class="btn btn-sm secondary-btn">View Jobs</a>
-          <button (click)="deletePrompt(prompt.promptUuid!)" class="btn btn-sm secondary-btn">Delete</button>
+          <button (click)="deletePrompt(prompt)" class="btn btn-sm secondary-btn">Delete</button>
         </div>
       </div>
     </div>

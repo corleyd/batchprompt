@@ -59,13 +59,17 @@ $info-color: #17a2b8;
 
 .job-actions {
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: 0.5rem;
+  position: relative;
 
   button, app-download-button {
     display: inline-block;
-    margin-right: 0.5rem;
 
-    &:last-child {
-      margin-right: 0;
+    &:not(:last-child) {
+      margin-right: 0.5rem;
     }
   }
 
@@ -80,6 +84,103 @@ $info-color: #17a2b8;
     
     &:hover {
       background-color: #f8f9fa;
+    }
+  }
+}
+
+// Context menu styling
+.context-menu-trigger {
+  padding: 0.5rem;
+  min-width: initial;
+  height: 36px;
+  width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid #e0e0e0;
+  
+  &:hover {
+    background-color: #f0f0f0;
+  }
+  
+  .context-menu-icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2px;
+    color: #555;
+  }
+}
+
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  min-width: 150px;
+  border: 1px solid #e0e0e0;
+  
+  &:before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 10px;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    transform: rotate(45deg);
+    border-left: 1px solid #e0e0e0;
+    border-top: 1px solid #e0e0e0;
+  }
+  
+  .context-menu-item {
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: #333;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: #f5f5f5;
+    }
+    
+    &:first-child {
+      border-radius: 4px 4px 0 0;
+    }
+    
+    &:last-child {
+      border-radius: 0 0 4px 4px;
+    }
+    
+    &.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      
+      &:hover {
+        background-color: transparent;
+      }
+    }
+    
+    &.delete-action {
+      color: #f44336;
+      
+      &:hover {
+        background-color: #ffebee;
+      }
+      
+      .menu-icon {
+        color: #f44336;
+      }
+    }
+    
+    .menu-icon {
+      margin-right: 0.75rem;
+      width: 16px;
+      height: 16px;
+      stroke-width: 2px;
     }
   }
 }

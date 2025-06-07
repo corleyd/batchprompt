@@ -35,6 +35,11 @@
         buttonClass="btn btn-sm action-btn"
       ></app-download-button>
       <button *ngIf="job.status === 'COMPLETED' && !job.resultFileUuid" class="btn btn-secondary btn-md">View Results</button>
+      
+      <button class="btn btn-sm secondary-btn context-menu-trigger" 
+              (click)="toggleContextMenu($event, job)">
+        <i-feather name="more-vertical" class="context-menu-icon"></i-feather>
+      </button>
     </div>
   </ng-template>
 
@@ -60,4 +65,28 @@
     (refresh)="refreshJobs()"
     (rowClick)="onRowClick($event)"
   ></app-generic-table>
+
+  <!-- Global context menu -->
+  <div class="context-menu" *ngIf="activeContextMenuJob && menuPosition" 
+       [style.top.px]="menuPosition.top"
+       [style.left.px]="menuPosition.left">
+    <div class="context-menu-item" 
+         *ngIf="canSubmitJob(getActiveJob())"
+         (click)="$event.stopPropagation(); submitJob(getActiveJob());">
+      <i-feather name="play" class="menu-icon"></i-feather>
+      Submit Job
+    </div>
+    <div class="context-menu-item" 
+         *ngIf="canCancelJob(getActiveJob())"
+         (click)="$event.stopPropagation(); cancelJob(getActiveJob());">
+      <i-feather name="x-circle" class="menu-icon"></i-feather>
+      Cancel Job
+    </div>
+    <div class="context-menu-item delete-action" 
+         *ngIf="canDeleteJob(getActiveJob())"
+         (click)="$event.stopPropagation(); deleteJob(getActiveJob());">
+      <i-feather name="trash-2" class="menu-icon"></i-feather>
+      Delete
+    </div>
+  </div>
 </div>

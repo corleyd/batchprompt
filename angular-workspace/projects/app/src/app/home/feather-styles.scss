@@ -38,22 +38,12 @@
 .view-all-link i-feather {
   margin-left: 0.25rem;
   margin-right: 0;
-  transition: transform 0.2s ease;
-}
-
-.view-all-link:hover i-feather {
-  transform: translateX(3px);
 }
 
 /* Override card-action-btn for feather icons */
 .card-action-btn i-feather {
   margin-left: 0.5rem;
   margin-right: 0;
-  transition: transform 0.2s ease;
-}
-
-.card-action-btn:hover i-feather {
-  transform: translateX(3px);
 }
 
 /* Rest of original styles */

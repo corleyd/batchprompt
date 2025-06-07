@@ -2,6 +2,7 @@ import { Component, OnInit, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { FileService } from './file.service';
 import { TableConfig, TableSortEvent, TablePageEvent } from '../shared/components/generic-table/table-models';
+import { ConfirmationDialogService } from '../shared/services/confirmation-dialog.service';
 
 @Component({
   selector: 'app-files',
@@ -66,7 +67,8 @@ export class FilesComponent implements OnInit {
   
   constructor(
     private fileService: FileService,
-    private router: Router
+    private router: Router,
+    private confirmationDialogService: ConfirmationDialogService
   ) { }
 
   ngOnInit(): void {
@@ -138,17 +140,43 @@ export class FilesComponent implements OnInit {
     }
   }
 
-  deleteFile(file: any): void {
-    if (file && file.fileUuid && confirm('Are you sure you want to delete this file?')) {
-      this.fileService.deleteFile(file.fileUuid).subscribe({
-        next: () => {
-          this.refreshFiles();
-        },
-        error: (error: any) => {
-          console.error('Error deleting file:', error);
-          alert('Failed to delete file. Please try again.');
-        }
-      });
+  async deleteFile(file: any): Promise<void> {
+    if (!file || !file.fileUuid) return;
+    
+    try {
+      const confirmed = await this.confirmationDialogService.confirmDelete(file.fileName);
+      
+      if (confirmed) {
+        this.fileService.deleteFile(file.fileUuid).subscribe({
+          next: () => {
+            this.refreshFiles();
+          },
+          error: (error: any) => {
+            console.error('Error deleting file:', error);
+            let errorMessage = 'Failed to delete file. Please try again.';
+            
+            // Handle specific error cases
+            if (error.status === 409) {
+              // Conflict - business rule violation
+              errorMessage = error.error || 'Cannot delete this file due to active jobs or current processing state.';
+            } else if (error.status === 403) {
+              errorMessage = 'You do not have permission to delete this file.';
+            } else if (error.status === 404) {
+              errorMessage = 'File not found.';
+            }
+            
+            this.confirmationDialogService.confirm({
+              title: 'Cannot Delete File',
+              message: errorMessage,
+              confirmText: 'OK',
+              cancelText: '',
+              isDangerous: false
+            });
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error showing confirmation dialog', error);
     }
   }
 

@@ -537,6 +537,73 @@ public class JobService {
     }
 
     /**
+     * Check if a file or prompt has any active jobs (not in terminal states)
+     * 
+     * @param fileUuid The UUID of the file to check (can be null if checking by prompt)
+     * @param promptUuid The UUID of the prompt to check (can be null if checking by file)
+     * @return true if there are active jobs for this file or prompt
+     */
+    public boolean hasActiveJobs(UUID fileUuid, UUID promptUuid) {
+        List<Job> jobs;
+        
+        if (fileUuid != null) {
+            jobs = jobRepository.findByFileUuid(fileUuid);
+        } else if (promptUuid != null) {
+            jobs = jobRepository.findByPromptUuid(promptUuid);
+        } else {
+            throw new IllegalArgumentException("Either fileUuid or promptUuid must be provided");
+        }
+        
+        // Check if any jobs are not in terminal states
+        return jobs.stream().anyMatch(job -> {
+            JobStatus status = job.getStatus();
+            return status != JobStatus.COMPLETED && 
+                   status != JobStatus.FAILED && 
+                   status != JobStatus.CANCELLED &&
+                   status != JobStatus.COMPLETED_WITH_ERRORS;
+        });
+    }
+    
+    /**
+     * Check if a file has any active jobs (not in terminal states)
+     * 
+     * @param fileUuid The UUID of the file to check
+     * @return true if there are active jobs for this file
+     */
+    public boolean hasActiveJobs(UUID fileUuid) {
+        return hasActiveJobs(fileUuid, null);
+    }
+
+    /**
+     * Delete a job and all its associated tasks
+     * 
+     * @param jobUuid The UUID of the job to delete
+     */
+    @Transactional
+    public void deleteJob(UUID jobUuid) {
+        Job job = jobRepository.findById(jobUuid).orElseThrow(() -> new JobSubmissionException("Job not found: " + jobUuid));
+        
+        // Check if the job can be deleted - only allow deletion of completed, failed, or cancelled jobs
+        if (job.getStatus() == JobStatus.PROCESSING || 
+            job.getStatus() == JobStatus.SUBMITTED || 
+            job.getStatus() == JobStatus.VALIDATING || 
+            job.getStatus() == JobStatus.PENDING_VALIDATION) {
+            throw new JobSubmissionException("Cannot delete job in status: " + job.getStatus() + ". Only completed, failed, or cancelled jobs can be deleted.");
+        }
+        
+        // Delete all job tasks first (due to foreign key constraints)
+        jobTaskRepository.deleteByJobUuid(jobUuid);
+        
+        // Delete all job output fields
+        jobOutputFieldRepository.deleteByJob(job);
+        
+        // Delete the job
+        jobRepository.delete(job);
+        
+        log.info("Job {} and all associated tasks deleted", jobUuid);
+    }
+
+    /**
      * Continue a job that was previously cancelled or has insufficient credits
      * 
      * @param jobUuid The UUID of the job to continue

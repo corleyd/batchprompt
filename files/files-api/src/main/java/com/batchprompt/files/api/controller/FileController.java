@@ -215,16 +215,32 @@ public class FileController {
     }
 
     @DeleteMapping("/{fileUuid}")
-    public ResponseEntity<Void> deleteFile(
+    public ResponseEntity<?> deleteFile(
         @PathVariable UUID fileUuid,
         @AuthenticationPrincipal Jwt jwt) 
     {
-        FileEntity file = fileService.getFileById(fileUuid).orElseThrow(() -> new IllegalArgumentException("File not found with UUID: " + fileUuid));
-        if (!serviceAuthenticationService.canAccessUserData(jwt, file.getUserId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }                
-        boolean deleted = fileService.deleteFile(fileUuid);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+        try {
+            FileEntity file = fileService.getFileById(fileUuid)
+                .orElseThrow(() -> new IllegalArgumentException("File not found with UUID: " + fileUuid));
+            
+            if (!serviceAuthenticationService.canAccessUserData(jwt, file.getUserId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            
+            boolean deleted = fileService.deleteFile(fileUuid);
+            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+            
+        } catch (IllegalStateException e) {
+            // Return a 409 Conflict status with the error message for business rule violations
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IllegalArgumentException e) {
+            // Return a 404 Not Found for file not found
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            // Return a 500 Internal Server Error for other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred while deleting the file");
+        }
     }
 
     @PostMapping("/{fileUuid}/validate")

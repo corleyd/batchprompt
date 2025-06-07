@@ -33,6 +33,8 @@ import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import com.batchprompt.jobs.client.JobClient;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -45,6 +47,7 @@ public class FileService {
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
     private final ExcelValidator excelValidator;
+    private final JobClient jobClient;
 
     public List<FileEntity> getAllFiles() {
         return fileRepository.findAll();
@@ -255,7 +258,20 @@ public class FileService {
         Optional<FileEntity> optionalFile = fileRepository.findById(fileUuid);
         
         if (optionalFile.isPresent()) {
+            FileEntity file = optionalFile.get();
+            
             try {
+                // Check if file is in VALIDATING or PROCESSING state
+                if (file.getStatus() == FileStatus.VALIDATING || file.getStatus() == FileStatus.PROCESSING) {
+                    throw new IllegalStateException("Cannot delete file while it is being validated or processed");
+                }
+                
+                // Check if there are any active jobs for this file
+                boolean hasActiveJobs = jobClient.hasActiveJobs(fileUuid, null);
+                if (hasActiveJobs) {
+                    throw new IllegalStateException("Cannot delete file while it has active jobs. Please cancel or wait for jobs to complete.");
+                }
+                
                 // Delete file records first
                 fileRecordRepository.deleteByFileFileUuid(fileUuid);
                 
@@ -273,7 +289,7 @@ public class FileService {
                 return true;
             } catch (Exception e) {
                 log.error("Error deleting file", e);
-                throw new RuntimeException("Failed to delete file", e);
+                throw new RuntimeException("Failed to delete file: " + e.getMessage(), e);
             }
         }
         

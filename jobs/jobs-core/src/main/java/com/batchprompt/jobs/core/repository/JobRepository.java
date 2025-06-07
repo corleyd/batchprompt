@@ -16,4 +16,5 @@ public interface JobRepository extends JpaRepository<Job, UUID>, JpaSpecificatio
     List<Job> findByUserId(String userId);
     Page<Job> findByUserId(String userId, Pageable pageable);
     List<Job> findByFileUuid(UUID fileUuid);
+    List<Job> findByPromptUuid(UUID promptUuid);
 }

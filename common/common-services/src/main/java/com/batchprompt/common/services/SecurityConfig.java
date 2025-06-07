@@ -43,10 +43,19 @@ public class SecurityConfig {
         http.cors(cors -> {
             CorsConfigurationSource corsConfigurationSource = request -> {
                 CorsConfiguration config = new CorsConfiguration();
-                config.setAllowedOrigins(securityProperties.getAllowedOrigins());
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
-                //config.setAllowCredentials(true);
+
+                /* 
+                 * The following is necessary. Without it, the STOMP client will complain about:
+                 * 
+                 * The value of the 'Access-Control-Allow-Credentials' header in the response is '' which must be 'true' when the request's credentials mode is 'include'. The credentials mode of requests initiated by the XMLHttpRequest is controlled by the withCredentials attribute.
+                 * 
+                 * When we set that, we're not allowed to set the allowed origins to "*", so we have to specify the exact origins.
+                 */
+
+                config.setAllowCredentials(true);
+                config.setAllowedOrigins(securityProperties.getAllowedOrigins());
                 return config;
             };
             cors.configurationSource(corsConfigurationSource);

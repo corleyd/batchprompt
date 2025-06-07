@@ -1,0 +1,27 @@
+<div class="confirmation-dialog-overlay" *ngIf="isVisible" (click)="onBackdropClick($event)">
+  <div class="confirmation-dialog" (click)="$event.stopPropagation()">
+    <div class="dialog-header">
+      <h3 class="dialog-title">{{ data.title }}</h3>
+    </div>
+    
+    <div class="dialog-body">
+      <p class="dialog-message">{{ data.message }}</p>
+    </div>
+    
+    <div class="dialog-footer">
+      <button 
+        type="button" 
+        class="btn btn-outline-secondary dialog-btn"
+        (click)="onCancel()">
+        {{ data.cancelText || 'Cancel' }}
+      </button>
+      <button 
+        type="button" 
+        class="btn dialog-btn"
+        [ngClass]="data.isDangerous ? 'btn-danger' : 'btn-primary'"
+        (click)="onConfirm()">
+        {{ data.confirmText || 'Confirm' }}
+      </button>
+    </div>
+  </div>
+</div>

@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,9 +49,14 @@ public class PromptController {
     @GetMapping("/{promptUuid}")
     public ResponseEntity<PromptDto> getPromptById(
         @PathVariable UUID promptUuid,
-        @AuthenticationPrincipal Jwt jwt) {
+        @AuthenticationPrincipal Jwt jwt) 
+    {
 
-        if (!serviceAuthenticationService.isValidServiceJwt(jwt)) {
+        // Check if the user has permission to access this prompt
+        Prompt existingPrompt = promptService.getPromptById(promptUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Prompt not found with UUID: " + promptUuid));
+
+        if (!serviceAuthenticationService.canAccessUserData(jwt, existingPrompt.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         return promptService.getPromptById(promptUuid)
@@ -113,7 +119,19 @@ public class PromptController {
     }
 
     @PutMapping("/{promptUuid}")
-    public ResponseEntity<PromptDto> updatePrompt(@PathVariable UUID promptUuid, @RequestBody PromptDto promptDto) {
+    public ResponseEntity<PromptDto> updatePrompt(
+        @PathVariable UUID promptUuid, 
+        @RequestBody PromptDto promptDto,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        Prompt existingPrompt = promptService.getPromptById(promptUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Prompt not found with UUID: " + promptUuid));
+        
+                // Check if the user is allowed to update this prompt
+        if (!serviceAuthenticationService.canAccessUserData(jwt, existingPrompt.getUserId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
         Prompt prompt = promptMapper.toEntity(promptDto);
         return promptService.updatePrompt(promptUuid, prompt)
                 .map(promptMapper::toDto)
@@ -122,15 +140,25 @@ public class PromptController {
     }
 
     @DeleteMapping("/{promptUuid}")
-    public ResponseEntity<Void> deletePrompt(
+    public ResponseEntity<?> deletePrompt(
         @PathVariable UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
-        if (!serviceAuthenticationService.isValidServiceJwt(jwt)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        try {
+            if (!serviceAuthenticationService.canAccessUserData(jwt, jwt.getSubject())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            boolean deleted = promptService.deletePrompt(promptUuid);
+            return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+            
+        } catch (IllegalStateException e) {
+            // Return a 409 Conflict status with the error message for business rule violations
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            // Return a 500 Internal Server Error for other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("An error occurred while deleting the prompt");
         }
-        boolean deleted = promptService.deletePrompt(promptUuid);
-        return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
     /**
@@ -178,7 +206,11 @@ public class PromptController {
         @PathVariable UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt) {
         
-        if (!serviceAuthenticationService.isValidServiceJwt(jwt)) {
+        // Check if the user has permission to access this prompt
+        Prompt existingPrompt = promptService.getPromptById(promptUuid)
+                .orElseThrow(() -> new IllegalArgumentException("Prompt not found with UUID: " + promptUuid));
+
+        if (!serviceAuthenticationService.canAccessUserData(jwt, existingPrompt.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 

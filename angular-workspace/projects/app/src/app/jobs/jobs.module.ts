@@ -9,6 +9,7 @@ import { JobListComponent } from './job-list/job-list.component';
 import { DownloadButtonComponent } from '../shared/components';
 import { GenericTableModule } from '../shared/components/generic-table/generic-table.module';
 import { ComingSoonNotificationComponent } from "../shared/components/coming-soon-notification/coming-soon-notification.component";
+import { IconsModule } from '../icons/icons.module';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { ComingSoonNotificationComponent } from "../shared/components/coming-soo
     JobsRoutingModule,
     DownloadButtonComponent,
     GenericTableModule,
-    ComingSoonNotificationComponent
+    ComingSoonNotificationComponent,
+    IconsModule
 ],
   exports: [
     JobSubmitComponent,

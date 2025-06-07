@@ -325,4 +325,84 @@ public class JobClient {
             throw new ClientException("Error continuing job", e);
         }
     }
+    
+    /**
+     * Delete a job
+     * 
+     * @param jobUuid The UUID of the job to delete
+     * @param authToken User auth token or null for service-to-service call
+     */
+    public void deleteJob(UUID jobUuid, String authToken) throws ClientException {
+        try {
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
+            HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+            
+            restTemplate.exchange(
+                jobsServiceUrl + "/api/jobs/" + jobUuid,
+                HttpMethod.DELETE,
+                requestEntity,
+                Void.class
+            );
+        } catch (Exception e) {
+            log.error("Error deleting job {}", jobUuid, e);
+            throw new ClientException("Error deleting job", e);
+        }
+    }
+    
+    /**
+     * Check if a file has any active jobs
+     * 
+     * @param fileUuid The UUID of the file to check
+     * @param authToken User auth token or null for service-to-service call
+     * @return true if there are active jobs for this file
+     */
+    public boolean hasActiveJobs(UUID fileUuid, String authToken) throws ClientException {
+        try {
+            HttpHeaders headers = authService.createAuthHeaders(authToken);
+            HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+            
+            ResponseEntity<Boolean> response = restTemplate.exchange(
+                jobsServiceUrl + "/api/jobs/file/" + fileUuid + "/hasActiveJobs",
+                HttpMethod.GET,
+                requestEntity,
+                Boolean.class
+            );
+            return response.getBody() != null ? response.getBody() : false;
+        } catch (Exception e) {
+            log.error("Error checking active jobs for file {}", fileUuid, e);
+            throw new ClientException("Error checking active jobs", e);
+        }
+    }
+    
+    /**
+     * Check if a file or prompt has any active jobs
+     * 
+     * @param fileUuid The UUID of the file to check (can be null if checking by prompt)
+     * @param promptUuid The UUID of the prompt to check (can be null if checking by file)
+     * @param authToken User auth token or null for service-to-service call
+     * @return true if there are active jobs for this file or prompt
+     */
+    public boolean hasActiveJobs(UUID fileUuid, UUID promptUuid, String authToken) throws ClientException {
+        if (fileUuid != null) {
+            return hasActiveJobs(fileUuid, authToken);
+        } else if (promptUuid != null) {
+            try {
+                HttpHeaders headers = authService.createAuthHeaders(authToken);
+                HttpEntity<?> requestEntity = new HttpEntity<>(headers);
+                
+                ResponseEntity<Boolean> response = restTemplate.exchange(
+                    jobsServiceUrl + "/api/jobs/prompt/" + promptUuid + "/hasActiveJobs",
+                    HttpMethod.GET,
+                    requestEntity,
+                    Boolean.class
+                );
+                return response.getBody() != null ? response.getBody() : false;
+            } catch (Exception e) {
+                log.error("Error checking active jobs for prompt {}", promptUuid, e);
+                throw new ClientException("Error checking active jobs", e);
+            }
+        } else {
+            throw new IllegalArgumentException("Either fileUuid or promptUuid must be provided");
+        }
+    }
 }

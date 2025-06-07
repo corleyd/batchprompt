@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.batchprompt.prompts.core.model.Prompt;
 import com.batchprompt.prompts.core.repository.PromptRepository;
 import com.batchprompt.prompts.model.dto.PromptJobInfoDto;
+import com.batchprompt.jobs.client.JobClient;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 public class PromptService {
 
     private final PromptRepository promptRepository;
+    private final JobClient jobClient;
 
     public List<Prompt> getAllPrompts() {
         return promptRepository.findAll();
@@ -66,8 +68,18 @@ public class PromptService {
     public boolean deletePrompt(UUID promptUuid) {
         return promptRepository.findById(promptUuid)
                 .map(prompt -> {
-                    promptRepository.delete(prompt);
-                    return true;
+                    try {
+                        // Check if there are any active jobs for this prompt
+                        boolean hasActiveJobs = jobClient.hasActiveJobs(null, promptUuid, null);
+                        if (hasActiveJobs) {
+                            throw new IllegalStateException("Cannot delete prompt while it has active jobs. Please cancel or wait for jobs to complete.");
+                        }
+                        
+                        promptRepository.delete(prompt);
+                        return true;
+                    } catch (Exception e) {
+                        throw new RuntimeException("Failed to delete prompt: " + e.getMessage(), e);
+                    }
                 })
                 .orElse(false);
     }

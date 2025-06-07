@@ -7,6 +7,7 @@ import { switchMap } from 'rxjs';
 import { IconsModule } from '../../icons/icons.module';
 import { Prompt } from '../../models/prompt.model';
 import { PromptService } from '../../services/prompt.service';
+import { ConfirmationDialogService } from '../../shared/services/confirmation-dialog.service';
 
 @Component({
   selector: 'app-prompt-list',
@@ -41,7 +42,8 @@ export class PromptListComponent implements OnInit {
   constructor(
     private promptService: PromptService,
     public auth: AuthService,
-    private router: Router
+    private router: Router,
+    private confirmationDialogService: ConfirmationDialogService
   ) {}
 
   ngOnInit(): void {
@@ -88,22 +90,49 @@ export class PromptListComponent implements OnInit {
       });
   }
 
-  deletePrompt(promptUuid: string): void {
-    if (confirm('Are you sure you want to delete this prompt?')) {
-      this.promptService.deletePrompt(promptUuid).subscribe({
-        next: () => {
-          this.prompts = this.prompts.filter(p => p.promptUuid !== promptUuid);
-          // Reload the current page if it's now empty and not the first page
-          if (this.prompts.length === 0 && this.currentPage > 0) {
-            this.goToPage(this.currentPage - 1);
-          } else {
-            this.loadPrompts(); // Reload current page to update counts
+  async deletePrompt(prompt: Prompt): Promise<void> {
+    if (!prompt || !prompt.promptUuid) return;
+    
+    try {
+      const confirmed = await this.confirmationDialogService.confirmDelete(prompt.name);
+      
+      if (confirmed) {
+        this.promptService.deletePrompt(prompt.promptUuid).subscribe({
+          next: () => {
+            this.prompts = this.prompts.filter(p => p.promptUuid !== prompt.promptUuid);
+            // Reload the current page if it's now empty and not the first page
+            if (this.prompts.length === 0 && this.currentPage > 0) {
+              this.goToPage(this.currentPage - 1);
+            } else {
+              this.loadPrompts(); // Reload current page to update counts
+            }
+          },
+          error: (error: any) => {
+            console.error('Error deleting prompt:', error);
+            let errorMessage = 'Failed to delete prompt. Please try again.';
+            
+            // Handle specific error cases
+            if (error.status === 409) {
+              // Conflict - business rule violation
+              errorMessage = error.error || 'Cannot delete this prompt due to active jobs.';
+            } else if (error.status === 403) {
+              errorMessage = 'You do not have permission to delete this prompt.';
+            } else if (error.status === 404) {
+              errorMessage = 'Prompt not found.';
+            }
+            
+            this.confirmationDialogService.confirm({
+              title: 'Cannot Delete Prompt',
+              message: errorMessage,
+              confirmText: 'OK',
+              cancelText: '',
+              isDangerous: false
+            });
           }
-        },
-        error: (err) => {
-          console.error('Error deleting prompt', err);
-        }
-      });
+        });
+      }
+    } catch (error) {
+      console.error('Error showing confirmation dialog', error);
     }
   }
   

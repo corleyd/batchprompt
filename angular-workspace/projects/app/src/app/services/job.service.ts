@@ -107,5 +107,10 @@ export class JobService {
   cancelJob(jobUuid: string): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${jobUuid}/cancel`, {});
   }
+
+  // Delete a job
+  deleteJob(jobUuid: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${jobUuid}`);
+  }
 }
  

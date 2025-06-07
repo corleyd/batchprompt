@@ -1,7 +1,7 @@
 <div class="file-list-container">
   <div class="file-list-header">
     <h1>Files</h1>
-    <a routerLink="files/upload" class="btn primary-btn">Upload New File</a>
+    <a routerLink="/dashboard/files/upload" class="btn primary-btn">Upload New File</a>
   </div>
 
   <div class="filter-controls" *ngIf="!loading && !error && files.length > 0">

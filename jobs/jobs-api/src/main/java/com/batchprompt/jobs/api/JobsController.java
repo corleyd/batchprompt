@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -123,6 +124,19 @@ public class JobsController {
         return ResponseEntity.ok(jobMapper.toDto(job));
     }
 
+    @DeleteMapping("/{jobUuid}")
+    public ResponseEntity<Void> deleteJob(
+        @PathVariable UUID jobUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        if (getJobIfAllowed(jobUuid, jwt) == null) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        jobService.deleteJob(jobUuid);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/user")
     public ResponseEntity<?> getJobsByUser(
             @AuthenticationPrincipal Jwt jwt,
@@ -231,6 +245,28 @@ public class JobsController {
         );
         
         return ResponseEntity.status(HttpStatus.CREATED).body(jobMapper.toDto(job));
+    }
+
+    @GetMapping("/file/{fileUuid}/hasActiveJobs")
+    public ResponseEntity<Boolean> hasActiveJobs(
+        @PathVariable UUID fileUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        // For now, we'll allow any authenticated user to check this
+        // In a more secure implementation, you might want to verify file ownership
+        boolean hasActiveJobs = jobService.hasActiveJobs(fileUuid);
+        return ResponseEntity.ok(hasActiveJobs);
+    }
+
+    @GetMapping("/prompt/{promptUuid}/hasActiveJobs")
+    public ResponseEntity<Boolean> hasActiveJobsForPrompt(
+        @PathVariable UUID promptUuid,
+        @AuthenticationPrincipal Jwt jwt
+    ) {
+        // For now, we'll allow any authenticated user to check this
+        // In a more secure implementation, you might want to verify prompt ownership
+        boolean hasActiveJobs = jobService.hasActiveJobs(null, promptUuid);
+        return ResponseEntity.ok(hasActiveJobs);
     }
 
     private Job getJobIfAllowed(UUID jobUuid, Jwt jwt) {
