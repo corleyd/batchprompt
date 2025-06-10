@@ -31,7 +31,7 @@ Add the following to your environment or `local.yml`:
 ```yaml
 # Waitlist Email Settings
 WAITLIST_EMAIL_ENABLED=true
-WAITLIST_EMAIL_FROM=noreply@batchprompt.com
+WAITLIST_EMAIL_FROM=noreply@batchprompt.ai
 
 # SMTP Configuration
 MAIL_HOST=smtp.gmail.com

@@ -23,6 +23,20 @@ export interface WaitlistEntryDto {
   registeredAt?: string;
 }
 
+export interface WaitlistAutoAcceptanceDto {
+  id?: string;
+  remainingAutoAcceptCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
+  notes?: string;
+}
+
+export interface SetAutoAcceptanceCountDto {
+  count: number;
+  notes?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -70,5 +84,13 @@ export class WaitlistService {
     return this.http.post<WaitlistEntryDto[]>(`${environment.apiBaseUrl}/api/waitlist/admin/invite-next`, null, {
       params: { count: count.toString() }
     });
+  }
+
+  getAutoAcceptanceConfiguration(): Observable<WaitlistAutoAcceptanceDto> {
+    return this.http.get<WaitlistAutoAcceptanceDto>(`${environment.apiBaseUrl}/api/waitlist/admin/auto-acceptance`);
+  }
+
+  setAutoAcceptanceCount(request: SetAutoAcceptanceCountDto): Observable<WaitlistAutoAcceptanceDto> {
+    return this.http.post<WaitlistAutoAcceptanceDto>(`${environment.apiBaseUrl}/api/waitlist/admin/auto-acceptance`, request);
   }
 }

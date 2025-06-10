@@ -21,7 +21,7 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     
-    @Value("${waitlist.email.from:noreply@batchprompt.com}")
+    @Value("${waitlist.email.from:noreply@batchprompt.ai}")
     private String fromEmail;
     
     @Value("${app.base-url:https://batchprompt.com}")
@@ -49,7 +49,7 @@ public class EmailService {
      */
     public void sendWaitlistInvitationEmail(String email, String name, String company) {
         try {
-            String subject = "🎉 You're invited to BatchPrompt!";
+            String subject = "You're invited to BatchPrompt!";
             String htmlContent = generateInvitationEmailHtml(name, company);
             String textContent = generateInvitationEmailText(name, company);
             
@@ -93,7 +93,7 @@ public class EmailService {
     }
 
     private String generateSignupEmailHtml(String name) {
-        String statusUrl = baseUrl + "/waitlist/status";
+        String statusUrl = baseUrl + "/waitlist-status";
         
         return String.format("""
             <!DOCTYPE html>
@@ -105,9 +105,9 @@ public class EmailService {
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
                     .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
-                    .logo { font-size: 24px; font-weight: bold; color: #007bff; }
+                    .logo { font-size: 24px; font-weight: bold; color: #0056b3; }
                     .content { padding: 20px 0; }
-                    .cta-button { background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }
+                    .cta-button { background-color: #0056b3; color: #ffffff !important; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
                     .footer { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 14px; }
                 </style>
             </head>
@@ -118,9 +118,8 @@ public class EmailService {
                 </div>
                 
                 <div class="content">
-                    <h2>Hi %s!</h2>
                     
-                    <p>Welcome to the BatchPrompt waitlist! We're thrilled to have you join us in discovering how AI batch processing can simplify and speed up your workflow.</p>
+                    <p>Welcome to the BatchPrompt waitlist! Thank you for joining us to explore how AI batch processing can simplify and speed up your workflow.</p>
                     
                     <p>We're working hard to onboard users as quickly as possible while ensuring a great experience for everyone. You'll receive an email notification as soon as your invitation is ready.</p>
                     
@@ -131,7 +130,7 @@ public class EmailService {
                         <li>Explore our documentation to prepare for your access</li>
                     </ul>
                     
-                    <a href="%s" class="cta-button">Check Your Status</a>
+                    <a href="%s" class="cta-button" style="color: #ffffff !important;">Check Your Status</a>
                     
                     <p>Thank you for your patience, and we can't wait to welcome you to BatchPrompt!</p>
                     
@@ -139,7 +138,7 @@ public class EmailService {
                 </div>
                 
                 <div class="footer">
-                    <p>This email was sent because you signed up for the BatchPrompt waitlist. If you have any questions, please contact us at support@batchprompt.com.</p>
+                    <p>This email was sent because you signed up for the BatchPrompt waitlist. If you have any questions, please contact us at support@batchprompt.ai.</p>
                 </div>
             </body>
             </html>
@@ -147,11 +146,11 @@ public class EmailService {
     }
 
     private String generateSignupEmailText(String name) {
-        String statusUrl = baseUrl + "/waitlist/status";
+        String statusUrl = baseUrl + "/waitlist-status";
         
         return String.format("""
             
-            Welcome to the BatchPrompt waitlist! We're excited to have you join our community.
+            Welcome to the BatchPrompt waitlist! Thank you for joining our community.
             
             We're working hard to onboard users as quickly as possible. You'll receive an email notification as soon as your invitation is ready.
             
@@ -166,8 +165,6 @@ public class EmailService {
 
     private String generateInvitationEmailHtml(String name, String company) {
         String signupUrl = baseUrl + "/signup";
-        String companySection = (company != null && !company.isEmpty()) ? 
-            String.format("<p>We're particularly excited to see how <strong>%s</strong> will use BatchPrompt to enhance your AI workflows.</p>", company) : "";
         
         return String.format("""
             <!DOCTYPE html>
@@ -178,14 +175,14 @@ public class EmailService {
                 <title>You're Invited to BatchPrompt!</title>
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-                    .header { background: linear-gradient(135deg, #007bff, #0056b3); color: white; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
+                    .header { background: linear-gradient(135deg, #0056b3, #003a7a); color: white; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
                     .logo { font-size: 28px; font-weight: bold; margin-bottom: 10px; }
-                    .invitation-badge { background-color: #28a745; color: white; padding: 8px 20px; border-radius: 25px; display: inline-block; font-weight: bold; margin: 10px 0; }
+                    .invitation-badge { background-color: #1e7e34; color: white !important; padding: 8px 20px; border-radius: 25px; display: inline-block; font-weight: bold; margin: 10px 0; }
                     .content { padding: 20px 0; }
-                    .cta-button { background-color: #28a745; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 25px 0; font-weight: bold; font-size: 16px; }
+                    .cta-button { background-color: #1e7e34; color: #ffffff !important; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 25px 0; font-weight: bold; font-size: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
                     .features { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
                     .feature-item { margin: 10px 0; padding-left: 20px; position: relative; }
-                    .feature-item:before { content: "✓"; color: #28a745; font-weight: bold; position: absolute; left: 0; }
+                    .feature-item:before { content: "✓"; color: #1e7e34; font-weight: bold; position: absolute; left: 0; }
                     .footer { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 14px; }
                     .urgency { background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
                 </style>
@@ -194,16 +191,14 @@ public class EmailService {
                 
                 <div class="content">
                     
-                    <p>Great news! You've been approved for access to BatchPrompt, and we're excited to welcome you to our platform.</p>
-                    
-                    %s
+                    <p>Good news! You've been approved for access to BatchPrompt. Welcome to our platform.</p>
                     
                     <div class="urgency">
-                        <strong>⏰ Ready to get started?</strong> Your invitation is active and ready to use. Click below to create your account and start using BatchPrompt today.
+                        <strong>Ready to get started?</strong> Your invitation is active and ready to use. Click below to create your account and start using BatchPrompt today.
                     </div>
                     
                     <div style="text-align: center;">
-                        <a href="%s" class="cta-button">Create Your Account</a>
+                        <a href="%s" class="cta-button" style="color: #ffffff !important;">Create Your Account</a>
                     </div>
                     
                     <div class="features">
@@ -213,7 +208,7 @@ public class EmailService {
                         <div class="feature-item">Track usage and manage costs effectively</div>
                     </div>
                     
-                    <p>If you have any questions or need help getting started, our support team is here to help at support@batchprompt.com.</p>
+                    <p>If you have any questions or need help getting started, our support team is here to help at support@batchprompt.ai.</p>
                     
                     <p>Welcome to BatchPrompt!</p>
                     
@@ -225,35 +220,30 @@ public class EmailService {
                 </div>
             </body>
             </html>
-            """, name, companySection, signupUrl);
+            """, signupUrl);
     }
 
     private String generateInvitationEmailText(String name, String company) {
         String signupUrl = baseUrl + "/signup";
-        String companySection = (company != null && !company.isEmpty()) ? 
-            String.format("We're excited to see how %s will use BatchPrompt!", company) : "";
         
         return String.format("""
-            Congratulations %s!
+           
+            Good news! You've been approved for access to BatchPrompt.
             
-            Great news! You've been approved for access to BatchPrompt.
-            
-            %s
-            
-            Your invitation is ready! Create your account here: %s
+            Create your account here: %s
             
             What you can do with BatchPrompt:
             • Process large batches of prompts efficiently
             • Access multiple AI models from one platform  
             • Track usage and manage costs effectively
             
-            If you have any questions, contact us at support@batchprompt.com.
+            If you have any questions, contact us at support@batchprompt.ai.
             
             Welcome to BatchPrompt!
             
             Best regards,
             The BatchPrompt Team
-            """, name, companySection, signupUrl);
+            """, signupUrl);
     }
 
     private String generateFeedbackEmailHtml(String name, String email, String subject, String message) {
@@ -267,7 +257,7 @@ public class EmailService {
                 <style>
                     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
                     .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
-                    .logo { font-size: 24px; font-weight: bold; color: #007bff; }
+                    .logo { font-size: 24px; font-weight: bold; color: #0056b3; }
                     .content { padding: 20px 0; }
                     .info-section { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
                     .message-section { background-color: #fff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0; }

@@ -59,7 +59,7 @@
   </div>
 
   <div class="success-card" *ngIf="isSubmitted && waitlistEntry">
-    <h2>Access Request Submitted</h2>
+    <h2>Request Submitted</h2>
     <p>Thanks for your interest, {{ waitlistEntry.name || waitlistEntry.email }}!</p>
     <div class="waitlist-info">
       <p><strong>Status:</strong> {{ getStatusText(waitlistEntry.status) }}</p>

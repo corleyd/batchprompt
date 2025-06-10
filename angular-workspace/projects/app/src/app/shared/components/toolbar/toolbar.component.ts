@@ -1,10 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnInit } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Router, RouterLink, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { IconsModule } from '../../../icons/icons.module';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { map, filter } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 
 @Component({
@@ -14,17 +14,19 @@ import { UserService } from '../../../services/user.service';
   templateUrl: './toolbar.component.html',
   styleUrls: ['./toolbar.component.scss']
 })
-export class ToolbarComponent implements OnInit {
+export class ToolbarComponent implements OnInit, OnDestroy {
   title = 'BatchPrompt';
   showUserMenu = false;
   showExamplesDropdown = false;
   isAdmin$: Observable<boolean>;
   dropdownCloseTimeout: any;
+  private routerSubscription: Subscription = new Subscription();
 
   constructor(
     public auth: AuthService, 
     private router: Router,
-    private userService: UserService
+    private userService: UserService,
+    private activatedRoute: ActivatedRoute
   ) {
     // Create an observable to check if the current user has admin role
     this.isAdmin$ = this.auth.user$.pipe(
@@ -35,10 +37,44 @@ export class ToolbarComponent implements OnInit {
         return roles.includes('admin');
       })
     );
+    
+    // Check if current URL is '/signup' and redirect to Auth0 signup
+    if (this.router.url === '/signup') {
+      this.signup();
+    }
   }
 
   ngOnInit(): void {
-    // No need to load account information here anymore
+    // Subscribe to router events to detect navigation to /signup
+    this.routerSubscription = this.router.events.pipe(
+      filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      if (event.url === '/signup') {
+        this.signup();
+      }
+    });
+
+    // Check current URL in case component initializes with /signup
+    if (this.router.url === '/signup') {
+      this.signup();
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription when component is destroyed
+    if (this.routerSubscription) {
+      this.routerSubscription.unsubscribe();
+    }
+  }
+
+  private checkSignupRoute() {
+    // Check if the current route is the signup route
+    const isSignupRoute = this.router.url.includes('/signup');
+
+    if (isSignupRoute) {
+      // Trigger the signup function if on the signup route
+      this.signup();
+    }
   }
 
   @HostListener('document:click', ['$event'])

@@ -30,7 +30,7 @@ spring:
 services:
   email:
     enabled: ${EMAIL_ENABLED:false}
-    from: ${EMAIL_FROM:noreply@batchprompt.com}
+    from: ${EMAIL_FROM:noreply@batchprompt.ai}
     
 app:
   base-url: ${APP_BASE_URL:https://batchprompt.com}

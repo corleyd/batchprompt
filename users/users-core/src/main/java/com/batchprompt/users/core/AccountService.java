@@ -18,6 +18,7 @@ import com.batchprompt.users.core.model.User;
 import com.batchprompt.users.core.repository.AccountCreditTransactionRepository;
 import com.batchprompt.users.core.repository.AccountRepository;
 import com.batchprompt.users.core.repository.AccountUserRepository;
+import com.batchprompt.users.core.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,9 +31,10 @@ public class AccountService {
     private final AccountRepository accountRepository;
     private final AccountUserRepository accountUserRepository;
     private final AccountCreditTransactionRepository accountCreditTransactionRepository;
+    private final UserRepository userRepository;
     private final NotificationSender notificationSender;
     
-    private static final double DEFAULT_INITIAL_CREDITS = 100.0;
+    private static final double DEFAULT_INITIAL_CREDITS = 750.0;
     private static final String DEFAULT_CREDIT_REASON = "Initial account credits";
 
     /**
@@ -75,7 +77,16 @@ public class AccountService {
             return null; // No users associated with this account
         }
         // Return the first user (assuming one owner per account)
-        return accountUsers.get(0).getUser();
+        AccountUser accountUser = accountUsers.get(0);
+        
+        // The User relationship might be null due to timing/lazy loading issues
+        // In this case, we should fetch the user by ID directly
+        if (accountUser.getUser() != null) {
+            return accountUser.getUser();
+        } else {
+            // Fallback: lookup the user by userId
+            return userRepository.findById(accountUser.getUserId()).orElse(null);
+        }
     }
     
     /**
@@ -105,7 +116,8 @@ public class AccountService {
             savedAccount.getAccountUuid(), 
             DEFAULT_INITIAL_CREDITS, 
             DEFAULT_CREDIT_REASON, 
-            null
+            null,
+            owner  // Pass the owner directly to avoid lookup issues
         );
         
         return savedAccount;
@@ -147,13 +159,42 @@ public class AccountService {
         transaction.setReferenceId(referenceId);
         transaction.setCreateTimestamp(LocalDateTime.now());
 
+        transaction = accountCreditTransactionRepository.save(transaction);
+
+        // Send notification if we can find a user for the account
+        User user = getUserForAccount(account);
+        if (user != null) {
+            notificationSender.send("account/balance", 
+                new AccountBalanceDto(accountUuid, getAccountBalance(accountUuid)), user.getUserId());
+        }
+        
+        return transaction;
+    }
+    
+    /**
+     * Add credits to an account with a specific user for notifications
+     */
+    @Transactional
+    public AccountCreditTransaction addCreditsToAccount(UUID accountUuid, Double amount, String reason, String referenceId, User user) {
+        if (!accountRepository.existsById(accountUuid)) {
+            throw new IllegalArgumentException("Account not found");
+        }
+
+        AccountCreditTransaction transaction = new AccountCreditTransaction();
+        transaction.setTransactionUuid(UUID.randomUUID());
+        transaction.setAccountUuid(accountUuid);
+        transaction.setChangeAmount(amount);
+        transaction.setReason(reason);
+        transaction.setReferenceId(referenceId);
+        transaction.setCreateTimestamp(LocalDateTime.now());
 
         transaction = accountCreditTransactionRepository.save(transaction);
 
-        User user = getUserForAccount(account);
-        
-        notificationSender.send("account/balance", 
-            new AccountBalanceDto(accountUuid, getAccountBalance(accountUuid)), user.getUserId());
+        // Send notification if user is provided
+        if (user != null) {
+            notificationSender.send("account/balance", 
+                new AccountBalanceDto(accountUuid, getAccountBalance(accountUuid)), user.getUserId());
+        }
         
         return transaction;
     }

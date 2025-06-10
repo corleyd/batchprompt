@@ -10,6 +10,10 @@ export const routes: Routes = [
     component: LandingPageComponent,
     pathMatch: 'full'
   },
+  {
+    path: 'signup',
+    component: LandingPageComponent
+  },
   { 
     path: 'dashboard', 
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),

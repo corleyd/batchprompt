@@ -11,11 +11,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.batchprompt.waitlist.core.mapper.WaitlistEntryMapper;
+import com.batchprompt.waitlist.core.mapper.WaitlistAutoAcceptanceMapper;
 import com.batchprompt.waitlist.core.model.WaitlistEntry;
+import com.batchprompt.waitlist.core.model.WaitlistAutoAcceptance;
 import com.batchprompt.waitlist.core.repository.WaitlistEntryRepository;
+import com.batchprompt.waitlist.core.repository.WaitlistAutoAcceptanceRepository;
 import com.batchprompt.waitlist.model.WaitlistStatus;
 import com.batchprompt.waitlist.model.dto.WaitlistEntryDto;
 import com.batchprompt.waitlist.model.dto.WaitlistSignupDto;
+import com.batchprompt.waitlist.model.dto.WaitlistAutoAcceptanceDto;
+import com.batchprompt.waitlist.model.dto.SetAutoAcceptanceCountDto;
 
 @Service
 @Transactional
@@ -23,14 +28,20 @@ public class WaitlistService {
 
     private final WaitlistEntryRepository waitlistEntryRepository;
     private final WaitlistEntryMapper waitlistEntryMapper;
+    private final WaitlistAutoAcceptanceRepository waitlistAutoAcceptanceRepository;
+    private final WaitlistAutoAcceptanceMapper waitlistAutoAcceptanceMapper;
     
     @Autowired(required = false)
     private EmailService emailService;
 
     public WaitlistService(WaitlistEntryRepository waitlistEntryRepository, 
-                          WaitlistEntryMapper waitlistEntryMapper) {
+                          WaitlistEntryMapper waitlistEntryMapper,
+                          WaitlistAutoAcceptanceRepository waitlistAutoAcceptanceRepository,
+                          WaitlistAutoAcceptanceMapper waitlistAutoAcceptanceMapper) {
         this.waitlistEntryRepository = waitlistEntryRepository;
         this.waitlistEntryMapper = waitlistEntryMapper;
+        this.waitlistAutoAcceptanceRepository = waitlistAutoAcceptanceRepository;
+        this.waitlistAutoAcceptanceMapper = waitlistAutoAcceptanceMapper;
     }
 
     public WaitlistEntryDto joinWaitlist(WaitlistSignupDto signupDto) {
@@ -51,12 +62,20 @@ public class WaitlistService {
         // Create new entry
         WaitlistEntry entry = waitlistEntryMapper.toEntity(signupDto);
         entry.setPosition(getNextPosition());
+        
+        // Check if auto-acceptance is enabled and automatically accept if possible
+        boolean autoAccepted = tryAutoAcceptance(entry);
+        
         entry = waitlistEntryRepository.save(entry);
         
         WaitlistEntryDto dto = waitlistEntryMapper.toDto(entry);
         
-        // Send signup email for new entry
-        sendSignupEmail(dto);
+        // Send appropriate email based on status
+        if (autoAccepted) {
+            sendInvitationEmail(dto);
+        } else {
+            sendSignupEmail(dto);
+        }
         
         return dto;
     }
@@ -155,5 +174,60 @@ public class WaitlistService {
         if (emailService != null) {
             emailService.sendWaitlistInvitationEmail(entry.getEmail(), entry.getName(), entry.getCompany());
         }
+    }
+    
+    /**
+     * Try to automatically accept a waitlist entry if auto-acceptance is enabled
+     * @param entry The waitlist entry to potentially auto-accept
+     * @return true if the entry was auto-accepted, false otherwise
+     */
+    private boolean tryAutoAcceptance(WaitlistEntry entry) {
+        Optional<WaitlistAutoAcceptance> configOpt = waitlistAutoAcceptanceRepository.findCurrentConfiguration();
+        
+        if (configOpt.isEmpty()) {
+            return false;
+        }
+        
+        WaitlistAutoAcceptance config = configOpt.get();
+        
+        // Try to atomically decrement the count
+        int rowsAffected = waitlistAutoAcceptanceRepository.decrementAutoAcceptCount(config.getId());
+        
+        if (rowsAffected > 0) {
+            // Successfully decremented, auto-accept the user
+            entry.setStatus(WaitlistStatus.INVITED);
+            entry.setInvitedAt(LocalDateTime.now());
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Get current auto-acceptance configuration
+     */
+    public WaitlistAutoAcceptanceDto getAutoAcceptanceConfiguration() {
+        return waitlistAutoAcceptanceRepository.findCurrentConfiguration()
+                .map(waitlistAutoAcceptanceMapper::toDto)
+                .orElse(WaitlistAutoAcceptanceDto.builder()
+                        .remainingAutoAcceptCount(0)
+                        .build());
+    }
+    
+    /**
+     * Set the number of users to auto-accept
+     */
+    public WaitlistAutoAcceptanceDto setAutoAcceptanceCount(SetAutoAcceptanceCountDto request, String adminUserId) {
+        WaitlistAutoAcceptance config = waitlistAutoAcceptanceRepository.findCurrentConfiguration()
+                .orElse(WaitlistAutoAcceptance.builder()
+                        .createdBy(adminUserId)
+                        .build());
+        
+        config.setRemainingAutoAcceptCount(request.getCount());
+        config.setNotes(request.getNotes());
+        config.setCreatedBy(adminUserId);
+        config = waitlistAutoAcceptanceRepository.save(config);
+        
+        return waitlistAutoAcceptanceMapper.toDto(config);
     }
 }
