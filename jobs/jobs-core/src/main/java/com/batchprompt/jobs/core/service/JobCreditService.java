@@ -1,17 +1,10 @@
 package com.batchprompt.jobs.core.service;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.batchprompt.jobs.core.model.Job;
-import com.batchprompt.jobs.core.repository.JobRepository;
-import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.users.client.AccountClient;
 import com.batchprompt.users.model.dto.AccountDto;
 
@@ -26,9 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class JobCreditService {
 
-    private final JobRepository jobRepository;
-    private final JobTaskRepository jobTaskRepository;
-    private final CreditCalculationService creditCalculationService;
     private final AccountClient accountClient;
     
     /**

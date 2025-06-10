@@ -1,7 +1,5 @@
 package com.batchprompt.notifications.client;
 
-import java.lang.runtime.ObjectMethods;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpEntity;

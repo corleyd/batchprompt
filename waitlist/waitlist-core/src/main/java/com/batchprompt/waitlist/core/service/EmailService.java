@@ -61,6 +61,25 @@ public class EmailService {
         }
     }
 
+    /**
+     * Sends feedback email to support team.
+     */
+    public void sendFeedbackEmail(String name, String email, String subject, String message) {
+        try {
+            String emailSubject = "[BatchPrompt Feedback] " + subject;
+            String htmlContent = generateFeedbackEmailHtml(name, email, subject, message);
+            String textContent = generateFeedbackEmailText(name, email, subject, message);
+            
+            // Send to support email
+            sendEmail("support@batchprompt.ai", emailSubject, htmlContent, textContent);
+            log.info("Feedback email sent successfully from: {}", email);
+            
+        } catch (Exception e) {
+            log.error("Failed to send feedback email from: {}", email, e);
+            throw new RuntimeException("Failed to send feedback email", e);
+        }
+    }
+
     private void sendEmail(String to, String subject, String htmlContent, String textContent) throws MessagingException {
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -235,5 +254,92 @@ public class EmailService {
             Best regards,
             The BatchPrompt Team
             """, name, companySection, signupUrl);
+    }
+
+    private String generateFeedbackEmailHtml(String name, String email, String subject, String message) {
+        return String.format("""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>BatchPrompt Feedback</title>
+                <style>
+                    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+                    .header { background-color: #f8f9fa; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
+                    .logo { font-size: 24px; font-weight: bold; color: #007bff; }
+                    .content { padding: 20px 0; }
+                    .info-section { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0; }
+                    .message-section { background-color: #fff; padding: 20px; border: 1px solid #dee2e6; border-radius: 5px; margin: 20px 0; }
+                    .footer { border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px; color: #666; font-size: 14px; }
+                    .label { font-weight: bold; color: #495057; }
+                </style>
+            </head>
+            <body>
+                <div class="header">
+                    <div class="logo">BatchPrompt</div>
+                    <p>New Feedback Received</p>
+                </div>
+                
+                <div class="content">
+                    <div class="info-section">
+                        <h3>Contact Information</h3>
+                        <p><span class="label">Name:</span> %s</p>
+                        <p><span class="label">Email:</span> %s</p>
+                        <p><span class="label">Subject:</span> %s</p>
+                    </div>
+                    
+                    <div class="message-section">
+                        <h3>Message</h3>
+                        <div style="white-space: pre-wrap; background: #f8f9fa; padding: 15px; border-radius: 3px;">%s</div>
+                    </div>
+                </div>
+                
+                <div class="footer">
+                    <p>This email was sent from the BatchPrompt contact form at %s.</p>
+                </div>
+            </body>
+            </html>
+            """, 
+            escapeHtml(name), 
+            escapeHtml(email), 
+            escapeHtml(subject), 
+            escapeHtml(message),
+            java.time.LocalDateTime.now().toString()
+        );
+    }
+
+    private String generateFeedbackEmailText(String name, String email, String subject, String message) {
+        return String.format("""
+            New Feedback Received - BatchPrompt
+
+            Contact Information:
+            Name: %s
+            Email: %s  
+            Subject: %s
+
+            Message:
+            %s
+
+            ---
+            This email was sent from the BatchPrompt contact form at %s.
+            """, 
+            name, 
+            email, 
+            subject, 
+            message,
+            java.time.LocalDateTime.now().toString()
+        );
+    }
+
+    private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
+        return text.replace("&", "&amp;")
+                  .replace("<", "&lt;")
+                  .replace(">", "&gt;")
+                  .replace("\"", "&quot;")
+                  .replace("'", "&#x27;");
     }
 }
