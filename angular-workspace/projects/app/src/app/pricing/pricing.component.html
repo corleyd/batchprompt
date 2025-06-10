@@ -11,7 +11,7 @@
       </p>
       
       <div class="pricing-card">
-        <h3>🚀 Early Access</h3>
+        <h3>Early Access</h3>
         <p><strong>Current Status:</strong> Invitation Only</p>
         <p><strong>Cost:</strong> Free during early access period</p>
         <p><strong>Credits Included:</strong> Limited number of credits granted upon account creation</p>
@@ -20,14 +20,13 @@
           <li>Access to all AI models in our platform</li>
           <li>Batch processing capabilities</li>
           <li>Custom prompt templates</li>
-          <li>Structured JSON output</li>
           <li>Priority support during early access</li>
           <li>Direct feedback channel to our development team</li>
         </ul>
       </div>
       
       <div class="pricing-info">
-        <h3>📋 Waitlist</h3>
+        <h3>Waitlist</h3>
         <p>
           We're currently accepting applications for early access. Join our waitlist to be notified when 
           we have availability. Early access users will have the opportunity to influence our feature development 
@@ -42,17 +41,12 @@
       </div>
       
       <div class="pricing-info">
-        <h3>💰 Future Pricing</h3>
+        <h3>Future Pricing</h3>
         <p>
           We're still finalizing our pricing structure for the public launch. Our goal is to offer 
           transparent, usage-based pricing that scales with your needs. We're committed to keeping 
           BatchPrompt accessible for individuals and small teams while providing enterprise-grade 
           capabilities for larger organizations.
-        </p>
-        
-        <p>
-          Early access users will receive advance notice of our pricing plans and may be eligible 
-          for special launch pricing or extended trial periods.
         </p>
       </div>
       
@@ -64,7 +58,14 @@
         </p>
         
         <div class="cta-buttons">
-          <a href="/request-access" class="btn btn-primary">Request Access</a>
+          <!-- Dashboard Access for logged-in users -->
+          <button *ngIf="auth.isAuthenticated$ | async" class="btn btn-primary" (click)="navigateToDashboard()">Go to My Dashboard</button>
+          
+          <!-- CTA for non-authenticated users -->
+          <ng-container *ngIf="!(auth.isAuthenticated$ | async)">
+            <button class="btn btn-primary" (click)="joinWaitlist()">Request Access</button>
+          </ng-container>
+          
           <a href="/contact" class="btn btn-outline">Contact Us</a>
         </div>
       </div>

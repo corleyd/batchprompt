@@ -31,22 +31,18 @@
         <h2>Turbocharge Your Dataset with LLMs — No Code Required</h2>
         <div class="features-grid">
           <div class="feature-card">
-            <i class="fas fa-file-excel"></i>
             <h3>Batch Processing</h3>
             <p>Process thousands of records in one go. Simply upload your dataset and let BatchPrompt handle the rest.</p>
           </div>
           <div class="feature-card">
-            <i class="fas fa-code"></i>
             <h3>Custom Prompts</h3>
             <p>Design reusable prompts with placeholders that automatically fill with your data variables.</p>
           </div>
           <div class="feature-card">
-            <i class="fas fa-robot"></i>
             <h3>Multiple AI Models</h3>
             <p>Choose from various AI models to get the best results for your specific use case.</p>
           </div>
           <div class="feature-card">
-            <i class="fas fa-table"></i>
             <h3>Structured Output</h3>
             <p>Get responses in structured JSON format that can be directly integrated into your data pipeline.</p>
           </div>
@@ -150,7 +146,14 @@
       <div class="container">
         <h2>Ready to Turbocharge Your Dataset with LLMs?</h2>
         <p>Join the data professionals who use BatchPrompt to scale their AI-powered data processing.</p>
-        <div class="cta-buttons">
+        
+        <!-- Dashboard Access for logged-in users -->
+        <div *ngIf="auth.isAuthenticated$ | async" class="cta-buttons">
+          <button class="signup-btn" (click)="navigateToDashboard()">Go to My Dashboard</button>
+        </div>
+        
+        <!-- CTA for non-authenticated users -->
+        <div *ngIf="!(auth.isAuthenticated$ | async)" class="cta-buttons">
           <button class="signup-btn" (click)="joinWaitlist()">Request Access</button>
           <button class="login-btn" (click)="login()">Login</button>
         </div>

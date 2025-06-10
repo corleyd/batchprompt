@@ -1,35 +1,49 @@
 @import 'documents';
 
+// Use landing page color scheme
+$primary-color: #3498db;
+$primary-dark: #2980b9;
+$secondary-color: #f8f9fa;
+$accent-color: #e67e22;
+$text-dark: #333;
+$text-light: #666;
+$light-gray: #ddd;
+$border-radius: 6px;
+$box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
 .pricing-card {
-  background: #f8f9fa;
-  border-left: 4px solid #28a745;
-  border-radius: 8px;
+  background: $secondary-color;
+  border-left: 4px solid $primary-color;
+  border-radius: $border-radius;
   padding: 2rem;
   margin: 2rem 0;
+  box-shadow: $box-shadow;
 }
 
 .pricing-card h3 {
-  color: #28a745;
+  color: $primary-color;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .pricing-info {
   background: #fff;
-  border-radius: 8px;
+  border-radius: $border-radius;
   padding: 1.5rem;
   margin: 1.5rem 0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: $box-shadow;
 }
 
 .pricing-info h3 {
-  color: #007bff;
+  color: $primary-color;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .pricing-cta {
-  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  background: linear-gradient(135deg, $primary-color 0%, $primary-dark 100%);
   color: white;
-  border-radius: 8px;
+  border-radius: $border-radius;
   padding: 2rem;
   margin: 2rem 0;
   text-align: center;
@@ -38,6 +52,7 @@
 .pricing-cta h3 {
   color: white;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 .cta-buttons {
@@ -49,42 +64,47 @@
 }
 
 .btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 5px;
-  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: $border-radius;
   font-weight: 500;
+  font-size: 16px;
+  cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn-primary {
-  background: #28a745;
-  color: white;
-  border-color: #28a745;
-}
-
-.btn-primary:hover {
-  background: #218838;
-  border-color: #218838;
+  background-color: white;
+  color: $primary-color;
+  border: 1px solid $primary-color;
+  
+  &:hover {
+    background-color: #f0f7fd;
+    transform: translateY(-2px);
+  }
 }
 
 .btn-outline {
-  background: transparent;
+  background-color: transparent;
   color: white;
-  border-color: white;
-}
-
-.btn-outline:hover {
-  background: white;
-  color: #007bff;
+  border: 1px solid white;
+  
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+  }
 }
 
 .pricing-link {
-  color: #007bff;
+  color: $primary-color;
   text-decoration: none;
-  font-weight: 500;
-}
-
-.pricing-link:hover {
-  text-decoration: underline;
+  
+  &:hover {
+    color: $primary-dark;
+    text-decoration: underline;
+  }
 }
