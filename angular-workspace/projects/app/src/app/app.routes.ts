@@ -68,6 +68,18 @@ export const routes: Routes = [
     loadComponent: () => import('./examples/examples.component').then(m => m.ExamplesComponent),
   },
   { 
+    path: 'about-us',
+    loadComponent: () => import('./about-us/about-us.component').then(m => m.AboutUsComponent),
+  },
+  { 
+    path: 'pricing',
+    loadComponent: () => import('./pricing/pricing.component').then(m => m.PricingComponent),
+  },
+  { 
+    path: 'contact',
+    loadComponent: () => import('./contact/contact.component').then(m => m.ContactComponent),
+  },
+  { 
     path: 'request-access',
     loadComponent: () => import('./waitlist/waitlist-page.component').then(m => m.WaitlistPageComponent),
   },

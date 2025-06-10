@@ -1,0 +1,143 @@
+<div class="scrolling-container document-bg">
+  <div class="content document-card">
+    <h1 class="document-title">Contact Us</h1>
+    
+    <div class="document-section">
+      <p class="document-intro">
+        We'd love to hear from you! Whether you have questions, feedback, or need support, 
+        there are several ways to get in touch with the BatchPrompt team.
+      </p>
+      
+      <div class="contact-grid">
+        <div class="contact-info-card">
+          <h3>💬 Community Support</h3>
+          <p><strong>Slack Community:</strong></p>
+          <div class="placeholder-info">
+            Join our Slack workspace for community support and discussions
+            <br><em>(Slack invite link to be added)</em>
+          </div>
+          <p>Connect with other BatchPrompt users, share use cases, and get help from the community.</p>
+        </div>
+        
+        <div class="contact-info-card">
+          <h3>📧 Direct Support</h3>
+          <p><strong>Email Support:</strong></p>
+          <div class="placeholder-info">
+            <em>support&#64;batchprompt.ai (to be configured)</em>
+          </div>
+          <p>For technical support, billing questions, or account-related issues.</p>
+        </div>
+        
+        <div class="contact-info-card">
+          <h3>🏢 Business Inquiries</h3>
+          <p><strong>General Contact:</strong></p>
+          <div class="placeholder-info">
+            <em>hello&#64;batchprompt.ai (to be configured)</em>
+          </div>
+          <p>For partnership opportunities, enterprise sales, or general business inquiries.</p>
+        </div>
+        
+        <div class="contact-info-card">
+          <h3>📚 Documentation</h3>
+          <p><strong>Help Center:</strong></p>
+          <div class="placeholder-info">
+            <em>Knowledge base and documentation (coming soon)</em>
+          </div>
+          <p>Find guides, tutorials, and answers to frequently asked questions.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="contact-form-section">
+      <h2>Send Us Feedback</h2>
+      <p>Have suggestions for improving BatchPrompt? Found a bug? Want to share your use case? We'd love to hear from you!</p>
+      
+      <div class="feedback-form" *ngIf="!isSubmitted">
+        <form [formGroup]="feedbackForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="name">Your Name *</label>
+            <input 
+              type="text" 
+              id="name" 
+              formControlName="name"
+              placeholder="Enter your full name"
+              [class.error]="feedbackForm.get('name')?.invalid && feedbackForm.get('name')?.touched">
+            <div class="error-message" *ngIf="feedbackForm.get('name')?.invalid && feedbackForm.get('name')?.touched">
+              <span *ngIf="feedbackForm.get('name')?.errors?.['required']">Name is required</span>
+              <span *ngIf="feedbackForm.get('name')?.errors?.['maxlength']">Name cannot exceed 100 characters</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="email">Email Address *</label>
+            <input 
+              type="email" 
+              id="email" 
+              formControlName="email"
+              placeholder="your@email.com"
+              [class.error]="feedbackForm.get('email')?.invalid && feedbackForm.get('email')?.touched">
+            <div class="error-message" *ngIf="feedbackForm.get('email')?.invalid && feedbackForm.get('email')?.touched">
+              <span *ngIf="feedbackForm.get('email')?.errors?.['required']">Email is required</span>
+              <span *ngIf="feedbackForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="subject">Subject *</label>
+            <input 
+              type="text" 
+              id="subject" 
+              formControlName="subject"
+              placeholder="Brief description of your feedback"
+              [class.error]="feedbackForm.get('subject')?.invalid && feedbackForm.get('subject')?.touched">
+            <div class="error-message" *ngIf="feedbackForm.get('subject')?.invalid && feedbackForm.get('subject')?.touched">
+              <span *ngIf="feedbackForm.get('subject')?.errors?.['required']">Subject is required</span>
+              <span *ngIf="feedbackForm.get('subject')?.errors?.['maxlength']">Subject cannot exceed 200 characters</span>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="message">Message *</label>
+            <textarea 
+              id="message" 
+              formControlName="message"
+              rows="6"
+              placeholder="Please provide details about your feedback, suggestions, or any issues you've encountered..."
+              [class.error]="feedbackForm.get('message')?.invalid && feedbackForm.get('message')?.touched"></textarea>
+            <div class="error-message" *ngIf="feedbackForm.get('message')?.invalid && feedbackForm.get('message')?.touched">
+              <span *ngIf="feedbackForm.get('message')?.errors?.['required']">Message is required</span>
+              <span *ngIf="feedbackForm.get('message')?.errors?.['maxlength']">Message cannot exceed 2000 characters</span>
+            </div>
+          </div>
+          
+          <button 
+            type="submit" 
+            class="submit-button" 
+            [disabled]="isSubmitting">
+            <span *ngIf="isSubmitting">Sending...</span>
+            <span *ngIf="!isSubmitting">Send Feedback</span>
+          </button>
+        </form>
+      </div>
+      
+      <div class="success-message" *ngIf="isSubmitted">
+        <h3>Thank you for your feedback!</h3>
+        <p>We've received your message and will get back to you as soon as possible.</p>
+        <button class="submit-button" (click)="resetForm()">Send Another Message</button>
+      </div>
+    </div>
+    
+    <div class="document-section">
+      <h2>Response Times</h2>
+      <p>
+        During our early access period, we strive to respond to all inquiries within 24-48 hours. 
+        For urgent issues, please mark your subject line with "URGENT" and we'll prioritize your request.
+      </p>
+      
+      <p>
+        Our team is based in various time zones, so you can expect responses throughout the day. 
+        We appreciate your patience as we work to provide the best possible support experience.
+      </p>
+    </div>
+  </div>
+</div>

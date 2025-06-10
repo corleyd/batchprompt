@@ -1,0 +1,90 @@
+@import 'documents';
+
+.pricing-card {
+  background: #f8f9fa;
+  border-left: 4px solid #28a745;
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+
+.pricing-card h3 {
+  color: #28a745;
+  margin-bottom: 1rem;
+}
+
+.pricing-info {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.pricing-info h3 {
+  color: #007bff;
+  margin-bottom: 1rem;
+}
+
+.pricing-cta {
+  background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 2rem;
+  margin: 2rem 0;
+  text-align: center;
+}
+
+.pricing-cta h3 {
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.cta-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.btn-primary {
+  background: #28a745;
+  color: white;
+  border-color: #28a745;
+}
+
+.btn-primary:hover {
+  background: #218838;
+  border-color: #218838;
+}
+
+.btn-outline {
+  background: transparent;
+  color: white;
+  border-color: white;
+}
+
+.btn-outline:hover {
+  background: white;
+  color: #007bff;
+}
+
+.pricing-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pricing-link:hover {
+  text-decoration: underline;
+}
