@@ -164,4 +164,10 @@ public class UserController {
         boolean deleted = userService.deleteUser(userId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
+    
+    @PostMapping("/{userId}/restore")
+    public ResponseEntity<Void> restoreUser(@PathVariable String userId) {
+        boolean restored = userService.restoreUser(userId);
+        return restored ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
+    }
 }

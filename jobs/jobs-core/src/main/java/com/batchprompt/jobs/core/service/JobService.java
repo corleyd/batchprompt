@@ -413,7 +413,7 @@ public class JobService {
         }
             
         // We only update the count if it has changed
-        int completedTaskCount = completedCount + failedCount + insufficientCreditsCount;
+        int completedTaskCount = completedCount + failedCount;
         boolean countsChanged = job.getCompletedTaskCount() != completedTaskCount; 
         if (countsChanged) {
             job.setCompletedTaskCount(completedTaskCount);

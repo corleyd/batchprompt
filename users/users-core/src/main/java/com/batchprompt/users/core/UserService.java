@@ -28,23 +28,23 @@ public class UserService {
     private final WaitlistClient waitlistClient;
 
     public Page<User> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable);
+        return userRepository.findAllActive(pageable);
     }
 
     public Optional<User> getUserById(String userId) {
-        return userRepository.findById(userId);
+        return userRepository.findActiveById(userId);
     }
 
     public Optional<User> getUserByUserId(String userId) {
-        return userRepository.findById(userId);
+        return userRepository.findActiveById(userId);
     }
     
     public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findActiveByEmail(email);
     }
 
     public Page<User> searchUsersByName(String name, Pageable pageable) {
-        return userRepository.findByNameContainingIgnoreCase(name, pageable);
+        return userRepository.findActiveByNameContainingIgnoreCase(name, pageable);
     }
 
     /**
@@ -58,12 +58,19 @@ public class UserService {
     public User validateUserOnLogin(User user) {
         log.debug("Validating user on login: {}", user.getUserId());
         
-        // Check if user already exists by Auth0 ID
+        // Check if user already exists by Auth0 ID (including deleted users)
         Optional<User> existingUserOpt = userRepository.findById(user.getUserId());
         
         if (existingUserOpt.isPresent()) {
-            // Update existing user with latest information
             User existingUser = existingUserOpt.get();
+            
+            // Check if the user has been deleted (soft deleted)
+            if (existingUser.isDeleted()) {
+                log.warn("Login denied: User {} has been deleted", existingUser.getUserId());
+                throw new IllegalArgumentException("Account has been deactivated. Please contact support.");
+            }
+            
+            // Update existing user with latest information
             boolean needsUpdate = false;
             
             // Update name if it has changed
@@ -106,7 +113,8 @@ public class UserService {
             throw new IllegalArgumentException("User with this Auth0 ID already exists");
         }
         
-        if (userRepository.findByEmail(user.getEmail()).isPresent()) {
+        // Check if an active user with this email already exists
+        if (userRepository.findActiveByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("User with this email already exists");
         }
         
@@ -178,15 +186,15 @@ public class UserService {
 
     @Transactional
     public Optional<User> updateUser(String userId, User userDetails) {
-        return userRepository.findById(userId)
+        return userRepository.findActiveById(userId)
                 .map(existingUser -> {
                     // Don't update userId as it should remain constant
                     existingUser.setName(userDetails.getName());
                     existingUser.setPicture(userDetails.getPicture());
                     
-                    // Only update email if it changed and isn't already taken
+                    // Only update email if it changed and isn't already taken by another active user
                     if (!existingUser.getEmail().equals(userDetails.getEmail())) {
-                        userRepository.findByEmail(userDetails.getEmail())
+                        userRepository.findActiveByEmail(userDetails.getEmail())
                             .ifPresent(user -> {
                                 if (!user.getUserId().equals(userId)) {
                                     throw new IllegalArgumentException("Email already in use");
@@ -212,7 +220,30 @@ public class UserService {
     public boolean deleteUser(String userId) {
         return userRepository.findById(userId)
                 .map(user -> {
-                    userRepository.delete(user);
+                    // Perform soft deletion by setting delete_timestamp
+                    user.setDeleteTimestamp(LocalDateTime.now());
+                    user.setUpdateTimestamp(LocalDateTime.now());
+                    userRepository.save(user);
+                    log.info("Soft deleted user: {}", userId);
+                    return true;
+                })
+                .orElse(false);
+    }
+    
+    /**
+     * Restore a soft-deleted user by clearing the delete_timestamp
+     * @param userId The ID of the user to restore
+     * @return true if the user was restored, false if not found
+     */
+    @Transactional
+    public boolean restoreUser(String userId) {
+        return userRepository.findById(userId)
+                .filter(User::isDeleted)
+                .map(user -> {
+                    user.setDeleteTimestamp(null);
+                    user.setUpdateTimestamp(LocalDateTime.now());
+                    userRepository.save(user);
+                    log.info("Restored deleted user: {}", userId);
                     return true;
                 })
                 .orElse(false);

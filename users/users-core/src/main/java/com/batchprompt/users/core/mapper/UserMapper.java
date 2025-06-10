@@ -16,7 +16,6 @@ public class UserMapper {
     public UserDto toDto(User user) {
         return UserDto.builder()
                 .userId(user.getUserId())
-                .userId(user.getUserId())
                 .email(user.getEmail())
                 .name(user.getName())
                 .picture(user.getPicture())
@@ -24,12 +23,12 @@ public class UserMapper {
                 .enabled(user.isEnabled())
                 .createTimestamp(user.getCreateTimestamp())
                 .updateTimestamp(user.getUpdateTimestamp())
+                .deleteTimestamp(user.getDeleteTimestamp())
                 .build();
     }
 
     public User toEntity(UserDto userDto) {
         return User.builder()
-                .userId(userDto.getUserId())
                 .userId(userDto.getUserId())
                 .email(userDto.getEmail())
                 .name(userDto.getName())
@@ -38,6 +37,7 @@ public class UserMapper {
                 .enabled(userDto.isEnabled())
                 .createTimestamp(userDto.getCreateTimestamp())
                 .updateTimestamp(userDto.getUpdateTimestamp())
+                .deleteTimestamp(userDto.getDeleteTimestamp())
                 .build();
     }
 

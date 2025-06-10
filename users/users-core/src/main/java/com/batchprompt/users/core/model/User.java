@@ -48,4 +48,15 @@ public class User {
 
     @Column(name = "update_timestamp", nullable = false)
     private LocalDateTime updateTimestamp;
+    
+    @Column(name = "delete_timestamp")
+    private LocalDateTime deleteTimestamp;
+    
+    /**
+     * Check if the user is deleted (soft deleted)
+     * @return true if the user has been deleted
+     */
+    public boolean isDeleted() {
+        return deleteTimestamp != null;
+    }
 }

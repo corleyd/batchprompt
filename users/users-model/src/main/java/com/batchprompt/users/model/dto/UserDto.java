@@ -20,4 +20,5 @@ public class UserDto {
     private boolean enabled;
     private LocalDateTime createTimestamp;
     private LocalDateTime updateTimestamp;
+    private LocalDateTime deleteTimestamp;
 }
