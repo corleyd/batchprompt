@@ -7,8 +7,8 @@ echo "Starting all Spring Boot services from $PROJECT_ROOT"
 mkdir -p "$PROJECT_ROOT/logs"
 
 
-for service in prompts:prompts-api jobs:jobs-api files:files-api jobs:jobs-output-worker jobs:jobs-task-worker users:users-api notifications:notifications-service
-do
+for service in prompts:prompts-api jobs:jobs-api files:files-api jobs:jobs-output-worker jobs:jobs-task-worker jobs:jobs-validation-worker users:users-api notifications:notifications-service waitlist:waitlist-api 
+  
 
   service_name=$(echo $service | cut -d':' -f2)
 
