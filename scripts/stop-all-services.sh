@@ -33,7 +33,7 @@ stop_service() {
 }
 
 # Stop all services (matching the ones in start-all-services.sh)
-for service in prompts-api jobs-api files-api jobs-output-worker jobs-task-worker jobs-validation-worker users-api notifications-service waitlist-api
+for service in prompts-api jobs-api files-api jobs-output-worker jobs-task-worker jobs-validation-worker users-api notifications-api waitlist-api
 do
   echo "Stopping $service..."
   stop_service "$service"
