@@ -119,6 +119,7 @@ public class PromptService {
                 .responseJsonSchema(sourcePrompt.getResponseJsonSchema())
                 .createTimestamp(LocalDateTime.now())
                 .updateTimestamp(LocalDateTime.now())
+                .jobRunCount(0)
                 .build();
                 
         // Save the new prompt

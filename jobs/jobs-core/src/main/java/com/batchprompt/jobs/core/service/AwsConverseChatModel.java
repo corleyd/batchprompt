@@ -50,7 +50,7 @@ public class AwsConverseChatModel extends AbstractChatModel {
             
             // Append schema if provided
             if (outputSchema != null) {
-                prompt = simulateStructuredOutput(prompt, outputSchema);
+                messageContent = simulateStructuredOutput(prompt, outputSchema);
             }
             
             // Create a ContentBlock using the fromText factory method
