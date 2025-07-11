@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.batchprompt.prompts.core.model.Prompt;
 import com.batchprompt.prompts.core.repository.PromptRepository;
 import com.batchprompt.prompts.model.dto.PromptJobInfoDto;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.batchprompt.jobs.client.JobClient;
 
 import lombok.RequiredArgsConstructor;

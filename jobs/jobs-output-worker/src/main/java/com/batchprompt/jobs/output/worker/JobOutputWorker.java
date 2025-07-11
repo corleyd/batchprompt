@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -235,10 +235,13 @@ public class JobOutputWorker {
             // Create a temporary file
             tempFile = File.createTempFile("job_output_" + job.getJobUuid(), ".xlsx");
             
-            try (Workbook workbook = new XSSFWorkbook();
+            // Create SXSSF workbook with window size for memory efficiency
+            // Keep 100 rows in memory, others will be written to disk
+            try (SXSSFWorkbook sxssfWorkbook = new SXSSFWorkbook(100);
                  FileOutputStream fileOut = new FileOutputStream(tempFile)) {
                 
-                Sheet sheet = workbook.createSheet("Results");
+                Sheet sheet = sxssfWorkbook.createSheet("Results");
+                ((SXSSFSheet) sheet).trackAllColumnsForAutoSizing();
                 
                 // Create header row
                 Row headerRow = sheet.createRow(0);
@@ -266,30 +269,25 @@ public class JobOutputWorker {
                                       task.getJobTaskUuid(), job.getJobUuid(), e.getMessage());
                             // Continue with the next task even if this one fails
                         }
-                        
-                        // Flush workbook to disk periodically to keep memory usage low
-                        if (rowIndex % 100 == 0) {
-                            workbook.write(fileOut);
-                            fileOut.flush();
-                        }
                     }
                     page++;
                 } while (taskPage.hasNext());
                 
-                // Auto-size columns
+                // Auto-size columns (note: this works differently with SXSSF)
+                // We can only auto-size columns that are currently in the window
                 for (int i = 0; i < headers.size(); i++) {
                     sheet.autoSizeColumn(i);
                 }
                 
-                // Write the workbook to the file
-                workbook.write(fileOut);
+                // Write the workbook to the file (single write operation)
+                sxssfWorkbook.write(fileOut);
             }
             
             // Return the temporary file reference instead of reading it into memory
             return tempFile;
             
         } catch (Exception e) {
-            log.error("Error generating Excel file for job {}: {}", job.getJobUuid(), e.getMessage());
+            log.error("Error generating Excel file for job {}: {}", job.getJobUuid(), e.getMessage(), e);
             // Clean up the temp file if there was an error
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();

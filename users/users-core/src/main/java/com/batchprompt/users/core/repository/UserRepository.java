@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.batchprompt.users.core.model.User;
@@ -24,11 +25,11 @@ public interface UserRepository extends JpaRepository<User, String> {
     Page<User> findAllActive(Pageable pageable);
     
     @Query("SELECT u FROM User u WHERE u.deleteTimestamp IS NULL AND u.userId = :userId")
-    Optional<User> findActiveById(String userId);
+    Optional<User> findActiveById(@Param("userId") String userId);
     
     @Query("SELECT u FROM User u WHERE u.deleteTimestamp IS NULL AND u.email = :email")
-    Optional<User> findActiveByEmail(String email);
+    Optional<User> findActiveByEmail(@Param("email") String email);
     
     @Query("SELECT u FROM User u WHERE u.deleteTimestamp IS NULL AND UPPER(u.name) LIKE UPPER(CONCAT('%', :name, '%'))")
-    Page<User> findActiveByNameContainingIgnoreCase(String name, Pageable pageable);
+    Page<User> findActiveByNameContainingIgnoreCase(@Param("name") String name, Pageable pageable);
 }

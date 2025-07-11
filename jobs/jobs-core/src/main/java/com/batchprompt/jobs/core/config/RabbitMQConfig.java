@@ -9,6 +9,7 @@ import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +58,7 @@ public class RabbitMQConfig {
      */
 
     @Bean
-    public Binding jobsOutputBinding(DirectExchange exchange, Queue jobsOutputQueue) {
+    public Binding jobsOutputBinding(DirectExchange exchange, @Qualifier("jobsOutputQueue") Queue jobsOutputQueue) {
         return BindingBuilder.bind(jobsOutputQueue).to(exchange).with(jobsOutputRoutingKey);
     }
 
@@ -66,8 +67,8 @@ public class RabbitMQConfig {
         return new Queue(jobsValidationtQueueName, true);
     }
 
-    @Bean 
-    public Binding jobsValidationBinding(DirectExchange exchange, Queue jobsValidationQueue) {
+    @Bean
+    public Binding jobsValidationBinding(DirectExchange exchange, @Qualifier("jobsValidationQueue") Queue jobsValidationQueue) {
         return BindingBuilder.bind(jobsValidationQueue).to(exchange).with(jobsValidationRoutingKey);
     }
     

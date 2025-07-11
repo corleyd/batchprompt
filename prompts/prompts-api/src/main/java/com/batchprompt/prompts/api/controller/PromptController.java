@@ -47,7 +47,7 @@ public class PromptController {
 
     @GetMapping("/{promptUuid}")
     public ResponseEntity<PromptDto> getPromptById(
-        @PathVariable UUID promptUuid,
+        @PathVariable("promptUuid") UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt) 
     {
 
@@ -73,12 +73,12 @@ public class PromptController {
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<Page<PromptDto>> getPromptsByUserId(
-        @PathVariable String userId,
+        @PathVariable("userId") String userId,
         @AuthenticationPrincipal Jwt jwt,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "10") int size,
-        @RequestParam(defaultValue = "createTimestamp") String sort,
-        @RequestParam(defaultValue = "desc") String direction
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        @RequestParam(name = "sort", defaultValue = "createTimestamp") String sort,
+        @RequestParam(name = "direction", defaultValue = "desc") String direction
     ) {
         if (!serviceAuthenticationService.canAccessUserData(jwt, userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -99,7 +99,7 @@ public class PromptController {
 
     @GetMapping("/search")
     public ResponseEntity<List<PromptDto>> searchPromptsByName(
-        @RequestParam String name,
+        @RequestParam(name = "name") String name,
         @AuthenticationPrincipal Jwt jwt
     ) {
         List<Prompt> prompts = promptService.searchPromptsByName(name, jwt.getSubject());
@@ -119,7 +119,7 @@ public class PromptController {
 
     @PutMapping("/{promptUuid}")
     public ResponseEntity<PromptDto> updatePrompt(
-        @PathVariable UUID promptUuid, 
+        @PathVariable("promptUuid") UUID promptUuid,
         @RequestBody PromptDto promptDto,
         @AuthenticationPrincipal Jwt jwt
     ) {
@@ -140,7 +140,7 @@ public class PromptController {
 
     @DeleteMapping("/{promptUuid}")
     public ResponseEntity<?> deletePrompt(
-        @PathVariable UUID promptUuid,
+        @PathVariable("promptUuid") UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         try {
@@ -165,7 +165,7 @@ public class PromptController {
      */
     @GetMapping("/admin/{userId}")
     public ResponseEntity<List<Prompt>> getPromptsByUserIdForAdmin(
-            @PathVariable String userId,
+            @PathVariable("userId") String userId,
             @AuthenticationPrincipal Jwt jwt) {
         
         // Verify that the requester is an admin
@@ -182,8 +182,8 @@ public class PromptController {
      */
     @PostMapping("/admin/copy")
     public ResponseEntity<?> copyPromptForAdmin(
-            @RequestParam UUID sourcePromptUuid,
-            @RequestParam String targetUserId,
+            @RequestParam(name = "sourcePromptUuid") UUID sourcePromptUuid,
+            @RequestParam(name = "targetUserId") String targetUserId,
             @AuthenticationPrincipal Jwt jwt) {
         
         // Verify that the requester is an admin
@@ -202,7 +202,7 @@ public class PromptController {
     @PutMapping("/{promptUuid}/job-info") 
     public ResponseEntity<PromptDto> updateJobInfo(
         @RequestBody PromptJobInfoDto promptJobInfo,
-        @PathVariable UUID promptUuid,
+        @PathVariable("promptUuid") UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt) {
         
         // Check if the user has permission to access this prompt

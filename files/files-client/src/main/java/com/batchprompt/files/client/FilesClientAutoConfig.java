@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -107,7 +108,7 @@ public class FilesClientAutoConfig {
     public static class JacksonModuleRegistrar {
         
         @Bean
-        public Object jacksonModuleRegistrar(ObjectMapper objectMapper, SimpleModule fileRecordPageModule) {
+        public Object jacksonModuleRegistrar(ObjectMapper objectMapper, @Qualifier("fileRecordPageModule") SimpleModule fileRecordPageModule) {
             // Register our module with the fully constructed ObjectMapper
             objectMapper.registerModule(fileRecordPageModule);
             

@@ -28,14 +28,14 @@ public class WaitlistController {
     }
 
     @GetMapping("/status")
-    public ResponseEntity<WaitlistEntryDto> getWaitlistStatus(@RequestParam String email) {
+    public ResponseEntity<WaitlistEntryDto> getWaitlistStatus(@RequestParam(name = "email") String email) {
         Optional<WaitlistEntryDto> entry = waitlistService.findByEmail(email);
         return entry.map(e -> ResponseEntity.ok(e))
                    .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/position")
-    public ResponseEntity<Integer> getWaitlistPosition(@RequestParam String email) {
+    public ResponseEntity<Integer> getWaitlistPosition(@RequestParam(name = "email") String email) {
         int position = waitlistService.getWaitlistPosition(email);
         if (position == -1) {
             return ResponseEntity.notFound().build();
@@ -44,13 +44,13 @@ public class WaitlistController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<Void> markAsRegistered(@RequestParam String email) {
+    public ResponseEntity<Void> markAsRegistered(@RequestParam(name = "email") String email) {
         waitlistService.markAsRegistered(email);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/validate-signup")
-    public ResponseEntity<Object> validateSignup(@RequestParam String email) {
+    public ResponseEntity<Object> validateSignup(@RequestParam(name = "email") String email) {
         Optional<WaitlistEntryDto> entry = waitlistService.findByEmail(email);
         
         if (entry.isEmpty()) {

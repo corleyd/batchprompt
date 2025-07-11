@@ -47,14 +47,14 @@ public class JobsController {
 
     @GetMapping
     public ResponseEntity<?> getAllJobs(
-            @RequestParam(required = false) String userId,
-            @RequestParam(required = false) String modelId,
-            @RequestParam(required = false) UUID promptUuid,
-            @RequestParam(required = false) JobStatus status,
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size,
-            @RequestParam(required = false, defaultValue = "updatedAt") String sort,
-            @RequestParam(required = false, defaultValue = "desc") String direction) {
+            @RequestParam(name = "userId", required = false) String userId,
+            @RequestParam(name = "modelId", required = false) String modelId,
+            @RequestParam(name = "promptUuid", required = false) UUID promptUuid,
+            @RequestParam(name = "status", required = false) JobStatus status,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "20") int size,
+            @RequestParam(name = "sort", required = false, defaultValue = "updatedAt") String sort,
+            @RequestParam(name = "direction", required = false, defaultValue = "desc") String direction) {
 
         
         // Create pageable object with sorting
@@ -72,7 +72,7 @@ public class JobsController {
 
     @GetMapping("/{jobUuid}")
     public ResponseEntity<JobDto> getJobById(
-        @PathVariable UUID jobUuid,
+        @PathVariable("jobUuid") UUID jobUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         Job job = getJobIfAllowed(jobUuid, jwt);
@@ -84,7 +84,7 @@ public class JobsController {
 
     @PostMapping("/{jobUuid}/submit")
     public ResponseEntity<JobDto> submitJob(
-        @PathVariable UUID jobUuid,
+        @PathVariable("jobUuid") UUID jobUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         if (getJobIfAllowed(jobUuid, jwt) == null) {
@@ -97,7 +97,7 @@ public class JobsController {
 
     @PostMapping("/{jobUuid}/cancel")
     public ResponseEntity<JobDto> cancelJob(
-        @PathVariable UUID jobUuid,
+        @PathVariable("jobUuid") UUID jobUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         if (getJobIfAllowed(jobUuid, jwt) == null) {
@@ -112,7 +112,7 @@ public class JobsController {
 
     @PostMapping("/{jobUuid}/continue")
     public ResponseEntity<JobDto> continueJob(
-        @PathVariable UUID jobUuid,
+        @PathVariable("jobUuid") UUID jobUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         if (getJobIfAllowed(jobUuid, jwt) == null) {
@@ -126,7 +126,7 @@ public class JobsController {
 
     @DeleteMapping("/{jobUuid}")
     public ResponseEntity<Void> deleteJob(
-        @PathVariable UUID jobUuid,
+        @PathVariable("jobUuid") UUID jobUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         if (getJobIfAllowed(jobUuid, jwt) == null) {
@@ -140,15 +140,15 @@ public class JobsController {
     @GetMapping("/user")
     public ResponseEntity<?> getJobsByUser(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam(required = false) UUID promptUuid,
-            @RequestParam(required = false) JobStatus status,            
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size,
-            @RequestParam(required = false, defaultValue = "updatedAt") String sort,
-            @RequestParam(required = false, defaultValue = "desc") String direction) 
+            @RequestParam(name = "promptUuid", required = false) UUID promptUuid,
+            @RequestParam(name = "status", required = false) JobStatus status,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "20") int size,
+            @RequestParam(name = "sort", required = false, defaultValue = "updatedAt") String sort,
+            @RequestParam(name = "direction", required = false, defaultValue = "desc") String direction)
     {
         String userId = jwt.getSubject();
-        return getJobsByUserId(userId, promptUuid, status, jwt, page, size, sort, direction);
+        return getJobsByUserId(userId, promptUuid, status, page, size, sort, direction, jwt);
     }
 
     /**
@@ -156,15 +156,16 @@ public class JobsController {
      */
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getJobsByUserId(
-            @PathVariable String userId,
-            @RequestParam(required = false) UUID promptUuid,
-            @RequestParam(required = false) JobStatus status,
-            @AuthenticationPrincipal Jwt jwt,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sort,
-            @RequestParam(defaultValue = "desc") String direction) {
-        
+            @PathVariable("userId") String userId,
+            @RequestParam(name = "promptUuid", required = false) UUID promptUuid,
+            @RequestParam(name = "status", required = false) JobStatus status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sort", defaultValue = "createdAt") String sort,
+            @RequestParam(name = "direction", defaultValue = "desc") String direction,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+
         // Verify that the requester is an admin
         if (serviceAuthenticationService.canAccessUserData(jwt, userId) == false) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -188,11 +189,11 @@ public class JobsController {
 
     @GetMapping("/{jobUuid}/tasks")
     public ResponseEntity<?> getJobTasks(
-            @PathVariable UUID jobUuid,
-            @RequestParam(required = false, defaultValue = "0") int page,
-            @RequestParam(required = false, defaultValue = "20") int size,
-            @RequestParam(required = false, defaultValue = "createdAt") String sort,
-            @RequestParam(required = false, defaultValue = "desc") String direction,
+            @PathVariable("jobUuid") UUID jobUuid,
+            @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "20") int size,
+            @RequestParam(name = "sort", required = false, defaultValue = "createdAt") String sort,
+            @RequestParam(name = "direction", required = false, defaultValue = "desc") String direction,
             @AuthenticationPrincipal Jwt jwt
     ) {
 
@@ -249,7 +250,7 @@ public class JobsController {
 
     @GetMapping("/file/{fileUuid}/hasActiveJobs")
     public ResponseEntity<Boolean> hasActiveJobs(
-        @PathVariable UUID fileUuid,
+        @PathVariable("fileUuid") UUID fileUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         // For now, we'll allow any authenticated user to check this
@@ -260,7 +261,7 @@ public class JobsController {
 
     @GetMapping("/prompt/{promptUuid}/hasActiveJobs")
     public ResponseEntity<Boolean> hasActiveJobsForPrompt(
-        @PathVariable UUID promptUuid,
+        @PathVariable("promptUuid") UUID promptUuid,
         @AuthenticationPrincipal Jwt jwt
     ) {
         // For now, we'll allow any authenticated user to check this

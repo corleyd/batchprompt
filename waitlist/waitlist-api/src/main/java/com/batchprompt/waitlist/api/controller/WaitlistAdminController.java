@@ -40,14 +40,14 @@ public class WaitlistAdminController {
 
     @PostMapping("/invite/{entryId}")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<WaitlistEntryDto> inviteUser(@PathVariable UUID entryId) {
+    public ResponseEntity<WaitlistEntryDto> inviteUser(@PathVariable("entryId") UUID entryId) {
         WaitlistEntryDto entry = waitlistService.inviteUser(entryId);
         return ResponseEntity.ok(entry);
     }
 
     @PostMapping("/invite-next")
     @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<List<WaitlistEntryDto>> inviteNextUsers(@RequestParam(defaultValue = "10") int count) {
+    public ResponseEntity<List<WaitlistEntryDto>> inviteNextUsers(@RequestParam(name = "count", defaultValue = "10") int count) {
         List<WaitlistEntryDto> entries = waitlistService.inviteNextUsers(count);
         return ResponseEntity.ok(entries);
     }

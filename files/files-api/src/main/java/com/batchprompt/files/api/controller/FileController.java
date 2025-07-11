@@ -54,12 +54,12 @@ public class FileController {
     @GetMapping("/user")
     public ResponseEntity<?> getFilesByUser(
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam(required = false) String fileType,
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection) {
+            @RequestParam(name = "fileType", required = false) String fileType,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "desc") String sortDirection) {
         String userId = jwt.getSubject();
         if (!serviceAuthenticationService.canAccessUserData(jwt, userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -78,13 +78,13 @@ public class FileController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getFilesByUserId(
             @AuthenticationPrincipal Jwt jwt,
-            @PathVariable String userId,
-            @RequestParam(required = false) String fileType,
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection) {
+            @PathVariable("userId") String userId,
+            @RequestParam(name = "fileType", required = false) String fileType,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "desc") String sortDirection) {
         
         if (!serviceAuthenticationService.canAccessUserData(jwt, userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -127,7 +127,7 @@ public class FileController {
     }
 
     @GetMapping("/{fileUuid}")
-    public ResponseEntity<FileDto> getFileById(@PathVariable UUID fileUuid) {
+    public ResponseEntity<FileDto> getFileById(@PathVariable("fileUuid") UUID fileUuid) {
         return fileService.getFileById(fileUuid)
                 .map(entity -> FileMapper.toDto(entity))
                 .map(ResponseEntity::ok)
@@ -157,12 +157,12 @@ public class FileController {
 
     @GetMapping("/{fileUuid}/records")
     public ResponseEntity<?> getFileRecords(
-            @PathVariable UUID fileUuid,
-            @RequestParam(required = false, defaultValue = "false") boolean paginate,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "recordNumber") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDirection,
+            @PathVariable("fileUuid") UUID fileUuid,
+            @RequestParam(name = "paginate", required = false, defaultValue = "false") boolean paginate,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "recordNumber") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "asc") String sortDirection,
             @AuthenticationPrincipal Jwt jwt) {
         
 
@@ -201,7 +201,7 @@ public class FileController {
 
     @GetMapping("/records/{recordUuid}")
     public ResponseEntity<FileRecordDto> getFileRecordById(
-            @PathVariable UUID recordUuid,
+            @PathVariable("recordUuid") UUID recordUuid,
             @AuthenticationPrincipal Jwt jwt) 
     {
         return fileService.getFileRecordById(recordUuid)
@@ -216,7 +216,7 @@ public class FileController {
 
     @DeleteMapping("/{fileUuid}")
     public ResponseEntity<?> deleteFile(
-        @PathVariable UUID fileUuid,
+        @PathVariable("fileUuid") UUID fileUuid,
         @AuthenticationPrincipal Jwt jwt) 
     {
         try {
@@ -245,7 +245,7 @@ public class FileController {
 
     @PostMapping("/{fileUuid}/validate")
     public ResponseEntity<FileDto> validateFile(
-        @PathVariable UUID fileUuid,
+        @PathVariable("fileUuid") UUID fileUuid,
         @AuthenticationPrincipal Jwt jwt)
     {
         return fileService.getFileById(fileUuid)
@@ -267,7 +267,7 @@ public class FileController {
      */
     @GetMapping("/{fileUuid}/token")
     public ResponseEntity<String> getDownloadToken(
-            @PathVariable UUID fileUuid,
+            @PathVariable("fileUuid") UUID fileUuid,
             @AuthenticationPrincipal Jwt jwt) {
         
         return fileService.getFileById(fileUuid)
@@ -297,8 +297,8 @@ public class FileController {
      */
     @GetMapping("{fileUuid}/download/{token}")
     public ResponseEntity<Resource> downloadFileWithToken(
-        @PathVariable UUID fileUuid,    
-        @PathVariable String token
+        @PathVariable("fileUuid") UUID fileUuid,    
+        @PathVariable("token") String token
     ) {
         // Validate the token
         FileDownloadToken downloadToken = downloadTokens.get(token);
@@ -378,15 +378,15 @@ public class FileController {
     // Admin endpoints to get user files, jobs, and prompts
     @GetMapping("/admin/{userId}")
     public ResponseEntity<?> getFilesByUserIdForAdmin(
-            @PathVariable String userId,
+            @PathVariable("userId") String userId,
             @AuthenticationPrincipal Jwt jwt,
-            @RequestParam(required = false) String fileType,
-            @RequestParam(required = false) String status,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection) {
-        
+            @RequestParam(name = "fileType", required = false) String fileType,
+            @RequestParam(name = "status", required = false) String status,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+            @RequestParam(name = "sortDirection", defaultValue = "desc") String sortDirection) {
+
         // Verify that the requester is an admin
         if (!serviceAuthenticationService.isAdminUser(jwt)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
@@ -430,8 +430,8 @@ public class FileController {
 
     @PostMapping("/admin/copy")
     public ResponseEntity<?> copyFileForAdmin(
-            @RequestParam UUID sourceFileUuid,
-            @RequestParam String targetUserId,
+            @RequestParam(name = "sourceFileUuid") UUID sourceFileUuid,
+            @RequestParam(name = "targetUserId") String targetUserId,
             @AuthenticationPrincipal Jwt jwt) {
         
         // Verify that the requester is an admin

@@ -33,7 +33,7 @@ public class FileFieldController {
      * @return list of fields in order
      */
     @GetMapping("/{fileUuid}/fields")
-    public ResponseEntity<List<FileFieldDto>> getFileFields(@PathVariable UUID fileUuid) {
+    public ResponseEntity<List<FileFieldDto>> getFileFields(@PathVariable("fileUuid") UUID fileUuid) {
         return ResponseEntity.ok(fileFieldService.getFileFields(fileUuid));
     }
     
@@ -45,7 +45,7 @@ public class FileFieldController {
      * @return created field
      */
     @PostMapping("/{fileUuid}/fields")
-    public ResponseEntity<FileFieldDto> addField(@PathVariable UUID fileUuid, @RequestBody FileFieldDto dto) {
+    public ResponseEntity<FileFieldDto> addField(@PathVariable("fileUuid") UUID fileUuid, @RequestBody FileFieldDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(fileFieldService.addFieldToFile(fileUuid, dto.getFieldName(), dto.getFieldType(), dto.getDescription()));
     }
@@ -58,7 +58,7 @@ public class FileFieldController {
      * @return list of created fields
      */
     @PostMapping("/{fileUuid}/fields/batch")
-    public ResponseEntity<List<FileFieldDto>> addFields(@PathVariable UUID fileUuid, @RequestBody List<FileFieldDto> fields) {
+    public ResponseEntity<List<FileFieldDto>> addFields(@PathVariable("fileUuid") UUID fileUuid, @RequestBody List<FileFieldDto> fields) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(fileFieldService.addFieldsToFile(fileUuid, fields));
     }
@@ -71,7 +71,7 @@ public class FileFieldController {
      * @return empty response
      */
     @DeleteMapping("/{fileUuid}/fields/{fieldUuid}")
-    public ResponseEntity<Void> removeField(@PathVariable UUID fileUuid, @PathVariable UUID fieldUuid) {
+    public ResponseEntity<Void> removeField(@PathVariable("fileUuid") UUID fileUuid, @PathVariable("fieldUuid") UUID fieldUuid) {
         fileFieldService.removeField(fieldUuid);
         return ResponseEntity.noContent().build();
     }

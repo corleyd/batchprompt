@@ -26,11 +26,6 @@ allprojects {
         mavenCentral()
     }
 
-    tasks.withType(JavaCompile) {
-        println "setting compiler args for ${project.name}"
-        options.compilerArgs << '-parameters'
-    }
-
     dependencyManagement {
         imports {
             mavenBom "org.springframework.cloud:spring-cloud-dependencies:2024.0.0"

@@ -45,12 +45,12 @@ public class AccountController {
 
     @GetMapping
     public ResponseEntity<Page<AccountDto>> getAllAccounts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
                 Sort.Direction.DESC : Sort.Direction.ASC;
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
@@ -60,7 +60,7 @@ public class AccountController {
     }
 
     @GetMapping("/{accountUuid}")
-    public ResponseEntity<AccountDto> getAccountById(@PathVariable UUID accountUuid) {
+    public ResponseEntity<AccountDto> getAccountById(@PathVariable("accountUuid") UUID accountUuid) {
         return accountService.getAccountById(accountUuid)
                 .map(accountMapper::toDto)
                 .map(ResponseEntity::ok)
@@ -68,19 +68,19 @@ public class AccountController {
     }
     
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<AccountDto>> getAccountsForUser(@PathVariable String userId) {
+    public ResponseEntity<List<AccountDto>> getAccountsForUser(@PathVariable("userId") String userId) {
         return ResponseEntity.ok(accountMapper.toDtoList(accountService.getAccountsForUser(userId)));
     }
     
     @GetMapping("/{accountUuid}/balance")
-    public ResponseEntity<Double> getAccountBalance(@PathVariable UUID accountUuid) {
+    public ResponseEntity<Double> getAccountBalance(@PathVariable("accountUuid") UUID accountUuid) {
         return accountService.getAccountById(accountUuid)
                 .map(account -> ResponseEntity.ok(accountService.getAccountBalance(account.getAccountUuid())))
                 .orElse(ResponseEntity.notFound().build());
     }
     
     @GetMapping("/{accountUuid}/transactions")
-    public ResponseEntity<List<AccountCreditTransactionDto>> getAccountTransactions(@PathVariable UUID accountUuid) {
+    public ResponseEntity<List<AccountCreditTransactionDto>> getAccountTransactions(@PathVariable("accountUuid") UUID accountUuid) {
         return accountService.getAccountById(accountUuid)
                 .map(account -> {
                     List<AccountCreditTransaction> transactions = 
@@ -113,7 +113,7 @@ public class AccountController {
     
     @PutMapping("/{accountUuid}")
     public ResponseEntity<AccountDto> updateAccount(
-            @PathVariable UUID accountUuid,
+            @PathVariable("accountUuid") UUID accountUuid,
             @RequestBody AccountDto accountDto,
             @AuthenticationPrincipal Jwt jwt) {
         
@@ -136,7 +136,7 @@ public class AccountController {
     
     @PostMapping("/{accountUuid}/credits")
     public ResponseEntity<AccountCreditTransactionDto> addCredits(
-            @PathVariable UUID accountUuid,
+            @PathVariable("accountUuid") UUID accountUuid,
             @RequestBody AccountCreditTransactionDto transactionDto) {
         
         try {

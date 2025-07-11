@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.batchprompt.users.core.model.AccountCreditTransaction;
@@ -14,5 +15,5 @@ public interface AccountCreditTransactionRepository extends JpaRepository<Accoun
     List<AccountCreditTransaction> findByAccountUuid(UUID accountUuid);
     
     @Query("SELECT SUM(t.changeAmount) FROM AccountCreditTransaction t WHERE t.accountUuid = :accountUuid")
-    Double getAccountBalance(UUID accountUuid);
+    Double getAccountBalance(@Param("accountUuid") UUID accountUuid);
 }

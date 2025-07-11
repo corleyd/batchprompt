@@ -29,17 +29,17 @@ public interface UserClient {
     
     @GetMapping("/search")
     ResponseEntity<Page<UserDto>> searchUsersByName(
-            @RequestParam String name,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size);
+            @RequestParam(name = "name") String name,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size);
     
     @GetMapping
     ResponseEntity<Page<UserDto>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir);
-    
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir);
+
     @PostMapping("/register")
     ResponseEntity<UserDto> registerUser(@RequestBody UserDto userDto);
     

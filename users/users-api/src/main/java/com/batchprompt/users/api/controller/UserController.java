@@ -41,12 +41,12 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<Page<UserDto>> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
                 Sort.Direction.DESC : Sort.Direction.ASC;
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
@@ -57,7 +57,7 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDto> getUserById(
-        @PathVariable String userId,
+        @PathVariable("userId") String userId,
         @AuthenticationPrincipal Jwt jwt) {
 
         if (serviceAuthenticationService.canAccessUserData(jwt, userId)) {
@@ -71,7 +71,7 @@ public class UserController {
     }
     
     @GetMapping("/auth0/{userId}")
-    public ResponseEntity<UserDto> getUserByUserId(@PathVariable String userId) {
+    public ResponseEntity<UserDto> getUserByUserId(@PathVariable("userId") String userId) {
         return userService.getUserByUserId(userId)
                 .map(userMapper::toDto)
                 .map(ResponseEntity::ok)
@@ -80,13 +80,13 @@ public class UserController {
 
     @GetMapping("/search")
     public ResponseEntity<Page<UserDto>> searchUsersByName(
-            @RequestParam String name,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir) {
-        
-        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ? 
+            @RequestParam("name") String name,
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "sortBy", defaultValue = "name") String sortBy,
+            @RequestParam(name = "sortDir", defaultValue = "asc") String sortDir) {
+
+        Sort.Direction direction = sortDir.equalsIgnoreCase("desc") ?
                 Sort.Direction.DESC : Sort.Direction.ASC;
         
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
@@ -147,7 +147,10 @@ public class UserController {
     }
 
     @PutMapping("/{userId}")
-    public ResponseEntity<UserDto> updateUser(@PathVariable String userId, @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> updateUser(
+        @PathVariable("userId") String userId, 
+        @RequestBody UserDto userDto
+    ) {
         try {
             User user = userMapper.toEntity(userDto);
             return userService.updateUser(userId, user)
@@ -160,13 +163,13 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable String userId) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("userId") String userId) {
         boolean deleted = userService.deleteUser(userId);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
     
     @PostMapping("/{userId}/restore")
-    public ResponseEntity<Void> restoreUser(@PathVariable String userId) {
+    public ResponseEntity<Void> restoreUser(@PathVariable("userId") String userId) {
         boolean restored = userService.restoreUser(userId);
         return restored ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
