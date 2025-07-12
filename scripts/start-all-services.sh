@@ -36,7 +36,7 @@ do
     # Start the service
     echo "Starting $service service..."
     cd "$PROJECT_ROOT"
-    nohup ./gradlew "$service:bootRun" > "$PROJECT_ROOT/logs/$service_name.log" 2>&1 &
+    nohup ./gradlew "$service:bootRun" --no-daemon > "$PROJECT_ROOT/logs/$service_name.log" 2>&1 &
     SERVICE_PID=$!
     echo "$service service started with PID: $SERVICE_PID"
     echo $SERVICE_PID > "$PROJECT_ROOT/logs/$service_name.pid"
