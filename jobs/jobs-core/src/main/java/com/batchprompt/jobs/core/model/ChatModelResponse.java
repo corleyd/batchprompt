@@ -1,5 +1,7 @@
 package com.batchprompt.jobs.core.model;
 
+import com.batchprompt.jobs.model.StopReason;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +22,8 @@ public class ChatModelResponse {
     private Integer completionTokens;
     private Integer thinkingTokens;
     private Integer totalTokens;
+    private StopReason stopReason;
+    private String thinkingText;
     
     public static ChatModelResponse of(String responseText) {
         return ChatModelResponse.builder()
@@ -41,6 +45,20 @@ public class ChatModelResponse {
                 .completionTokens(completionTokens)
                 .thinkingTokens(thinkingTokens)
                 .totalTokens(totalTokens)
+                .build();
+    }
+    
+    public static ChatModelResponse of(String responseText, Integer promptTokens, 
+                                       Integer completionTokens, Integer thinkingTokens, Integer totalTokens,
+                                       StopReason stopReason, String thinkingText) {
+        return ChatModelResponse.builder()
+                .responseText(responseText)
+                .promptTokens(promptTokens)
+                .completionTokens(completionTokens)
+                .thinkingTokens(thinkingTokens)
+                .totalTokens(totalTokens)
+                .stopReason(stopReason)
+                .thinkingText(thinkingText)
                 .build();
     }
 }

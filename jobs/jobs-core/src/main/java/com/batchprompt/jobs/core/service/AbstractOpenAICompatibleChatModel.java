@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.Model;
+import com.batchprompt.jobs.model.StopReason;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -115,18 +116,27 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
             // Process response
             JsonNode responseJson = objectMapper.readTree(response.getBody());
             JsonNode choices = responseJson.get("choices");
-            String responseText = null;
             
+            // Extract response text and stop reason
+            String responseText = null;
+            StopReason stopReason = null;
             if (choices != null && choices.isArray() && choices.size() > 0) {
                 JsonNode firstChoice = choices.get(0);
                 if (firstChoice.has("message") && firstChoice.get("message").has("content")) {
                     responseText = firstChoice.get("message").get("content").asText();
                 }
+                
+                // Extract stop reason from finish_reason
+                if (firstChoice.has("finish_reason")) {
+                    String finishReason = firstChoice.get("finish_reason").asText();
+                    stopReason = mapFinishReasonToStopReason(finishReason);
+                }
             }
             
-            // Extract token usage information
+            // Extract token usage information  
             Integer promptTokens = null;
             Integer completionTokens = null;
+            Integer thinkingTokens = null;
             Integer totalTokens = null;
             
             if (responseJson.has("usage")) {
@@ -140,16 +150,43 @@ public abstract class AbstractOpenAICompatibleChatModel extends AbstractChatMode
                 if (usage.has("total_tokens")) {
                     totalTokens = usage.get("total_tokens").asInt();
                 }
+                // Some models like OpenAI o1 have thinking tokens
+                if (usage.has("reasoning_tokens")) {
+                    thinkingTokens = usage.get("reasoning_tokens").asInt();
+                }
             }
 
             if (responseText == null) {
-                return handleError("Error: No valid response received from API");
+                return handleError("Error: No valid response received from API", stopReason, null);
             }
             
-            return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens);
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, thinkingTokens, totalTokens, stopReason, null);
             
         } catch (Exception e) {
             return handleError(e);
+        }
+    }
+
+    /**
+     * Maps OpenAI API finish_reason to StopReason enum
+     */
+    private StopReason mapFinishReasonToStopReason(String finishReason) {
+        if (finishReason == null) {
+            return StopReason.UNKNOWN;
+        }
+        
+        switch (finishReason.toLowerCase()) {
+            case "stop":
+                return StopReason.STOP;
+            case "length":
+                return StopReason.MAX_TOKENS;
+            case "function_call":
+            case "tool_calls":
+                return StopReason.TOOL_CALLS;
+            case "content_filter":
+                return StopReason.CONTENT_FILTER;
+            default:
+                return StopReason.UNKNOWN;
         }
     }
 }

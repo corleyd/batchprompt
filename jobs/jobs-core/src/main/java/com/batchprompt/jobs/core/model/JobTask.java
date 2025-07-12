@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.batchprompt.jobs.model.TaskStatus;
+import com.batchprompt.jobs.model.StopReason;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -92,4 +93,11 @@ public class JobTask {
 
     @Column(name = "prompt_text")
     private String promptText;
+
+    @Column(name = "stop_reason")
+    @Enumerated(EnumType.STRING)
+    private StopReason stopReason;
+
+    @Column(name = "thinking_text")
+    private String thinkingText;
 }

@@ -147,6 +147,9 @@ public class JobValidationWorker {
                 }
                 int estimatedPromptTokens = estimateInputTokens(promptText);
                 int estimatedCompletionTokens = 2000; // Placeholder for completion tokens
+                if (job.getMaxTokens() != null) {
+                    estimatedCompletionTokens = job.getMaxTokens();
+                }
                 int estimatedThinkingTokens = 0; // Placeholder for thinking tokens
 
                 // Estimate the cost

@@ -2,6 +2,7 @@ package com.batchprompt.jobs.core.service;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.Model;
+import com.batchprompt.jobs.model.StopReason;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.annotation.Nullable;
@@ -84,19 +85,30 @@ public class AwsConverseChatModel extends AbstractChatModel {
             ConverseResponse response = bedrockClient.converse(converseRequest);
             log.debug("AWS Bedrock Converse response: {}", response);
             
-            // Extract the response text from the message content
+            // Extract the response text and stop reason from the message content
             String responseText = null;
+            String reasoningText = null;
+            StopReason stopReason = StopReason.UNKNOWN;
+            
             if (response.output() != null && response.output().message() != null) {
                 // For SDK 2.28.21, we need to extract the text from the content blocks
                 if (response.output().message().content() != null && !response.output().message().content().isEmpty()) {
                     // The content is a list of ContentBlock, so we need to find the text block
                     for (ContentBlock block : response.output().message().content()) {
-                        if (block.text() != null) {
+                        if (block.text() != null && responseText == null) {
                             responseText = block.text();
-                            break;
+                        }
+                        if (block.reasoningContent() != null &&  block.reasoningContent().reasoningText() != null && reasoningText == null) {
+                            // If reasoning content is present, we can use it as the response
+                            reasoningText = block.reasoningContent().reasoningText().text();
                         }
                     }
                 }
+            }
+            
+            // Extract stop reason from response
+            if (response.stopReason() != null) {
+                stopReason = mapAwsStopReasonToStopReason(response.stopReason().toString());
             }
             
             // Extract token usage information - advantage of using the Converse API
@@ -111,13 +123,37 @@ public class AwsConverseChatModel extends AbstractChatModel {
             }
 
             if (responseText == null) {
-                return handleError("Could not extract response text from AWS Bedrock Converse API response");
+                return handleError("Could not extract response text from AWS Bedrock Converse API response", stopReason, reasoningText);
             }
             
-            return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens);
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, null, totalTokens, stopReason, reasoningText);
             
         } catch (Exception e) {
             return handleError(e);
+        }
+    }
+
+    /**
+     * Maps AWS Bedrock stop reason to StopReason enum
+     */
+    private StopReason mapAwsStopReasonToStopReason(String awsStopReason) {
+        if (awsStopReason == null) {
+            return StopReason.UNKNOWN;
+        }
+        
+        switch (awsStopReason.toUpperCase()) {
+            case "END_TURN":
+                return StopReason.STOP;
+            case "MAX_TOKENS":
+                return StopReason.MAX_TOKENS;
+            case "TOOL_USE":
+                return StopReason.TOOL_CALLS;
+            case "CONTENT_FILTERED":
+                return StopReason.CONTENT_FILTER;
+            case "STOP_SEQUENCE":
+                return StopReason.STOP_SEQUENCE;
+            default:
+                return StopReason.UNKNOWN;
         }
     }
 }

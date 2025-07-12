@@ -159,7 +159,12 @@ public class JobTaskWorker {
         // Set token usage information
         jobTask.setPromptTokens(chatResponse.getPromptTokens());
         jobTask.setCompletionTokens(chatResponse.getCompletionTokens());
+        jobTask.setThinkingTokens(chatResponse.getThinkingTokens());
         jobTask.setTotalTokens(chatResponse.getTotalTokens());
+        
+        // Set new fields
+        jobTask.setStopReason(chatResponse.getStopReason());
+        jobTask.setThinkingText(chatResponse.getThinkingText());
         
         // Calculate cost using the pricing service
         Double calculatedCost = jobPricingService.calculateCost(jobTask);

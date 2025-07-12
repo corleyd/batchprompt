@@ -2,6 +2,7 @@ package com.batchprompt.jobs.core.service;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.Model;
+import com.batchprompt.jobs.model.StopReason;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jakarta.annotation.Nullable;
@@ -41,6 +42,15 @@ public abstract class AbstractChatModel {
                 outputSchema.toString() + "\n\n" +
                 "Remember: Your entire response must be ONLY valid JSON that matches this schema. " +
                 "Do not repeat the schema or include explanations.\n";
+    }
+
+    protected ChatModelResponse handleError(String errorMessage, StopReason stopReason, String thinkingText) {
+        log.error("Error generating chat response: {}", errorMessage);
+        return ChatModelResponse.builder()
+                .errorMessage(errorMessage)
+                .stopReason(stopReason)
+                .thinkingText(thinkingText)
+                .build();
     }
 
     protected ChatModelResponse handleError(String errorMessage) {

@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.Model;
+import com.batchprompt.jobs.model.StopReason;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class BatchPromptChatModel extends AbstractChatModel {
@@ -18,7 +19,7 @@ public class BatchPromptChatModel extends AbstractChatModel {
 
         switch (getModel().getModelProviderModelId()) {
             case "echo":
-                return ChatModelResponse.of(prompt);
+                return ChatModelResponse.of(prompt, null, null, null, null, StopReason.STOP, null);
             case "random":
                 String response;
                 if (outputSchema != null) {
@@ -26,7 +27,7 @@ public class BatchPromptChatModel extends AbstractChatModel {
                 } else {
                     response = UUID.randomUUID().toString();
                 }
-                return ChatModelResponse.of(response);
+                return ChatModelResponse.of(response, null, null, null, null, StopReason.STOP, null);
             default:
                 return handleError("Unknown test model: " + getModelId());
         }

@@ -8,6 +8,7 @@ import org.springframework.web.client.RestTemplate;
 
 import com.batchprompt.jobs.core.model.ChatModelResponse;
 import com.batchprompt.jobs.core.model.Model;
+import com.batchprompt.jobs.model.StopReason;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -103,6 +104,10 @@ public class GeminiChatModel extends AbstractChatModel {
             JsonNode responseJson = objectMapper.readTree(response.getBody());
             String responseText = extractResponseText(responseJson);
             
+            // Extract stop reason and thinking text 
+            StopReason stopReason = extractStopReason(responseJson);
+            String thinkingText = extractThinkingText(responseJson);
+            
             // Extract token usage if available
             Integer promptTokens = null;
             Integer completionTokens = null;
@@ -132,10 +137,10 @@ public class GeminiChatModel extends AbstractChatModel {
             }
 
             if (responseText == null) {
-                return handleError("No valid response text found in Gemini API response");
+                return handleError("No valid response text found in Gemini API response", stopReason, thinkingText);
             }
             
-            return ChatModelResponse.of(responseText, promptTokens, completionTokens, thinkingTokens, totalTokens);
+            return ChatModelResponse.of(responseText, promptTokens, completionTokens, thinkingTokens, totalTokens, stopReason, thinkingText);
             
         } catch (Exception e) {
             return handleError(e);
@@ -162,5 +167,56 @@ public class GeminiChatModel extends AbstractChatModel {
             }
         }
         return null;
+    }
+    
+    /**
+     * Extract stop reason from Gemini API response JSON
+     */
+    private StopReason extractStopReason(JsonNode responseJson) {
+        if (responseJson.has("candidates") && responseJson.get("candidates").isArray()) {
+            JsonNode candidates = responseJson.get("candidates");
+            if (candidates.size() > 0) {
+                JsonNode firstCandidate = candidates.get(0);
+                if (firstCandidate.has("finishReason")) {
+                    String finishReason = firstCandidate.get("finishReason").asText();
+                    return mapGeminiFinishReasonToStopReason(finishReason);
+                }
+            }
+        }
+        return StopReason.UNKNOWN;
+    }
+    
+    /**
+     * Extract thinking text from Gemini API response JSON
+     * Note: Gemini doesn't currently provide thinking text in a separate field,
+     * but this method is prepared for future API updates
+     */
+    private String extractThinkingText(JsonNode responseJson) {
+        // Gemini doesn't currently provide thinking text in a separate field
+        // This method can be updated when the feature becomes available
+        return null;
+    }
+    
+    /**
+     * Maps Gemini API finishReason to StopReason enum
+     */
+    private StopReason mapGeminiFinishReasonToStopReason(String finishReason) {
+        if (finishReason == null) {
+            return StopReason.UNKNOWN;
+        }
+        
+        switch (finishReason.toUpperCase()) {
+            case "STOP":
+                return StopReason.STOP;
+            case "MAX_TOKENS":
+                return StopReason.MAX_TOKENS;
+            case "SAFETY":
+                return StopReason.CONTENT_FILTER;
+            case "RECITATION":
+                return StopReason.CONTENT_FILTER;
+            case "OTHER":
+            default:
+                return StopReason.UNKNOWN;
+        }
     }
 }

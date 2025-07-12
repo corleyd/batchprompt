@@ -36,6 +36,7 @@ import com.batchprompt.jobs.core.repository.JobRepository;
 import com.batchprompt.jobs.core.repository.JobTaskRepository;
 import com.batchprompt.jobs.core.service.JobService;
 import com.batchprompt.jobs.model.JobStatus;
+import com.batchprompt.jobs.model.StopReason;
 import com.batchprompt.jobs.model.TaskStatus;
 import com.batchprompt.jobs.model.dto.JobOutputMessage;
 import com.batchprompt.prompts.client.PromptClient;
@@ -409,14 +410,16 @@ public class JobOutputWorker {
         /*
          * Handle structured output fields
          */
-        String errorMessage = null;
+        String errorMessage = task.getErrorMessage();
 
         if (prompt.getOutputMethod() == PromptOutputMethod.STRUCTURED || prompt.getOutputMethod() == PromptOutputMethod.BOTH) {
             ;
             JsonNode jsonResponse = null;
 
             if (task.getResponseText() == null || task.getResponseText().isEmpty()) {
-                errorMessage = "no response text";
+                if (errorMessage == null) {
+                    errorMessage = "no response text";
+                }
             } else {
 
                 try {
@@ -439,6 +442,13 @@ public class JobOutputWorker {
             }
         }
 
+        if (task.getStopReason() == StopReason.MAX_TOKENS) {
+            if (errorMessage == null) {
+                errorMessage = "Response truncated due to max tokens";
+            } else {
+                errorMessage += ", response truncated due to max tokens";
+            }
+        }
                
         // Add response text column
         if (prompt.getOutputMethod() != PromptOutputMethod.STRUCTURED) {
