@@ -30,4 +30,5 @@ public class PromptDto {
     private LocalDateTime deleteTimestamp;
     private Double temperature;
     private Integer maxTokens;
+    private String thinkingTextColumnName;
 }

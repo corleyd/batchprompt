@@ -152,6 +152,22 @@
         <small class="form-hint">This is the name of the column where the LLM response will be stored.</small>
       </div>
 
+      <!-- Thinking Text Column Name -->
+      <div class="form-group">
+        <label for="thinkingTextColumnName">Thinking Text Column Name</label>
+        <input 
+          type="text" 
+          id="thinkingTextColumnName" 
+          formControlName="thinkingTextColumnName" 
+          placeholder="Enter column name for the thinking text (optional)"
+          [class.is-invalid]="promptForm.get('thinkingTextColumnName')?.invalid && promptForm.get('thinkingTextColumnName')?.touched"
+        >
+        <div class="validation-error" *ngIf="promptForm.get('thinkingTextColumnName')?.invalid && promptForm.get('thinkingTextColumnName')?.touched">
+          <span *ngIf="promptForm.get('thinkingTextColumnName')?.errors?.['maxlength']">Column name cannot exceed 255 characters.</span>
+        </div>
+        <small class="form-hint">Optional: This is the name of the column where the LLM thinking text will be stored (useful for models that output reasoning steps).</small>
+      </div>
+
       <!-- Show Output Schema section only for schema and both modes -->
       <div *ngIf="promptForm.get('outputMethod')?.value === 'STRUCTURED' || promptForm.get('outputMethod')?.value === 'BOTH'">
         <!-- Output Schema Section Header with Mode Toggle -->

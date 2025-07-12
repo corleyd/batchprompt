@@ -37,6 +37,7 @@ public class PromptMapper {
                 .deleteTimestamp(prompt.getDeleteTimestamp())
                 .temperature(prompt.getTemperature())
                 .maxTokens(prompt.getMaxTokens())
+                .thinkingTextColumnName(prompt.getThinkingTextColumnName())
                 .build();
     }
 
@@ -65,6 +66,7 @@ public class PromptMapper {
                 .deleteTimestamp(promptDto.getDeleteTimestamp())
                 .temperature(promptDto.getTemperature())
                 .maxTokens(promptDto.getMaxTokens())
+                .thinkingTextColumnName(promptDto.getThinkingTextColumnName())
                 .build();
     }
 

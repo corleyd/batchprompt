@@ -337,6 +337,11 @@ public class JobOutputWorker {
             }
         }
         
+        // Add thinking text column if specified
+        if (prompt.getThinkingTextColumnName() != null && !prompt.getThinkingTextColumnName().trim().isEmpty()) {
+            headers.add(prompt.getThinkingTextColumnName());
+        }
+        
         headers.add("error_message");
         
         return headers;
@@ -455,6 +460,14 @@ public class JobOutputWorker {
             Cell responseTextCell = row.createCell(colIndex++);
             if (task.getResponseText() != null) {
                 responseTextCell.setCellValue(task.getResponseText());
+            }
+        }
+
+        // Add thinking text column if specified
+        if (prompt.getThinkingTextColumnName() != null && !prompt.getThinkingTextColumnName().trim().isEmpty()) {
+            Cell thinkingTextCell = row.createCell(colIndex++);
+            if (task.getThinkingText() != null) {
+                thinkingTextCell.setCellValue(task.getThinkingText());
             }
         }
 

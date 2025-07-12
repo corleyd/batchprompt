@@ -63,6 +63,7 @@ public class PromptService {
                     existingPrompt.setUpdateTimestamp(LocalDateTime.now());
                     existingPrompt.setTemperature(promptDetails.getTemperature());
                     existingPrompt.setMaxTokens(promptDetails.getMaxTokens());
+                    existingPrompt.setThinkingTextColumnName(promptDetails.getThinkingTextColumnName());
                     return promptRepository.save(existingPrompt);
                 });
     }
@@ -119,6 +120,7 @@ public class PromptService {
                 .promptText(sourcePrompt.getPromptText())
                 .outputMethod(sourcePrompt.getOutputMethod())
                 .responseTextColumnName(sourcePrompt.getResponseTextColumnName())
+                .thinkingTextColumnName(sourcePrompt.getThinkingTextColumnName())
                 .responseJsonSchema(sourcePrompt.getResponseJsonSchema())
                 .createTimestamp(LocalDateTime.now())
                 .updateTimestamp(LocalDateTime.now())

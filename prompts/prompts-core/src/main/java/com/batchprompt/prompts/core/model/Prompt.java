@@ -76,4 +76,7 @@ public class Prompt {
     @Column(name = "max_tokens")
     private Integer maxTokens;
 
+    @Column(name = "thinking_text_column_name")
+    private String thinkingTextColumnName;
+
 }

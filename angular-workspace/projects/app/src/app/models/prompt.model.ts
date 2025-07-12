@@ -6,6 +6,7 @@ export interface Prompt {
   promptText: string;
   outputMethod?: 'TEXT' | 'STRUCTURED' | 'BOTH';
   responseTextColumnName?: string;
+  thinkingTextColumnName?: string;
   responseJsonSchema: string;
   temperature?: number;
   maxTokens?: number;

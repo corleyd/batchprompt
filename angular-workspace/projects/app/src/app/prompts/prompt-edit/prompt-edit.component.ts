@@ -53,6 +53,7 @@ export class PromptEditComponent implements OnInit {
       maxTokens: [null, [Validators.min(1), Validators.max(8192)]],
       outputMethod: ['TEXT', [Validators.required]],
       responseColumnName: ['response_text', [Validators.required]],
+      thinkingTextColumnName: ['', [Validators.maxLength(255)]],
       outputSchema: ['{}', []],
       schemaProperties: this.fb.array([])
     });
@@ -313,6 +314,7 @@ export class PromptEditComponent implements OnInit {
             // Hold off on setting the schema until we've determined the mode
             outputMethod: prompt.outputMethod || 'TEXT',
             responseColumnName: prompt.responseTextColumnName || 'response_text',
+            thinkingTextColumnName: prompt.thinkingTextColumnName || '',
           });
           
           // Handle schema mode determination for non-TEXT output methods
@@ -365,7 +367,7 @@ export class PromptEditComponent implements OnInit {
     
     // For TEXT mode, manually validate only the relevant controls
     if (outputMethod === 'TEXT') {
-      const relevantControls = ['name', 'description', 'promptText', 'temperature', 'maxTokens', 'responseColumnName'];
+      const relevantControls = ['name', 'description', 'promptText', 'temperature', 'maxTokens', 'responseColumnName', 'thinkingTextColumnName'];
       const isValid = relevantControls.every(controlName => {
         const control = this.promptForm.get(controlName);
         return control && control.valid;
@@ -404,6 +406,7 @@ export class PromptEditComponent implements OnInit {
       responseTextColumnName: outputMethod === 'TEXT' || outputMethod === 'BOTH' 
         ? this.promptForm.get('responseColumnName')?.value 
         : undefined,
+      thinkingTextColumnName: this.promptForm.get('thinkingTextColumnName')?.value || undefined,
       responseJsonSchema: outputMethod === 'TEXT' 
         ? '{}' 
         : this.promptForm.get('outputSchema')?.value,
