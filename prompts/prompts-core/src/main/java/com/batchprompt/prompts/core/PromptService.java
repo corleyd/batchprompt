@@ -61,6 +61,8 @@ public class PromptService {
                     existingPrompt.setResponseTextColumnName(promptDetails.getResponseTextColumnName());
                     existingPrompt.setResponseJsonSchema(promptDetails.getResponseJsonSchema());
                     existingPrompt.setUpdateTimestamp(LocalDateTime.now());
+                    existingPrompt.setTemperature(promptDetails.getTemperature());
+                    existingPrompt.setMaxTokens(promptDetails.getMaxTokens());
                     return promptRepository.save(existingPrompt);
                 });
     }
@@ -120,7 +122,10 @@ public class PromptService {
                 .responseJsonSchema(sourcePrompt.getResponseJsonSchema())
                 .createTimestamp(LocalDateTime.now())
                 .updateTimestamp(LocalDateTime.now())
-                .jobRunCount(0)
+                .temperature(sourcePrompt.getTemperature())
+                .maxTokens(sourcePrompt.getMaxTokens())
+                .jobRunCount(0) // Reset job run count for the new prompt
+                .lastJobRunTimestamp(null)
                 .build();
                 
         // Save the new prompt

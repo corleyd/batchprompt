@@ -175,6 +175,12 @@ public class JobService {
         UUID jobUuid = UUID.randomUUID();
         LocalDateTime now = LocalDateTime.now();
         
+        // Use prompt defaults for temperature and maxTokens, override with non-null job values
+        Integer finalMaxTokens = jobDefinitionDto.getMaxTokens() != null ? 
+            jobDefinitionDto.getMaxTokens() : prompt.getMaxTokens();
+        Double finalTemperature = jobDefinitionDto.getTemperature() != null ? 
+            jobDefinitionDto.getTemperature() : prompt.getTemperature();
+        
         // Determine record range parameters
       
         Job job = Job.builder()
@@ -186,8 +192,8 @@ public class JobService {
                 .modelId(jobDefinitionDto.getModelId())
                 .status(JobStatus.PENDING_VALIDATION)
                 .completedTaskCount(0)
-                .maxTokens(jobDefinitionDto.getMaxTokens())
-                .temperature(jobDefinitionDto.getTemperature())
+                .maxTokens(finalMaxTokens)
+                .temperature(finalTemperature)
                 .maxRecords(jobDefinitionDto.getMaxRecords())
                 .startRecordNumber(jobDefinitionDto.getStartRecordNumber())
                 .createdAt(now)

@@ -29,11 +29,14 @@ public class PromptMapper {
                 .promptText(prompt.getPromptText())
                 .outputMethod(prompt.getOutputMethod())
                 .responseJsonSchema(responseJsonSchema)
+                .responseTextColumnName(prompt.getResponseTextColumnName())
                 .createTimestamp(prompt.getCreateTimestamp())
                 .updateTimestamp(prompt.getUpdateTimestamp())
                 .jobRunCount(prompt.getJobRunCount())
                 .lastJobRunTimestamp(prompt.getLastJobRunTimestamp())
-                .deleteTimestamp(prompt.getDeleteTimestamp())                
+                .deleteTimestamp(prompt.getDeleteTimestamp())
+                .temperature(prompt.getTemperature())
+                .maxTokens(prompt.getMaxTokens())
                 .build();
     }
 
@@ -54,11 +57,14 @@ public class PromptMapper {
                 .promptText(promptDto.getPromptText())
                 .outputMethod(promptDto.getOutputMethod())
                 .responseJsonSchema(responseJsonSchema)
+                .responseTextColumnName(promptDto.getResponseTextColumnName())
                 .createTimestamp(promptDto.getCreateTimestamp())
                 .updateTimestamp(promptDto.getUpdateTimestamp())
                 .jobRunCount(promptDto.getJobRunCount())
                 .lastJobRunTimestamp(promptDto.getLastJobRunTimestamp())
-                .deleteTimestamp(promptDto.getDeleteTimestamp())                
+                .deleteTimestamp(promptDto.getDeleteTimestamp())
+                .temperature(promptDto.getTemperature())
+                .maxTokens(promptDto.getMaxTokens())
                 .build();
     }
 

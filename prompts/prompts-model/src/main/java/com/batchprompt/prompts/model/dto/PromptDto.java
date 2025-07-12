@@ -27,5 +27,7 @@ public class PromptDto {
     private LocalDateTime updateTimestamp;
     private Integer jobRunCount;
     private LocalDateTime lastJobRunTimestamp;
-    private LocalDateTime deleteTimestamp;    
+    private LocalDateTime deleteTimestamp;
+    private Double temperature;
+    private Integer maxTokens;
 }

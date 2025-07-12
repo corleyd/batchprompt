@@ -7,6 +7,8 @@ export interface Prompt {
   outputMethod?: 'TEXT' | 'STRUCTURED' | 'BOTH';
   responseTextColumnName?: string;
   responseJsonSchema: string;
+  temperature?: number;
+  maxTokens?: number;
   createTimestamp?: Date;
   updateTimestamp?: Date;
   lastJobRunTimestamp?: Date;

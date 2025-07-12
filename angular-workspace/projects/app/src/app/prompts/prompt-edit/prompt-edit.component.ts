@@ -49,6 +49,8 @@ export class PromptEditComponent implements OnInit {
       name: ['', [Validators.required]],
       description: ['', [Validators.required]],
       promptText: ['', [Validators.required]],
+      temperature: [1.0, [Validators.min(0.0), Validators.max(2.0)]],
+      maxTokens: [null, [Validators.min(1), Validators.max(8192)]],
       outputMethod: ['TEXT', [Validators.required]],
       responseColumnName: ['response_text', [Validators.required]],
       outputSchema: ['{}', []],
@@ -306,6 +308,8 @@ export class PromptEditComponent implements OnInit {
             name: prompt.name,
             description: prompt.description,
             promptText: prompt.promptText,
+            temperature: prompt.temperature || 1.0,
+            maxTokens: prompt.maxTokens || null,
             // Hold off on setting the schema until we've determined the mode
             outputMethod: prompt.outputMethod || 'TEXT',
             responseColumnName: prompt.responseTextColumnName || 'response_text',
@@ -361,7 +365,7 @@ export class PromptEditComponent implements OnInit {
     
     // For TEXT mode, manually validate only the relevant controls
     if (outputMethod === 'TEXT') {
-      const relevantControls = ['name', 'description', 'promptText', 'responseColumnName'];
+      const relevantControls = ['name', 'description', 'promptText', 'temperature', 'maxTokens', 'responseColumnName'];
       const isValid = relevantControls.every(controlName => {
         const control = this.promptForm.get(controlName);
         return control && control.valid;
@@ -394,6 +398,8 @@ export class PromptEditComponent implements OnInit {
       name: this.promptForm.get('name')?.value,
       description: this.promptForm.get('description')?.value,
       promptText: this.promptForm.get('promptText')?.value,
+      temperature: this.promptForm.get('temperature')?.value,
+      maxTokens: this.promptForm.get('maxTokens')?.value,
       outputMethod: outputMethod,
       responseTextColumnName: outputMethod === 'TEXT' || outputMethod === 'BOTH' 
         ? this.promptForm.get('responseColumnName')?.value 

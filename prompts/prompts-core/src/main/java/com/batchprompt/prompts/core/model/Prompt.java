@@ -69,6 +69,11 @@ public class Prompt {
 
     @Column(name = "delete_timestamp")
     private LocalDateTime deleteTimestamp;
- 
+
+    @Column(name = "temperature")
+    private Double temperature;
+
+    @Column(name = "max_tokens")
+    private Integer maxTokens;
 
 }
