@@ -31,6 +31,7 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
   loading = true;
   error = false;
   errorMessage = '';
+  validationErrors: string[] = [];
   
   fileFields: string[] = [];
   fieldSamples: any = {};
@@ -69,6 +70,9 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
         this.file = fileData;
         this.loading = false;
         
+        // Extract validation errors if they exist
+        this.extractValidationErrors();
+        
         // If file is ready, load the fields
         if (this.file.status === 'READY') {
           this.loadFileFields();
@@ -85,6 +89,14 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
         this.loading = false;
       }
     });
+  }
+  
+  extractValidationErrors(): void {
+    this.validationErrors = [];
+    
+    if (this.file && this.file.validationErrors && this.file.validationErrors.errors && Array.isArray(this.file.validationErrors.errors)) {
+      this.validationErrors = this.file.validationErrors.errors.slice(0, 5); // Get first 5 errors
+    }
   }
   
   loadFileFields(): void {
@@ -215,12 +227,16 @@ export class FileStatusPageComponent implements OnInit, OnDestroy {
     
     this.statusPolling = interval(3000)
       .pipe(
-        switchMap(() => this.fileService.getFileStatus(this.fileId!)),
+        switchMap(() => this.fileService.getFileDetails(this.fileId!)),
         takeWhile((response) => response.status === 'VALIDATING' || response.status === 'PROCESSING', true)
       )
       .subscribe({
         next: (statusData) => {
           this.file.status = statusData.status;
+          
+          // Update the file object with latest data including potential validation errors
+          this.file = statusData;
+          this.extractValidationErrors();
           
           if (statusData.status === 'READY') {
             // File is ready, load the fields

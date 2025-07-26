@@ -52,6 +52,9 @@
       <div class="error-message">
         <mat-icon>error</mat-icon>
         <p>{{ file.errorMessage || 'File processing failed' }}</p>
+        <ul *ngIf="validationErrors.length > 0" class="validation-errors">
+          <li *ngFor="let error of validationErrors">{{ error }}</li>
+        </ul>
       </div>
     </div>
     

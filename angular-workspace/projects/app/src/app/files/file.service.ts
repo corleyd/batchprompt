@@ -31,11 +31,6 @@ export class FileService {
     return this.http.request(req);
   }
 
-  // Get file status by id
-  getFileStatus(fileId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/status/${fileId}`);
-  }
-
   // Get file details by id (including all metadata and fields)
   getFileDetails(fileId: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${fileId}`);

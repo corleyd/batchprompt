@@ -204,7 +204,7 @@ public class FileService {
                         fileRepository.save(file);
                     } else {
                         // Update the file with validation errors
-                        file.setStatus(FileStatus.VALIDATING);
+                        file.setStatus(FileStatus.FAILED);
                         file.setValidationErrors(validationResult.getErrors());
                         file.setUpdatedAt(LocalDateTime.now());
                         fileRepository.save(file);

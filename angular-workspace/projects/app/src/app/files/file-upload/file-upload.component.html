@@ -52,5 +52,8 @@
       <i class="fa fa-exclamation-circle"></i>
     </div>
     {{ errorMsg }}
+    <ul *ngIf="validationErrors.length > 0" class="validation-errors">
+      <li *ngFor="let error of validationErrors">{{ error }}</li>
+    </ul>
   </div>
 </div>

@@ -165,6 +165,31 @@
   .message-icon {
     color: #C62828;
   }
+  
+  .validation-errors {
+    margin: 10px 0 0 0;
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    width: 100%;
+    
+    li {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(198, 40, 40, 0.2);
+      font-size: 0.9rem;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      &:before {
+        content: "• ";
+        color: #C62828;
+        font-weight: bold;
+        margin-right: 8px;
+      }
+    }
+  }
 }
 
 .upload-button {

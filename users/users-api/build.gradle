@@ -4,6 +4,7 @@ plugins {
 }
 
 group = 'com.batchprompt'
+version = '0.0.1-SNAPSHOT'
 
 dependencies {
     implementation project(':users:users-core')
@@ -45,10 +46,3 @@ test {
     useJUnitPlatform()
 }
 
-bootJar {
-    enabled = true
-}
-
-jar {
-    enabled = false
-}

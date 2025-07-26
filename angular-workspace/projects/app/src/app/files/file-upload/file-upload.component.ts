@@ -28,6 +28,7 @@ export class FileUploadComponent {
   progress = 0;
   message = '';
   errorMsg = '';
+  validationErrors: string[] = [];
   isDragover = false;
   uploadedFileId?: string;
 
@@ -74,6 +75,7 @@ export class FileUploadComponent {
 
   upload(): void {
     this.errorMsg = '';
+    this.validationErrors = [];
     this.progress = 0;
     
     if (this.selectedFiles) {
@@ -99,8 +101,15 @@ export class FileUploadComponent {
           },
           error: (err: any) => {
             this.progress = 0;
-            this.errorMsg = 'Could not upload the file. Please ensure that the file is a valid Excel spreadsshet in XLSX format.';
             this.currentFile = undefined;
+            
+            // Check if there are validation errors
+            if (err.error?.validationErrors?.errors && Array.isArray(err.error.validationErrors.errors)) {
+              this.validationErrors = err.error.validationErrors.errors.slice(0, 5); // Get first 5 errors
+              this.errorMsg = 'File validation failed. Please fix the following issues:';
+            } else {
+              this.errorMsg = 'Could not upload the file. Please ensure that the file is a valid Excel spreadsheet in XLSX format.';
+            }
           }
         });
       }

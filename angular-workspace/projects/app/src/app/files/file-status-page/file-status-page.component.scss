@@ -33,11 +33,37 @@
     
     .error-message {
       display: flex;
-      align-items: center;
+      flex-direction: column;
+      align-items: flex-start;
       color: #d32f2f;
       
       mat-icon {
         margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .validation-errors {
+        margin: 10px 0 0 0;
+        padding: 0;
+        list-style: none;
+        width: 100%;
+        
+        li {
+          padding: 4px 0;
+          border-bottom: 1px solid rgba(211, 47, 47, 0.2);
+          font-size: 0.9rem;
+          
+          &:last-child {
+            border-bottom: none;
+          }
+          
+          &:before {
+            content: "• ";
+            color: #d32f2f;
+            font-weight: bold;
+            margin-right: 8px;
+          }
+        }
       }
     }
     

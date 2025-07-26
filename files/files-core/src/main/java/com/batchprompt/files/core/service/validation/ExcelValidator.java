@@ -11,8 +11,11 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,15 +112,23 @@ public class ExcelValidator {
         List<String> validationErrors = new ArrayList<>();
         List<FieldInfo> fields = new ArrayList<>();
         int recordCount = 0;
+        File tempFile = null;
 
-        try (Workbook workbook = new XSSFWorkbook(inputStream)) {
-            // Validation rule 1: Must have exactly one worksheet
-            if (workbook.getNumberOfSheets() != 1) {
-                validationErrors.add("File must contain exactly one worksheet");
-                return createValidationResult(validationErrors, fields, recordCount);
+        try {
+            // Create temporary file and write input stream to it
+            tempFile = Files.createTempFile("excel-validation-", ".xlsx").toFile();
+            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+                inputStream.transferTo(fos);
             }
 
-            Sheet sheet = workbook.getSheetAt(0);
+            try (Workbook workbook = new XSSFWorkbook(tempFile)) {
+                // Validation rule 1: Must have exactly one worksheet
+                if (workbook.getNumberOfSheets() != 1) {
+                    validationErrors.add("File must contain exactly one worksheet");
+                    return createValidationResult(validationErrors, fields, recordCount);
+                }
+
+                Sheet sheet = workbook.getSheetAt(0);
             
             // Get header row
             Row headerRow = sheet.getRow(0);
@@ -165,10 +176,10 @@ public class ExcelValidator {
                 
                 // Check if data row has more columns than header
                 int lastCellNum = row.getLastCellNum();
-                if (lastCellNum > headerColumnCount) {
-                    validationErrors.add("Row " + row.getRowNum() + " contains more columns than the header row");
-                    continue;
-                }
+                // if (lastCellNum > headerColumnCount) {
+                //     validationErrors.add("Row " + row.getRowNum() + " contains more columns than the header row");
+                //     continue;
+                // }
                 
                 // Process valid row into a record
                 Map<String, String> recordMap = new HashMap<>();
@@ -199,10 +210,22 @@ public class ExcelValidator {
                 return createValidationResult(validationErrors, fields, recordCount);
             }
             
+            } // Close try-with-resources block for workbook
+            
         } catch (IOException e) {
             validationErrors.add("Invalid Excel file format: " + e.getMessage());
         } catch (Exception e) {
             validationErrors.add("Error processing file: " + e.getMessage());
+        } finally {
+            // Clean up temporary file
+            if (tempFile != null && tempFile.exists()) {
+                try {
+                    Files.delete(tempFile.toPath());
+                } catch (IOException e) {
+                    // Log warning but don't fail the validation
+                    System.err.println("Warning: Could not delete temporary file: " + tempFile.getPath());
+                }
+            }
         }
         
         return createValidationResult(validationErrors, fields, recordCount);
