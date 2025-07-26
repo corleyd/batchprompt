@@ -62,7 +62,8 @@ public class Prompt {
     private LocalDateTime updateTimestamp;
 
     @Column(name = "job_run_count", nullable = false)
-    private Integer jobRunCount;
+    @Builder.Default
+    private Integer jobRunCount = 0;
 
     @Column(name = "last_job_run_timestamp")
     private LocalDateTime lastJobRunTimestamp;

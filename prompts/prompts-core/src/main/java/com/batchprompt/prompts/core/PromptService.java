@@ -47,6 +47,7 @@ public class PromptService {
         LocalDateTime now = LocalDateTime.now();
         prompt.setCreateTimestamp(now);
         prompt.setUpdateTimestamp(now);
+        prompt.setJobRunCount(0);
         return promptRepository.save(prompt);
     }
 
