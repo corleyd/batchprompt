@@ -1,5 +1,13 @@
 import { Component } from '@angular/core';
 
+interface StatsCard {
+  title: string;
+  value: string;
+  icon: string;
+  trend: string;
+  color: string;
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   templateUrl: './admin-dashboard.component.html',
@@ -7,10 +15,6 @@ import { Component } from '@angular/core';
 })
 export class AdminDashboardComponent {
   // Admin dashboard statistics (these would normally be fetched from a service)
-  statsCards = [
-    { title: 'Total Users', value: '1,243', icon: 'users', trend: '+12%', color: '#4C51BF' },
-    { title: 'Active Jobs', value: '57', icon: 'activity', trend: '+3%', color: '#38B2AC' },
-    { title: 'Storage Used', value: '512 GB', icon: 'database', trend: '+18%', color: '#ED8936' },
-    { title: 'API Requests', value: '98.3K', icon: 'server', trend: '+27%', color: '#667EEA' }
+  statsCards: StatsCard[] = [
   ];
 }

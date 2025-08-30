@@ -10,8 +10,10 @@ import org.springframework.stereotype.Component;
 
 import com.batchprompt.jobs.core.model.Job;
 import com.batchprompt.jobs.core.model.JobTask;
+import com.batchprompt.jobs.core.repository.JobValidationResultMessageRepository;
 import com.batchprompt.jobs.model.dto.JobDto;
 import com.batchprompt.jobs.model.dto.JobTaskDto;
+import com.batchprompt.jobs.model.dto.ValidationMessageSummaryDto;
 import com.batchprompt.prompts.client.PromptClient;
 import com.batchprompt.prompts.model.dto.PromptDto;
 
@@ -21,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JobMapper {
     private final PromptClient promptClient;
+    private final JobValidationResultMessageRepository jobValidationResultMessageRepository;
 
     public JobDto toDto(Job job, PromptDto promptDto) {
         if (promptDto == null) {
@@ -50,6 +53,7 @@ public class JobMapper {
                 .costEstimate(job.getCostEstimate())
                 .promptName(promptDto.getName())
                 .errorMessage(job.getErrorMessage())
+                .validationMessageSummary(getValidationMessageSummary(job))
                 .build();
     }
 
@@ -99,5 +103,28 @@ public class JobMapper {
             });
             return toDto(job, promptDto);
         });
+    }
+    
+    /**
+     * Get validation message summary for a job
+     *
+     * @param job the job to get validation messages for
+     * @return list of validation message summaries, or null if not validation failed status
+     */
+    private List<ValidationMessageSummaryDto> getValidationMessageSummary(Job job) {
+        // Only return validation message summary if the job status is VALIDATION_FAILED
+        if (job.getStatus() != com.batchprompt.jobs.model.JobStatus.VALIDATION_FAILED) {
+            return null;
+        }
+        
+        List<Object[]> summaryResults = jobValidationResultMessageRepository
+            .getValidationMessageSummary(job.getJobUuid());
+            
+        return summaryResults.stream()
+            .map(result -> ValidationMessageSummaryDto.builder()
+                .message((String) result[0])
+                .count((Long) result[1])
+                .build())
+            .collect(Collectors.toList());
     }
 }

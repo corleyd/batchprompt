@@ -69,9 +69,23 @@
           (refresh)="refreshFiles()">
           <!-- Custom template for file actions -->
           <ng-template #fileActions let-item>
-            <button class="action-btn" (click)="downloadFile(item.fileUuid, item.fileName); $event.stopPropagation()">Download</button>
-            <button class="action-btn" (click)="copyFileToUser(item); $event.stopPropagation()">Copy to User</button>
-            <button class="action-btn" *ngIf="item.status === 'READY'" (click)="submitJobForUser(item); $event.stopPropagation()">Submit Job</button>
+            <button mat-icon-button [matMenuTriggerFor]="fileActionsMenu" (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #fileActionsMenu="matMenu">
+              <button mat-menu-item (click)="downloadFile(item.fileUuid, item.fileName)">
+                <mat-icon>download</mat-icon>
+                <span>Download</span>
+              </button>
+              <button mat-menu-item (click)="copyFileToUser(item)">
+                <mat-icon>content_copy</mat-icon>
+                <span>Copy to User</span>
+              </button>
+              <button mat-menu-item *ngIf="item.status === 'READY'" (click)="submitJobForUser(item)">
+                <mat-icon>play_arrow</mat-icon>
+                <span>Submit Job</span>
+              </button>
+            </mat-menu>
           </ng-template>
         </app-generic-table>
       </div>
@@ -94,10 +108,23 @@
           [sortDirection]="jobsSortDirection"
           (pageChange)="onJobsPageChange($event)"
           (sortChange)="onJobsSortChange($event)"
+          (rowClick)="viewJobDetails($event.jobUuid)"
           (refresh)="refreshJobs()">
           <!-- Custom template for job actions -->
           <ng-template #jobActions let-item>
-            <button class="action-btn" (click)="downloadFile(item.resultFileUuid)">Download Results</button>
+            <button mat-icon-button [matMenuTriggerFor]="jobActionsMenu" (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #jobActionsMenu="matMenu">
+              <button mat-menu-item (click)="viewJobDetails(item.jobUuid)">
+                <mat-icon>visibility</mat-icon>
+                <span>View</span>
+              </button>
+              <button mat-menu-item *ngIf="item.resultFileUuid" (click)="downloadFile(item.resultFileUuid)">
+                <mat-icon>download</mat-icon>
+                <span>Download Results</span>
+              </button>
+            </mat-menu>
           </ng-template>
         </app-generic-table>
       </div>
@@ -124,8 +151,19 @@
           (refresh)="refreshPrompts()">
           <!-- Custom template for prompt actions -->
           <ng-template #promptActions let-item>
-            <button class="action-btn" (click)="viewPromptDetails(item.promptUuid); $event.stopPropagation()">View</button>
-            <button class="action-btn" (click)="copyPromptToUser(item); $event.stopPropagation()">Copy to User</button>
+            <button mat-icon-button [matMenuTriggerFor]="promptActionsMenu" (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #promptActionsMenu="matMenu">
+              <button mat-menu-item (click)="viewPromptDetails(item.promptUuid)">
+                <mat-icon>visibility</mat-icon>
+                <span>View</span>
+              </button>
+              <button mat-menu-item (click)="copyPromptToUser(item)">
+                <mat-icon>content_copy</mat-icon>
+                <span>Copy to User</span>
+              </button>
+            </mat-menu>
           </ng-template>
         </app-generic-table>
       </div>

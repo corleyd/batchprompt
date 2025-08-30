@@ -1,6 +1,7 @@
 package com.batchprompt.jobs.model.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import com.batchprompt.jobs.model.JobStatus;
@@ -41,4 +42,6 @@ public class JobDto {
     private Double creditEstimate;
 
     private String errorMessage;
+    
+    private List<ValidationMessageSummaryDto> validationMessageSummary;
 }

@@ -9,6 +9,7 @@ import { AccountService } from '../../../services/account.service';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -30,6 +31,7 @@ import { SubmitJobDialogComponent } from './submit-job-dialog/submit-job-dialog.
     MatTabsModule,
     MatButtonModule,
     MatIconModule,
+    MatMenuModule,
     MatDialogModule,
     FormsModule,
     ReactiveFormsModule,
@@ -311,14 +313,14 @@ export class UserDetailsComponent implements OnInit {
     this.fileService.downloadFile(fileUuid, fileName).subscribe(() => console.log('File download initiated'));
   }
 
+  viewPromptDetails(promptUuid: string): void {
+    // Navigate to prompt details page
+    this.router.navigate(['/dashboard/prompts', promptUuid]);
+  }
+
   viewJobDetails(jobUuid: string): void {
     // Navigate to job details page
     this.router.navigate(['/dashboard/jobs', jobUuid]);
-  }
-
-  viewPromptDetails(promptUuid: string): void {
-    // Navigate to prompt details page
-    this.router.navigate(['/dashboard/prompts/edit', promptUuid]);
   }
 
   goBack(): void {

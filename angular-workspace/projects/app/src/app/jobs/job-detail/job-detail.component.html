@@ -101,7 +101,17 @@
       
       <div class="error-details">
         <h4>Error Details:</h4>
-        <p class="error-message">{{ job.errorMessage || 'No detailed error information available.' }}</p>
+        <div *ngIf="job.validationMessageSummary && job.validationMessageSummary.length > 0; else noDetailedInfo">
+          <div class="validation-summary">
+            <div class="validation-message" *ngFor="let summary of job.validationMessageSummary">
+              <div class="message-content">{{ summary.message }}</div>
+              <div class="message-count">{{ summary.count }} occurrence{{ summary.count === 1 ? '' : 's' }}</div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noDetailedInfo>
+          <p class="error-message">{{ job.errorMessage || 'No detailed error information available.' }}</p>
+        </ng-template>
       </div>
 
       <div class="action-buttons">

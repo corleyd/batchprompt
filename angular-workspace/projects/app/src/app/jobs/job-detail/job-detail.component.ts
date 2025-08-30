@@ -8,6 +8,7 @@ import { IconsModule } from '../../icons/icons.module';
 import { JobService } from '../../services/job.service';
 import { NotificationService } from '../../services/notification.service';
 import { DownloadButtonComponent } from '../../shared/components';
+import { Job } from '../../models/job.model';
 
 @Component({
   selector: 'app-job-detail',
@@ -17,7 +18,7 @@ import { DownloadButtonComponent } from '../../shared/components';
   imports: [CommonModule, IconsModule, DownloadButtonComponent, MatProgressBarModule, MatButtonModule]
 })
 export class JobDetailComponent implements OnInit, OnDestroy {
-  job: any;
+  job: Job | null = null;
   loading = true;
   error = false;
   errorMessage = '';
@@ -95,7 +96,9 @@ export class JobDetailComponent implements OnInit, OnDestroy {
     if (this.job && this.job.jobUuid) {
       this.jobService.submitJob(this.job.jobUuid).subscribe({
         next: () => {
-          this.loadJobDetails(this.job.jobUuid);
+          if (this.job) {
+            this.loadJobDetails(this.job.jobUuid);
+          }
         },
         error: (err) => {
           console.error('Error submitting job', err);
@@ -109,7 +112,9 @@ export class JobDetailComponent implements OnInit, OnDestroy {
     if (this.job && this.job.jobUuid) {
       this.jobService.continueProcessingJob(this.job.jobUuid).subscribe({
         next: () => {
-          this.loadJobDetails(this.job.jobUuid);
+          if (this.job) {
+            this.loadJobDetails(this.job.jobUuid);
+          }
         },
         error: (err) => {
           console.error('Error continuing job processing', err);
